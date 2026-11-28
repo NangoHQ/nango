@@ -39,7 +39,7 @@ const CONNECTION: AgentSessionResolvedConnection = {
 
 const SESSION = {
     id: 'session-1',
-    metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} }, nangoRunCode: true },
+    metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} }, nangoQueryResult: true },
     resolvedConnections: { gmail: CONNECTION }
 } as unknown as AgentSession;
 
@@ -72,8 +72,8 @@ describe('toolResultForAgent', () => {
     it.each([
         ['off', false],
         ['absent, as on a session created before it', undefined]
-    ])('returns a large result unchanged when nango_run_code is %s', async (_, nangoRunCode) => {
-        const session = { ...SESSION, metaTools: { ...SESSION.metaTools, nangoRunCode } } as AgentSession;
+    ])('returns a large result unchanged when nango_query_result is %s', async (_, nangoQueryResult) => {
+        const session = { ...SESSION, metaTools: { ...SESSION.metaTools, nangoQueryResult } } as AgentSession;
 
         await expect(resultFor(LARGE, session)).resolves.toBe(LARGE);
         expect(mocks.upsert).not.toHaveBeenCalled();
@@ -98,7 +98,7 @@ describe('toolResultForAgent', () => {
             bytes: Buffer.byteLength(JSON.stringify(LARGE)),
             shape: expect.stringContaining('emails: {'),
             sample: { emails: [expect.anything(), expect.anything(), '… 48 more items'] },
-            hint: expect.stringContaining('nango_run_code')
+            hint: expect.stringContaining('nango_query_result')
         });
         expect(result).not.toHaveProperty('data');
     });
@@ -139,7 +139,13 @@ describe('result ids', () => {
         expect(decodeResultId(encodeResultId(ref))).toEqual(ref);
     });
 
-    it.each(['', 'not-base64!', Buffer.from('{"a":1}').toString('base64url'), Buffer.from('["only-one"]').toString('base64url')])('reject %j', (resultId) => {
+    it.each([
+        '',
+        'not-base64!',
+        Buffer.from('{"a":1}').toString('base64url'),
+        Buffer.from('["only-one"]').toString('base64url'),
+        Buffer.from('["gmail","not-a-uuid"]').toString('base64url')
+    ])('reject %j', (resultId) => {
         expect(decodeResultId(resultId)).toBeNull();
     });
 });

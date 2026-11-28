@@ -1,0 +1,53 @@
+---
+title: 'Postman - How do I link my account?'
+sidebarTitle: 'Postman'
+---
+
+## Overview
+
+To authenticate with Postman, you need:
+
+1. **Region** — the Postman API host your account uses.
+2. **API Key** — a Postman API key.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Postman account. You can sign up for free at [identity.getpostman.com](https://identity.getpostman.com/signup).
+
+### Step 1: Choose your region
+
+Select the Postman API host for your account in the **Region** field:
+
+| Your account | Value to select |
+|--------------|-----------------|
+| Default | `api.postman.com` |
+| EU, on an Enterprise plan | `api.eu.postman.com` |
+
+Postman uses `api.eu.postman.com` for users in the EU with Enterprise plans. Everyone else uses `api.postman.com`.
+
+### Step 2: Generate an API key
+
+1. Sign in to Postman. In the top right of the Postman header, click **Settings** > **Account settings**, then click **API keys**. You can also go straight to the [API keys page](https://go.postman.co/settings/me/api-keys).
+2. Click **Generate API Key**.
+
+<img src="/api-integrations/postman/api_keys_page.png" alt="Postman API keys page in Account settings with the Generate API Key button"/>
+
+3. Enter a name for your key and click **Generate API Key**.
+
+<img src="/api-integrations/postman/name_api_key.png" alt="Postman Generate an API key dialog with the key name field and the Generate API Key button"/>
+
+4. Click **Copy to Clipboard** to copy your key. Postman shows the key only once.
+
+<img src="/api-integrations/postman/copy_api_key.png" alt="Postman Copy your API key dialog with the Copy to Clipboard button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Postman.
+2. Select your **Region**, then enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/postman/form.png" alt="Postman connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Postman.

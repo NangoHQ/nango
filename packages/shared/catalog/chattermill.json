@@ -1,0 +1,3475 @@
+{
+    "providerConfigKey": "chattermill",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make attribute definitions from accessible projects available as project-qualified records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-attributes",
+            "output": [
+                "Attribute"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Attribute"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Attribute": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque attribute ID, scoped to projectKey."
+                            },
+                            "key": {
+                                "description": "Attribute property key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "description": "Attribute display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "type": {
+                                "description": "Opaque attribute type label if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An attribute definition belonging to an accessible project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make categories from accessible projects available as project-qualified reference records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-categories",
+            "output": [
+                "Category"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Category"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Category": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque category ID, scoped to projectKey."
+                            },
+                            "name": {
+                                "description": "Category display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A category reference record belonging to an accessible Chattermill project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible custom segment identities and names available across accessible projects.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-custom-segments",
+            "output": [
+                "CustomSegment"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CustomSegment"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CustomSegment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque custom segment ID, scoped to projectKey."
+                            },
+                            "name": {
+                                "description": "Custom segment display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible custom segment identity and display name within its owning project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make data source identities, keys and names available across accessible projects.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-data-sources",
+            "output": [
+                "DataSource"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "DataSource"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DataSource": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque data source ID, scoped to projectKey."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Data source key used for response creation and filtering."
+                            },
+                            "name": {
+                                "description": "Data source display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Data source identity, key and optional display name within an accessible project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make data type identities, keys and display names available across accessible projects.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-data-types",
+            "output": [
+                "DataType"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "DataType"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "DataType": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque data type ID, scoped to projectKey."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Data type key used by response creation and filtering."
+                            },
+                            "name": {
+                                "description": "Data type display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Data type identity, key and optional display name within an accessible project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible project identities, routing keys and display names available as replicated records.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-projects",
+            "output": [
+                "Project"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Project"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Project": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque project ID."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Project routing key for project-scoped resources."
+                            },
+                            "name": {
+                                "description": "Project display name if supplied; explicit null is retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible Chattermill project identity, routing key and display name."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make feedback responses from accessible projects available with text, scores, metadata and supplied analysis.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-responses",
+            "output": [
+                "ChattermillResponse"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ChattermillResponse"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ChattermillResponse": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque response ID, scoped to projectKey."
+                            },
+                            "score": {
+                                "description": "Original feedback score in its data type scale, without rescaling.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "tagIds": {
+                                "description": "Assigned tag IDs if supplied; omission does not mean an empty list.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Opaque assigned tag ID."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "themes": {
+                                "description": "Theme assignments when supplied; omission does not establish processing completion.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "themeId": {
+                                                    "type": "string",
+                                                    "description": "Opaque assigned theme ID in this project."
+                                                },
+                                                "sentiment": {
+                                                    "description": "Original -1, 0 or 1 sentiment code if supplied.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer",
+                                                            "enum": [
+                                                                -1,
+                                                                0,
+                                                                1
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "themeId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "A supplied theme assignment and its optional original sentiment."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "comment": {
+                                "description": "Feedback text; absent, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "segments": {
+                                "description": "Segment property map keyed by provider property keys.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Property display label if supplied.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "type": {
+                                                    "description": "Opaque provider property type label, without inferred coercion.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "value": {
+                                                    "description": "Original scalar property value; numeric-looking strings stay strings.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "description": "Original string property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "number",
+                                                            "description": "Original numeric property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "boolean",
+                                                            "description": "Original boolean property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "A supplied metadata or segment property with its original scalar value."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            },
+                            "dataTypeKey": {
+                                "description": "Data type key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "userMetadata": {
+                                "description": "User metadata keyed by provider property keys; may contain personal information.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Property display label if supplied.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "type": {
+                                                    "description": "Opaque provider property type label, without inferred coercion.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "value": {
+                                                    "description": "Original scalar property value; numeric-looking strings stay strings.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string",
+                                                            "description": "Original string property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "number",
+                                                            "description": "Original numeric property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "boolean",
+                                                            "description": "Original boolean property value, without coercion."
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "A supplied metadata or segment property with its original scalar value."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dataSourceKey": {
+                                "description": "Data source key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Feedback response from an accessible project, with supplied content, metadata and analysis."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make tag identities and names available across accessible projects.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-tags",
+            "output": [
+                "Tag"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Tag"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Tag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque tag ID, scoped to projectKey."
+                            },
+                            "name": {
+                                "description": "Tag display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A tag identity and optional display name belonging to an accessible Chattermill project."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make theme identities, names and supplied category references available across accessible projects.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-themes",
+            "output": [
+                "Theme"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Theme"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Theme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque theme ID, scoped to projectKey."
+                            },
+                            "name": {
+                                "description": "Theme display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "categoryId": {
+                                "description": "Parent category ID if supplied; explicit null remains null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project key; together with id identifies the record."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A project-scoped Chattermill theme with its supplied display name and category reference."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-response",
+            "integrationId": "chattermill",
+            "description": "Create one feedback response with text, score, data type, data source and optional customer metadata.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_createresponse",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_createresponse",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_createresponse": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key receiving the response."
+                            },
+                            "dataTypeKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Data type key from list-data-types."
+                            },
+                            "dataSourceKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Data source key from list-data-sources."
+                            },
+                            "comment": {
+                                "type": "string",
+                                "description": "Ordinary feedback text; empty text is sent as empty, omission does not supply text."
+                            },
+                            "score": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Feedback score in the selected data type's scale; no universal range is assumed."
+                            },
+                            "segments": {
+                                "description": "Optional segment properties keyed by provider property keys; empty object is sent as empty.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Property display label, sent unchanged."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Provider property type label; obtain the appropriate label from project configuration or existing responses."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Property value sent as ordinary text; empty string is an explicit empty value, not deletion."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A property retaining its provider display label, type label and text value."
+                                }
+                            },
+                            "userMetadata": {
+                                "description": "Optional user metadata keyed by property keys, such as customer_id; may contain personal information.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Property display label, sent unchanged."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Provider property type label; obtain the appropriate label from project configuration or existing responses."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Property value sent as ordinary text; empty string is an explicit empty value, not deletion."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A property retaining its provider display label, type label and text value."
+                                }
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "dataTypeKey",
+                            "dataSourceKey"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "properties": {
+                                    "comment": {
+                                        "description": "Ordinary feedback text; empty text is sent as empty, omission does not supply text."
+                                    }
+                                },
+                                "required": [
+                                    "comment"
+                                ]
+                            },
+                            {
+                                "properties": {
+                                    "score": {
+                                        "description": "Feedback score in the selected data type's scale; no universal range is assumed."
+                                    }
+                                },
+                                "required": [
+                                    "score"
+                                ]
+                            }
+                        ],
+                        "description": "One feedback response, requiring a comment or score, with optional typed customer and segment properties."
+                    },
+                    "FunctionOutput_chattermill_createresponse": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the newly created response."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Project routing key receiving the response."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The established identity of the newly created feedback response."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Get projectKey from `list-projects`, dataTypeKey from `list-data-types` and dataSourceKey from `list-data-sources`. Provide comment or score. Property maps retain provider type labels, display names and values. Creation is not proven replay-safe: if the result is uncertain, inspect responses before retrying. Use `update-response` only for an existing response's metadata."
+            },
+            "filePath": "./chattermill/tools/create-response.ts",
+            "version": "3a6137e95790e5148bf3097e08f3c7cda63405ba2dfb058b03f9f522972b2550",
+            "location": {
+                "js": "templates-zero/chattermill/tools/create-response/3a6137e95790e5148bf3097e08f3c7cda63405ba2dfb058b03f9f522972b2550.cjs",
+                "ts": "templates-zero/chattermill/tools/create-response/3a6137e95790e5148bf3097e08f3c7cda63405ba2dfb058b03f9f522972b2550.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-response-permanently",
+            "integrationId": "chattermill",
+            "description": "Permanently erase one response by ID for a data-erasure request. The operation cannot be reversed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_deleteresponsepermanently",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_deleteresponsepermanently",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_deleteresponsepermanently": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            },
+                            "responseId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the single response to erase permanently."
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "responseId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the single response to erase permanently and its owning project."
+                    },
+                    "FunctionOutput_chattermill_deleteresponsepermanently": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque response ID whose deletion the provider acknowledged."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after the provider acknowledges successful deletion; not a claim of customer-wide erasure."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider acknowledgment of permanent deletion of one response, not customer-wide erasure."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `search-responses` to locate the correct response for an erasure request and `get-response` if needed to inspect it. Supply its projectKey and responseId. This irreversibly deletes that response, not every response belonging to the customer. Continue searching pages to identify other records; do not treat one deletion as complete customer erasure. If the result is uncertain, inspect the target before retrying."
+            },
+            "filePath": "./chattermill/tools/delete-response-permanently.ts",
+            "version": "4078af3327789b35d1f5d2b6e9d44a3e0bf783e8362f6c6db01020aa25ec972d",
+            "location": {
+                "js": "templates-zero/chattermill/tools/delete-response-permanently/4078af3327789b35d1f5d2b6e9d44a3e0bf783e8362f6c6db01020aa25ec972d.cjs",
+                "ts": "templates-zero/chattermill/tools/delete-response-permanently/4078af3327789b35d1f5d2b6e9d44a3e0bf783e8362f6c6db01020aa25ec972d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-attribute",
+            "integrationId": "chattermill",
+            "description": "Get a project's attribute by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getattribute",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getattribute",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getattribute": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            },
+                            "attributeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque attribute ID from list-attributes."
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "attributeId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project and attribute identifiers for a single attribute lookup."
+                    },
+                    "FunctionOutput_chattermill_getattribute": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque attribute ID within this project."
+                            },
+                            "key": {
+                                "description": "Attribute property key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "description": "Attribute display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "type": {
+                                "description": "Opaque provider attribute type label if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested attribute and its owning project routing key."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects` and attributeId from `list-attributes`. Use `list-attributes` to browse."
+            },
+            "filePath": "./chattermill/tools/get-attribute.ts",
+            "version": "61ae0c8d492ca7e37a6b83bed109bc87a1564131167475f7f1999c6acd703e3b",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-attribute/61ae0c8d492ca7e37a6b83bed109bc87a1564131167475f7f1999c6acd703e3b.cjs",
+                "ts": "templates-zero/chattermill/tools/get-attribute/61ae0c8d492ca7e37a6b83bed109bc87a1564131167475f7f1999c6acd703e3b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-category",
+            "integrationId": "chattermill",
+            "description": "Get one category in a project by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getcategory",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getcategory",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getcategory": {
+                        "type": "object",
+                        "properties": {
+                            "categoryId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque category ID from list-categories."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "categoryId",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one category within its owning project."
+                    },
+                    "FunctionOutput_chattermill_getcategory": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque category ID within this project."
+                            },
+                            "name": {
+                                "description": "Category display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested category with its owning project key."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects` and categoryId from `list-categories`. Use `list-categories` to browse."
+            },
+            "filePath": "./chattermill/tools/get-category.ts",
+            "version": "78f7cf9ea315c1111b34279e8dab32e97da3fa94fa8d3d3a01ce86fe5dde8e56",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-category/78f7cf9ea315c1111b34279e8dab32e97da3fa94fa8d3d3a01ce86fe5dde8e56.cjs",
+                "ts": "templates-zero/chattermill/tools/get-category/78f7cf9ea315c1111b34279e8dab32e97da3fa94fa8d3d3a01ce86fe5dde8e56.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-data-source",
+            "integrationId": "chattermill",
+            "description": "Get a project's data source by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getdatasource",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getdatasource",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getdatasource": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            },
+                            "dataSourceId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque data source ID from list-data-sources, not its key."
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "dataSourceId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a data source by its owning project key and opaque ID."
+                    },
+                    "FunctionOutput_chattermill_getdatasource": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque data source ID within the project."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Data source key used by response tools."
+                            },
+                            "name": {
+                                "description": "Display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested data source and the key used by response tools."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain projectKey from `list-projects` and dataSourceId from `list-data-sources`. Use the returned key, rather than ID, with response filters."
+            },
+            "filePath": "./chattermill/tools/get-data-source.ts",
+            "version": "b8566859c477c2341a5e172e94fb656c7e2d46400d63b0bbd5fdd464ccdd3ca1",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-data-source/b8566859c477c2341a5e172e94fb656c7e2d46400d63b0bbd5fdd464ccdd3ca1.cjs",
+                "ts": "templates-zero/chattermill/tools/get-data-source/b8566859c477c2341a5e172e94fb656c7e2d46400d63b0bbd5fdd464ccdd3ca1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-data-type",
+            "integrationId": "chattermill",
+            "description": "Get a project's data type by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getdatatype",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getdatatype",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getdatatype": {
+                        "type": "object",
+                        "properties": {
+                            "dataTypeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque data type ID from list-data-types, not its key."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "dataTypeId",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project routing key and opaque ID of the data type to retrieve."
+                    },
+                    "FunctionOutput_chattermill_getdatatype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque data type ID within this project."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Data type key used by response tools."
+                            },
+                            "name": {
+                                "description": "Data type display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested data type and its owning project routing key."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain projectKey from `list-projects` and dataTypeId from `list-data-types`. Use the returned key with response tools."
+            },
+            "filePath": "./chattermill/tools/get-data-type.ts",
+            "version": "02b60d98817613b83eed5b6145202bf74b1b19b71b4b90f131972d6aec61d142",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-data-type/02b60d98817613b83eed5b6145202bf74b1b19b71b4b90f131972d6aec61d142.cjs",
+                "ts": "templates-zero/chattermill/tools/get-data-type/02b60d98817613b83eed5b6145202bf74b1b19b71b4b90f131972d6aec61d142.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-metric",
+            "integrationId": "chattermill",
+            "description": "Get NPS, average score, net sentiment or response volume for a project, optionally filtered by time, category, theme and sentiment.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getmetric",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getmetric",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getmetric": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "description": "Optional upper time bound with explicit offset and whole-second precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "from": {
+                                "description": "Optional lower time bound with explicit offset and whole-second precision; inclusivity follows provider behavior.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            },
+                            "metric": {
+                                "type": "string",
+                                "enum": [
+                                    "nps",
+                                    "average_score",
+                                    "net_sentiment",
+                                    "volume"
+                                ],
+                                "description": "Metric to calculate: provider NPS, average score, net sentiment or volume; values retain provider scale."
+                            },
+                            "sentiment": {
+                                "description": "Optional provider sentiment code -1, 0 or 1, passed without reinterpretation.",
+                                "type": "integer",
+                                "enum": [
+                                    -1,
+                                    0,
+                                    1
+                                ]
+                            },
+                            "themeName": {
+                                "description": "Optional exact theme name, not theme ID.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            },
+                            "categoryName": {
+                                "description": "Optional exact category name, not category ID.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "metric",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project, metric and optional time and exact-name filters for one aggregate."
+                    },
+                    "FunctionOutput_chattermill_getmetric": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "description": "Provider's numeric aggregate in its original metric scale; null only when the provider explicitly returns an undefined or null aggregate, not fabricated zero.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "metric": {
+                                "type": "string",
+                                "enum": [
+                                    "nps",
+                                    "average_score",
+                                    "net_sentiment",
+                                    "volume"
+                                ],
+                                "description": "Requested metric, echoed for result interpretation."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Project routing key for the aggregate."
+                            }
+                        },
+                        "required": [
+                            "value",
+                            "metric",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider aggregate and the project and metric that identify it."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Choose a metric; use names from `list-categories` and `list-themes` for those filters, not their IDs. Supply whole-second timestamps with explicit offsets. This returns one aggregate value, not individual feedback; use `list-responses` or `search-responses` for records."
+            },
+            "filePath": "./chattermill/tools/get-metric.ts",
+            "version": "a4955ac981f19b1fc2084947b219ca48ead11cbeaf860e8df8884249e44b6296",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-metric/a4955ac981f19b1fc2084947b219ca48ead11cbeaf860e8df8884249e44b6296.cjs",
+                "ts": "templates-zero/chattermill/tools/get-metric/a4955ac981f19b1fc2084947b219ca48ead11cbeaf860e8df8884249e44b6296.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-project",
+            "integrationId": "chattermill",
+            "description": "Get one project by its project ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getproject",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getproject",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "projectId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque project ID from list-projects, not the project routing key."
+                            }
+                        },
+                        "required": [
+                            "projectId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The project to retrieve by its opaque ID."
+                    },
+                    "FunctionOutput_chattermill_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque project ID."
+                            },
+                            "key": {
+                                "type": "string",
+                                "description": "Project routing key used by project-scoped tools."
+                            },
+                            "name": {
+                                "description": "Display name if supplied; null remains null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "key"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested project without its transport envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain a project ID from `list-projects`. Use this for one project's details; use `list-projects` to discover available projects."
+            },
+            "filePath": "./chattermill/tools/get-project.ts",
+            "version": "929c9dcf0db2e4aef0eeac4b36e4d1125de2af2d644753edbd415c1de505c5d2",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-project/929c9dcf0db2e4aef0eeac4b36e4d1125de2af2d644753edbd415c1de505c5d2.cjs",
+                "ts": "templates-zero/chattermill/tools/get-project/929c9dcf0db2e4aef0eeac4b36e4d1125de2af2d644753edbd415c1de505c5d2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-response",
+            "integrationId": "chattermill",
+            "description": "Get one feedback response, its content, metadata and available theme analysis.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_getresponse",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_getresponse",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_getresponse": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            },
+                            "responseId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque response ID within the project."
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "responseId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project and opaque ID of the feedback response to read."
+                    },
+                    "FunctionOutput_chattermill_getresponse": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque response ID, scoped to projectKey."
+                            },
+                            "score": {
+                                "description": "Feedback score in the response's data type scale, without rescaling.",
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "tagIds": {
+                                "description": "Assigned tag IDs when supplied; omission is not an empty assignment list.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Opaque assigned tag ID."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "themes": {
+                                "description": "Available theme assignments; omission does not mean no themes or completed analysis.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "themeId": {
+                                                    "type": "string",
+                                                    "description": "Opaque assigned theme ID in this project."
+                                                },
+                                                "sentiment": {
+                                                    "description": "Provider sentiment code: -1, 0 or 1; explicit null retained.",
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer",
+                                                            "enum": [
+                                                                -1,
+                                                                0,
+                                                                1
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "themeId"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An available theme assignment and its supplied sentiment."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "comment": {
+                                "description": "Feedback text; absent, null and empty text remain distinct.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "segments": {
+                                "description": "Segment properties keyed by their provider property keys; null remains null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Display label if supplied.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "type": {
+                                                    "description": "Opaque provider type label; do not infer conversions.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "value": {
+                                                    "description": "Property value preserved in its supplied scalar type; no type-label coercion.",
+                                                    "anyOf": [
+                                                        {
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "description": "Property value supplied as text, without coercion."
+                                                                },
+                                                                {
+                                                                    "type": "number",
+                                                                    "description": "Property value supplied as a number, without coercion."
+                                                                },
+                                                                {
+                                                                    "type": "boolean",
+                                                                    "description": "Property value supplied as a boolean, without coercion."
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Provider property with its original label, type and scalar value."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            },
+                            "dataTypeKey": {
+                                "description": "Data type key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "userMetadata": {
+                                "description": "User metadata keyed by provider property keys; may contain personal information.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Display label if supplied.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "type": {
+                                                    "description": "Opaque provider type label; do not infer conversions.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "value": {
+                                                    "description": "Property value preserved in its supplied scalar type; no type-label coercion.",
+                                                    "anyOf": [
+                                                        {
+                                                            "anyOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "description": "Property value supplied as text, without coercion."
+                                                                },
+                                                                {
+                                                                    "type": "number",
+                                                                    "description": "Property value supplied as a number, without coercion."
+                                                                },
+                                                                {
+                                                                    "type": "boolean",
+                                                                    "description": "Property value supplied as a boolean, without coercion."
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "null"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Provider property with its original label, type and scalar value."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "dataSourceKey": {
+                                "description": "Data source key if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One feedback response with supplied content, metadata and available theme analysis, without the provider envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects` and responseId from `list-responses` or `search-responses`. Use `search-responses` to find customer-related responses before erasure."
+            },
+            "filePath": "./chattermill/tools/get-response.ts",
+            "version": "0654c4cbe9ec2fb7b25649ba3a3b19b6a9c5a926f7e317fa2cc9511a503d308b",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-response/0654c4cbe9ec2fb7b25649ba3a3b19b6a9c5a926f7e317fa2cc9511a503d308b.cjs",
+                "ts": "templates-zero/chattermill/tools/get-response/0654c4cbe9ec2fb7b25649ba3a3b19b6a9c5a926f7e317fa2cc9511a503d308b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-tag",
+            "integrationId": "chattermill",
+            "description": "Get a project's tag by ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_gettag",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_gettag",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_gettag": {
+                        "type": "object",
+                        "properties": {
+                            "tagId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque tag ID from list-tags."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "tagId",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project and tag identifiers for a single tag lookup."
+                    },
+                    "FunctionOutput_chattermill_gettag": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque tag ID within the project."
+                            },
+                            "name": {
+                                "description": "Tag display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The requested tag with its owning project key."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects` and tagId from `list-tags`. Use `list-tags` for discovery."
+            },
+            "filePath": "./chattermill/tools/get-tag.ts",
+            "version": "17b6a95beaf1a57a0c880b02caef5ea493242d63651f7f18fe401a7492ac2552",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-tag/17b6a95beaf1a57a0c880b02caef5ea493242d63651f7f18fe401a7492ac2552.cjs",
+                "ts": "templates-zero/chattermill/tools/get-tag/17b6a95beaf1a57a0c880b02caef5ea493242d63651f7f18fe401a7492ac2552.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-theme",
+            "integrationId": "chattermill",
+            "description": "Get one theme in a project by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_gettheme",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_gettheme",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_gettheme": {
+                        "type": "object",
+                        "properties": {
+                            "themeId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque theme ID from list-themes."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "themeId",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project and theme identifiers for retrieving one theme."
+                    },
+                    "FunctionOutput_chattermill_gettheme": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque theme ID within the project."
+                            },
+                            "name": {
+                                "description": "Theme display name if supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "categoryId": {
+                                "description": "Parent category ID if supplied; explicit null is retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One theme belonging to the requested project."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects` and themeId from `list-themes`. Use `list-themes` to browse."
+            },
+            "filePath": "./chattermill/tools/get-theme.ts",
+            "version": "ec0935f2df83ab2779ee1289f92c7c26d2dcc107636a266236a25198ade40a43",
+            "location": {
+                "js": "templates-zero/chattermill/tools/get-theme/ec0935f2df83ab2779ee1289f92c7c26d2dcc107636a266236a25198ade40a43.cjs",
+                "ts": "templates-zero/chattermill/tools/get-theme/ec0935f2df83ab2779ee1289f92c7c26d2dcc107636a266236a25198ade40a43.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-attributes",
+            "integrationId": "chattermill",
+            "description": "List the attributes defined for a project.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listattributes",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listattributes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listattributes": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose attribute definitions to list."
+                    },
+                    "FunctionOutput_chattermill_listattributes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque attribute ID within the project."
+                                        },
+                                        "key": {
+                                            "description": "Attribute property key if supplied, distinct from its ID.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "description": "Attribute display name if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "type": {
+                                            "description": "Provider's attribute type label, retained without interpretation.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An attribute defined for the requested project."
+                                },
+                                "description": "Attributes returned for this project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Attribute definitions returned by the project collection request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-attribute` for one known attribute ID."
+            },
+            "filePath": "./chattermill/tools/list-attributes.ts",
+            "version": "853082ae8a65c0bc946ea9c1655516f70e60357273cb0b078f134fe1a9944714",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-attributes/853082ae8a65c0bc946ea9c1655516f70e60357273cb0b078f134fe1a9944714.cjs",
+                "ts": "templates-zero/chattermill/tools/list-attributes/853082ae8a65c0bc946ea9c1655516f70e60357273cb0b078f134fe1a9944714.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-categories",
+            "integrationId": "chattermill",
+            "description": "List the categories in a project.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listcategories",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listcategories",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listcategories": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose categories to list."
+                    },
+                    "FunctionOutput_chattermill_listcategories": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque category ID within the project."
+                                        },
+                                        "name": {
+                                            "description": "Category display name if supplied; usable as a metric filter when non-null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A category belonging to the requested project."
+                                },
+                                "description": "Categories in the project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The category collection returned for the project."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-category` for a known category ID. Category names can filter `get-metric`."
+            },
+            "filePath": "./chattermill/tools/list-categories.ts",
+            "version": "cbc2f17900a04e2327628fa7fd3d77dc31d183404cebd1eb18453ec580e7206f",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-categories/cbc2f17900a04e2327628fa7fd3d77dc31d183404cebd1eb18453ec580e7206f.cjs",
+                "ts": "templates-zero/chattermill/tools/list-categories/cbc2f17900a04e2327628fa7fd3d77dc31d183404cebd1eb18453ec580e7206f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-custom-segments",
+            "integrationId": "chattermill",
+            "description": "List the custom segments accessible within a project.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listcustomsegments",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listcustomsegments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listcustomsegments": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose accessible custom segments should be listed."
+                    },
+                    "FunctionOutput_chattermill_listcustomsegments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque custom segment ID usable in response filters."
+                                        },
+                                        "name": {
+                                            "description": "Custom segment display name if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible saved custom segment."
+                                },
+                                "description": "Accessible custom segments in the project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Full collection of accessible custom segments returned for the requested project."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use returned IDs with `list-responses` or `search-responses` to select a saved custom segment."
+            },
+            "filePath": "./chattermill/tools/list-custom-segments.ts",
+            "version": "1b25c47483649492ad4e19175a7c6ef5667a2a26fca95d866e60fff079137c9c",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-custom-segments/1b25c47483649492ad4e19175a7c6ef5667a2a26fca95d866e60fff079137c9c.cjs",
+                "ts": "templates-zero/chattermill/tools/list-custom-segments/1b25c47483649492ad4e19175a7c6ef5667a2a26fca95d866e60fff079137c9c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-data-sources",
+            "integrationId": "chattermill",
+            "description": "List a project's data sources, including keys used to create and filter responses.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listdatasources",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listdatasources",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listdatasources": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose data sources to list."
+                    },
+                    "FunctionOutput_chattermill_listdatasources": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque data source ID within the project."
+                                        },
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Data source key accepted by response filters and creation."
+                                        },
+                                        "name": {
+                                            "description": "Data source display name if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A data source configured for the requested project."
+                                },
+                                "description": "Data sources configured for this project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The data sources supplied by the provider for the requested project."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-data-source` for an ID lookup. Pass a returned key as dataSourceKey to response tools."
+            },
+            "filePath": "./chattermill/tools/list-data-sources.ts",
+            "version": "eb9b7b0d4b33fb7f946e59254b3361c28cc87bbaf1fcdb400f5d64d3ab945424",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-data-sources/eb9b7b0d4b33fb7f946e59254b3361c28cc87bbaf1fcdb400f5d64d3ab945424.cjs",
+                "ts": "templates-zero/chattermill/tools/list-data-sources/eb9b7b0d4b33fb7f946e59254b3361c28cc87bbaf1fcdb400f5d64d3ab945424.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-data-types",
+            "integrationId": "chattermill",
+            "description": "List a project's data types and the keys used by response tools.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listdatatypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listdatatypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listdatatypes": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose configured data types to list."
+                    },
+                    "FunctionOutput_chattermill_listdatatypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque data type ID within the project."
+                                        },
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Data type key accepted by response tools."
+                                        },
+                                        "name": {
+                                            "description": "Data type display name if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A configured project data type and its response-tool key."
+                                },
+                                "description": "Data types configured for the project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Data types supplied by one provider list response."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-data-type` for one ID. Use a returned key as dataTypeKey when creating or listing responses."
+            },
+            "filePath": "./chattermill/tools/list-data-types.ts",
+            "version": "23878f42821b1d9cb2a70363b0c469068cf6c9bb07294cb5601edb696c60bdcc",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-data-types/23878f42821b1d9cb2a70363b0c469068cf6c9bb07294cb5601edb696c60bdcc.cjs",
+                "ts": "templates-zero/chattermill/tools/list-data-types/23878f42821b1d9cb2a70363b0c469068cf6c9bb07294cb5601edb696c60bdcc.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-projects",
+            "integrationId": "chattermill",
+            "description": "List the projects available to the connected user, including the keys used by project-scoped tools.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listprojects",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listprojects",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listprojects": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "List accessible projects without any input parameters."
+                    },
+                    "FunctionOutput_chattermill_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque project ID used by get-project."
+                                        },
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Project key used by project-scoped tools; distinct from the project ID."
+                                        },
+                                        "name": {
+                                            "description": "Project display name, if supplied; preserves explicit null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "key"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible project and its distinct discovery ID and routing key."
+                                },
+                                "description": "Projects accessible to the connected user."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The projects available to the connected user."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this first to discover project IDs and keys. Use `get-project` for a known project ID. Pass a returned key, not its ID, to tools that require projectKey."
+            },
+            "filePath": "./chattermill/tools/list-projects.ts",
+            "version": "7564e9ebdecda6ea7da9daa5ba9e429a10e08ea8cf144542fbba1e5ef9ad01fe",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-projects/7564e9ebdecda6ea7da9daa5ba9e429a10e08ea8cf144542fbba1e5ef9ad01fe.cjs",
+                "ts": "templates-zero/chattermill/tools/list-projects/7564e9ebdecda6ea7da9daa5ba9e429a10e08ea8cf144542fbba1e5ef9ad01fe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-tags",
+            "integrationId": "chattermill",
+            "description": "List a project's tags.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listtags",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listtags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose tags to list."
+                    },
+                    "FunctionOutput_chattermill_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque tag ID within this project."
+                                        },
+                                        "name": {
+                                            "description": "Tag display name if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A tag belonging to the requested project."
+                                },
+                                "description": "Tags returned for this project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Tags from one provider response for the requested project."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-tag` for a known tag ID."
+            },
+            "filePath": "./chattermill/tools/list-tags.ts",
+            "version": "b050dc23adcb559efd88059faec8c537859e1e748e321598f35784dc48e6ae8e",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-tags/b050dc23adcb559efd88059faec8c537859e1e748e321598f35784dc48e6ae8e.cjs",
+                "ts": "templates-zero/chattermill/tools/list-tags/b050dc23adcb559efd88059faec8c537859e1e748e321598f35784dc48e6ae8e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-themes",
+            "integrationId": "chattermill",
+            "description": "List a project's themes for response and metric filtering.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_listthemes",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_listthemes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Project whose themes to list."
+                    },
+                    "FunctionOutput_chattermill_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque theme ID usable in response filters."
+                                        },
+                                        "name": {
+                                            "description": "Theme display name, usable in metric filters when supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "categoryId": {
+                                            "description": "Parent category ID if supplied; null retains an explicit lack of category.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A theme available in the requested project."
+                                },
+                                "description": "Themes in the project."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider collection of project themes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Use `get-theme` for an ID lookup. Use theme IDs with `list-responses`, and theme names with `get-metric`."
+            },
+            "filePath": "./chattermill/tools/list-themes.ts",
+            "version": "c0363009d7ff6ac8d4ff58999b62d582f4b54284ae5ed670623e15a848153f37",
+            "location": {
+                "js": "templates-zero/chattermill/tools/list-themes/c0363009d7ff6ac8d4ff58999b62d582f4b54284ae5ed670623e15a848153f37.cjs",
+                "ts": "templates-zero/chattermill/tools/list-themes/c0363009d7ff6ac8d4ff58999b62d582f4b54284ae5ed670623e15a848153f37.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-responses",
+            "integrationId": "chattermill",
+            "description": "Find one page of responses matching a response ID, user metadata, or a custom segment, including for data-erasure workflows.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_searchresponses",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_searchresponses",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_searchresponses": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Requested response count for one page; public default 20 and provisional maximum 100.",
+                                "default": 20,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token for the same project, criteria and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Project routing key from list-projects."
+                            },
+                            "responseId": {
+                                "description": "Optional opaque response ID criterion, sent unchanged.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userMetadata": {
+                                "description": "Match one user metadata property and value.",
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "type": "string",
+                                        "description": "Exact metadata value to match, preserving leading zeros and empty text."
+                                    },
+                                    "property": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Provider user metadata property key, such as customer_id."
+                                    }
+                                },
+                                "required": [
+                                    "value",
+                                    "property"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "customSegmentId": {
+                                "description": "Optional saved custom segment ID from list-custom-segments.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Search one project using at least one response ID, metadata pair or saved segment criterion.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "responseId"
+                                ],
+                                "properties": {
+                                    "responseId": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "userMetadata"
+                                ],
+                                "properties": {
+                                    "userMetadata": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "customSegmentId"
+                                ],
+                                "properties": {
+                                    "customSegmentId": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_chattermill_searchresponses": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque response ID within projectKey."
+                                        },
+                                        "score": {
+                                            "description": "Original feedback score without rescaling.",
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "tagIds": {
+                                            "description": "Assigned opaque tag IDs if supplied.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "themes": {
+                                            "description": "Available theme assignments; omission does not establish processing state.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "themeId": {
+                                                                "type": "string",
+                                                                "description": "Assigned theme ID."
+                                                            },
+                                                            "sentiment": {
+                                                                "description": "Original -1, 0 or 1 sentiment code if supplied.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "integer",
+                                                                        "enum": [
+                                                                            -1,
+                                                                            0,
+                                                                            1
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "themeId"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "An available theme assignment and its original sentiment."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "comment": {
+                                            "description": "Feedback text; absent, null and empty remain distinct.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "segments": {
+                                            "description": "Segment properties keyed by provider property key.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Display label if supplied.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "type": {
+                                                                "description": "Opaque provider type label.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "value": {
+                                                                "description": "Original scalar value without type-label coercion.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string",
+                                                                                "description": "Original text scalar value."
+                                                                            },
+                                                                            {
+                                                                                "type": "number",
+                                                                                "description": "Original numeric scalar value."
+                                                                            },
+                                                                            {
+                                                                                "type": "boolean",
+                                                                                "description": "Original boolean scalar value."
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A provider property with its original scalar value and optional display information."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "projectKey": {
+                                            "type": "string",
+                                            "description": "Owning project's routing key."
+                                        },
+                                        "dataTypeKey": {
+                                            "description": "Data type key if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "userMetadata": {
+                                            "description": "User metadata keyed by provider property key; may contain personal information.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Display label if supplied.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "type": {
+                                                                "description": "Opaque provider type label.",
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "value": {
+                                                                "description": "Original scalar value without type-label coercion.",
+                                                                "anyOf": [
+                                                                    {
+                                                                        "anyOf": [
+                                                                            {
+                                                                                "type": "string",
+                                                                                "description": "Original text scalar value."
+                                                                            },
+                                                                            {
+                                                                                "type": "number",
+                                                                                "description": "Original numeric scalar value."
+                                                                            },
+                                                                            {
+                                                                                "type": "boolean",
+                                                                                "description": "Original boolean scalar value."
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "type": "null"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "additionalProperties": false,
+                                                        "description": "A provider property with its original scalar value and optional display information."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "dataSourceKey": {
+                                            "description": "Data source key if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "projectKey"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A matching response with available feedback and metadata."
+                                },
+                                "description": "Responses matching criteria in this provider page."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token, omitted when exhaustion is established.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of matching responses, preserving provider order."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Get projectKey from `list-projects`. Supply at least one criterion; metadata matching uses a property key and value together. Use `list-custom-segments` to discover saved segment IDs. Use `list-responses` for date, score, theme and source filtering. Returns one page, default 20, maximum 100. Continue with nextCursor as cursor and unchanged criteria/limit. Inspect matches before using `delete-response-permanently`."
+            },
+            "filePath": "./chattermill/tools/search-responses.ts",
+            "version": "5771d03bc484a54578c62c0f9a05eef97eac38f78cc33d8a4bbf08039af7140d",
+            "location": {
+                "js": "templates-zero/chattermill/tools/search-responses/5771d03bc484a54578c62c0f9a05eef97eac38f78cc33d8a4bbf08039af7140d.cjs",
+                "ts": "templates-zero/chattermill/tools/search-responses/5771d03bc484a54578c62c0f9a05eef97eac38f78cc33d8a4bbf08039af7140d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-response",
+            "integrationId": "chattermill",
+            "description": "Partially update an existing response's segment properties and user metadata. This tool does not edit comment, score, data source or data type.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_chattermill_updateresponse",
+            "output_schema_ref": "#/definitions/FunctionOutput_chattermill_updateresponse",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_chattermill_updateresponse": {
+                        "type": "object",
+                        "properties": {
+                            "segments": {
+                                "description": "Segment entries to create or replace by property key; omitted keys remain unchanged.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Replacement property display label, sent unchanged."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Replacement provider property type label, sent unchanged."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Replacement text value; empty string explicitly empties the value, not the property association."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Replacement property display label, provider type and text value."
+                                },
+                                "minProperties": 1
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Owning project's routing key."
+                            },
+                            "responseId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque response ID to modify within this project."
+                            },
+                            "userMetadata": {
+                                "description": "User metadata entries to create or replace by property key; omitted keys remain unchanged.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Replacement property display label, sent unchanged."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Replacement provider property type label, sent unchanged."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "Replacement text value; empty string explicitly empties the value, not the property association."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Replacement property display label, provider type and text value."
+                                },
+                                "minProperties": 1
+                            }
+                        },
+                        "required": [
+                            "projectKey",
+                            "responseId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "segments"
+                                ],
+                                "properties": {
+                                    "segments": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "userMetadata"
+                                ],
+                                "properties": {
+                                    "userMetadata": true
+                                }
+                            }
+                        ],
+                        "description": "Target response and nonempty property maps to partially update."
+                    },
+                    "FunctionOutput_chattermill_updateresponse": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the updated response."
+                            },
+                            "projectKey": {
+                                "type": "string",
+                                "description": "Owning project's routing key."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "projectKey"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identity of the response after a successful update, without an analysis-completion guarantee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain projectKey and responseId from `list-responses` or `search-responses`; inspect current metadata with `get-response`. Supply only property keys to change. Omitted properties remain unchanged; empty string sets an empty value and does not delete a property. Nulls and empty maps are not accepted. This overwrites supplied property values and may race with other writers. Use `create-response` for new feedback."
+            },
+            "filePath": "./chattermill/tools/update-response.ts",
+            "version": "6e0a4e8a483960c1c8363ee6a5e078ad151bc7fae45af2fc8fe2e72e62305c67",
+            "location": {
+                "js": "templates-zero/chattermill/tools/update-response/6e0a4e8a483960c1c8363ee6a5e078ad151bc7fae45af2fc8fe2e72e62305c67.cjs",
+                "ts": "templates-zero/chattermill/tools/update-response/6e0a4e8a483960c1c8363ee6a5e078ad151bc7fae45af2fc8fe2e72e62305c67.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

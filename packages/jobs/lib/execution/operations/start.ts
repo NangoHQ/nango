@@ -15,13 +15,15 @@ export async function startScript({
     nangoProps,
     routingContext,
     arg,
-    logCtx
+    logCtx,
+    code
 }: {
     taskId: string;
     nangoProps: NangoProps;
     routingContext: RoutingContext;
     arg?: JsonValue | undefined;
     logCtx: LogContext;
+    code?: string | undefined;
 }): Promise<Result<void>> {
     return tracer.trace(
         'runScript',
@@ -37,15 +39,7 @@ export async function startScript({
         },
         async (span) => {
             try {
-                const fileLocation = nangoProps.syncConfig.file_location;
-                const script: string | null =
-                    isCloud || integrationFilesAreRemote || isTemplatesZeroPath(fileLocation)
-                        ? await tracer.trace('runScript.getFile', async () => remoteFileService.getFile(fileLocation))
-                        : localFileService.getIntegrationFile({
-                              syncConfig: nangoProps.syncConfig,
-                              providerConfigKey: nangoProps.providerConfigKey,
-                              scriptType: nangoProps.scriptType
-                          });
+                const script = code ?? (await getDeployedScript(nangoProps));
 
                 if (!script) {
                     throw new Error(`Unable to find integration file`);
@@ -80,4 +74,15 @@ export async function startScript({
             }
         }
     );
+}
+
+async function getDeployedScript(nangoProps: NangoProps): Promise<string | null> {
+    const fileLocation = nangoProps.syncConfig.file_location;
+    return isCloud || integrationFilesAreRemote || isTemplatesZeroPath(fileLocation)
+        ? await tracer.trace('runScript.getFile', async () => remoteFileService.getFile(fileLocation))
+        : localFileService.getIntegrationFile({
+              syncConfig: nangoProps.syncConfig,
+              providerConfigKey: nangoProps.providerConfigKey,
+              scriptType: nangoProps.scriptType
+          });
 }

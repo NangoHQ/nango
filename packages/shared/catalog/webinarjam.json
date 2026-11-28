@@ -1,0 +1,1671 @@
+{
+    "providerConfigKey": "webinarjam",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make WebinarJam registration countries and their states or provinces available as a reference dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-countries",
+            "output": [
+                "Countries"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Countries"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Countries": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque country registration identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Provider country display name."
+                            },
+                            "states": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque state identifier within this country."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "State or province display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A state or province associated with this country."
+                                },
+                                "description": "Associated states or provinces; empty when the catalog supplies none."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "states"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A WebinarJam registration country and its associated states or provinces."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make a selected webinar's registrants, attendance, purchases, consent, attribution, and attendee links available as replicated records.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_webinarjam_syncregistrants",
+            "name": "sync-registrants",
+            "output": [
+                "Registrants"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Registrants",
+                "SyncMetadata_webinarjam_syncregistrants"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Registrants": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque webinar lead ID; identity source is provisional pending validation."
+                            },
+                            "email": {
+                                "description": "Registrant email address.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number preserving leading zeros.",
+                                "type": "string"
+                            },
+                            "utmTerm": {
+                                "description": "Provider campaign keyword, preserving its scalar type.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                ]
+                            },
+                            "lastName": {
+                                "description": "Registrant family name, when configured.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Registrant given name.",
+                                "type": "string"
+                            },
+                            "ipAddress": {
+                                "description": "Registrant IP address.",
+                                "type": "string"
+                            },
+                            "utmMedium": {
+                                "description": "Provider attribution medium, preserving its scalar type.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                ]
+                            },
+                            "utmSource": {
+                                "description": "Provider attribution source, preserving its scalar type.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                ]
+                            },
+                            "webinarId": {
+                                "type": "string",
+                                "description": "Opaque parent webinar ID; record identity is scoped to this webinar."
+                            },
+                            "gdprStatus": {
+                                "description": "Provider GDPR acceptance code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "scheduleId": {
+                                "description": "Opaque API schedule ID associated with the registration.",
+                                "type": "string"
+                            },
+                            "signedUpAt": {
+                                "description": "Registration instant in UTC Z; integer-second source mapping is provisional.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "utmContent": {
+                                "description": "Provider campaign link variation, preserving its scalar type.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                ]
+                            },
+                            "liveRevenue": {
+                                "description": "Provider live-room revenue value, with currency and scale unspecified.",
+                                "type": "string"
+                            },
+                            "liveRoomUrl": {
+                                "description": "Registrant-specific live-room link.",
+                                "type": "string"
+                            },
+                            "utmCampaign": {
+                                "description": "Provider campaign value, preserving its scalar type.",
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                ]
+                            },
+                            "gdprStatusAt": {
+                                "description": "GDPR choice instant in UTC Z when available; source mapping is provisional.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "liveDuration": {
+                                "description": "Provider live-room duration text without inferred units.",
+                                "type": "string"
+                            },
+                            "gdprIpAddress": {
+                                "description": "IP address associated with the GDPR choice.",
+                                "type": "string"
+                            },
+                            "liveWatchedAt": {
+                                "description": "Live viewing instant in UTC Z when available; source mapping is provisional.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "replayRevenue": {
+                                "description": "Provider replay revenue value without inferred currency or scale.",
+                                "type": "string"
+                            },
+                            "replayRoomUrl": {
+                                "description": "Registrant-specific replay-room link.",
+                                "type": "string"
+                            },
+                            "replayDuration": {
+                                "description": "Provider replay-room duration text without inferred units.",
+                                "type": "string"
+                            },
+                            "smsConsentedAt": {
+                                "description": "SMS consent instant in UTC Z when available; source mapping is provisional.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "unsubscribeUrl": {
+                                "description": "Registrant-specific notification opt-out link.",
+                                "type": "string"
+                            },
+                            "liveEnteredTime": {
+                                "description": "Provider live-room entry time text without inferred timezone or units.",
+                                "type": "string"
+                            },
+                            "replayWatchedAt": {
+                                "description": "Replay viewing instant in UTC Z when available; source mapping is provisional.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "phoneCountryCode": {
+                                "description": "Phone dialing prefix as returned.",
+                                "type": "string"
+                            },
+                            "livePurchaseStatus": {
+                                "description": "Provider live-room purchase code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "subscriptionStatus": {
+                                "description": "Provider webinar-notification subscription code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "liveAttendanceStatus": {
+                                "description": "Provider live attendance code, not an inferred boolean.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "replayPurchaseStatus": {
+                                "description": "Provider replay purchase code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "replayAttendanceStatus": {
+                                "description": "Provider replay attendance code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "gdprCommunicationsStatus": {
+                                "description": "Provider GDPR communication-consent code.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "webinarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Registrant identity, attendance, purchases, consent, attribution, and attendee links for the configured webinar."
+                    },
+                    "SyncMetadata_webinarjam_syncregistrants": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Webinar whose registrants form this dataset; obtain the ID from list-webinars."
+                            }
+                        },
+                        "required": [
+                            "webinarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Selected webinar whose registrants are replicated."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make published account webinars available as records containing identity, public and private names, description, presentation type, timezone, and human-readable schedules.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-webinars",
+            "output": [
+                "Webinars"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Webinars"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Webinars": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque account webinar ID."
+                            },
+                            "name": {
+                                "description": "Private account-facing webinar name.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Provider presentation type; null means unspecified.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Public webinar title.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Named timezone governing local webinar schedules.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Webinar description without content transformations.",
+                                "type": "string"
+                            },
+                            "webinarHash": {
+                                "description": "Provider webinar hash, when returned.",
+                                "type": "string"
+                            },
+                            "scheduleDescriptions": {
+                                "description": "Human-readable schedule strings, including recurring or symbolic schedules; not UTC instants or API schedule IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Human-readable webinar schedule label, unchanged from the provider."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Published account webinar identity, names, description, presentation type, timezone, and human-readable schedules."
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-webinar",
+            "integrationId": "webinarjam",
+            "description": "Get one webinar's details, API schedule IDs, presenters, registration links, and custom registration-field configuration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_getwebinar",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_getwebinar",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_getwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque webinar ID returned by list-webinars; not the webinar hash."
+                            }
+                        },
+                        "required": [
+                            "webinarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select one account webinar by its opaque webinar ID."
+                    },
+                    "FunctionOutput_webinarjam_getwebinar": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque account webinar ID."
+                            },
+                            "name": {
+                                "description": "Private account-facing webinar name.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Provider presentation type, or null when unspecified.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Public webinar title.",
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "description": "Named timezone for the local schedule times.",
+                                "type": "string"
+                            },
+                            "schedules": {
+                                "description": "API schedules; several sessions in a series may share an ID.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "API schedule ID, not the ID displayed in webinar settings."
+                                        },
+                                        "description": {
+                                            "description": "Human-readable schedule comment.",
+                                            "type": "string"
+                                        },
+                                        "localDateTime": {
+                                            "description": "Local scheduled date and time in YYYY-MM-DDTHH:mm form, retaining any returned seconds or fractional precision; not a UTC instant.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One returned API schedule, retaining its position and local calendar time."
+                                }
+                            },
+                            "presenters": {
+                                "description": "Presenters returned for this webinar.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Presenter display name.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Presenter email address.",
+                                            "type": "string"
+                                        },
+                                        "pictureUrl": {
+                                            "description": "Presenter image URL; empty string is preserved.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One presenter returned by the provider."
+                                }
+                            },
+                            "description": {
+                                "description": "Webinar description, preserved without removing markup.",
+                                "type": "string"
+                            },
+                            "webinarHash": {
+                                "description": "Provider webinar hash, when available.",
+                                "type": "string"
+                            },
+                            "customFields": {
+                                "description": "Custom registration fields when exposed by the webinar configuration.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Provider custom-field type; text and dropdown types have documented submission semantics."
+                                        },
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Exact provider field label to use as the customFields map key during registration."
+                                        },
+                                        "options": {
+                                            "description": "Selectable answers for a dropdown, omitted for text fields.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque answer ID submitted when this option is selected."
+                                                    },
+                                                    "label": {
+                                                        "type": "string",
+                                                        "description": "Human-readable option label."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "One selectable dropdown answer."
+                                            }
+                                        },
+                                        "question": {
+                                            "description": "Displayed registration question, when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "label"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One custom registration field and its provider submission identifiers."
+                                }
+                            },
+                            "registrationFee": {
+                                "description": "Provider registration fee value; its monetary scale is undocumented and is not converted.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "registrationUrl": {
+                                "description": "Public registration URL, or empty string if returned empty.",
+                                "type": "string"
+                            },
+                            "registrationType": {
+                                "description": "Provider registration pricing type, ordinarily paid or free.",
+                                "type": "string"
+                            },
+                            "directLiveRoomUrl": {
+                                "description": "Generic direct live-room URL, not an attendee-specific registration link.",
+                                "type": "string"
+                            },
+                            "directReplayRoomUrl": {
+                                "description": "Generic direct replay-room URL, not an attendee-specific registration link.",
+                                "type": "string"
+                            },
+                            "registrationCurrency": {
+                                "description": "Registration currency as returned; an empty string remains empty.",
+                                "type": "string"
+                            },
+                            "registrationCheckoutUrl": {
+                                "description": "Checkout URL when configured; may be empty.",
+                                "type": "string"
+                            },
+                            "registrationPostPaymentUrl": {
+                                "description": "Post-payment URL when configured; may be empty.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Webinar details with API schedule IDs, local times, registration links, and available custom-field configuration."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain a webinar ID from `list-webinars`. Use this before `register-registrant` to obtain API schedule IDs and any custom-field labels and option IDs. Schedule IDs from the webinar settings UI are not interchangeable with these API IDs. Local scheduled times retain the returned timezone."
+            },
+            "filePath": "./webinarjam/tools/get-webinar.ts",
+            "version": "332411d032d46fe958aa1812deb1fa20afc9c82223969cdbea1d29c510b908a3",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/get-webinar/332411d032d46fe958aa1812deb1fa20afc9c82223969cdbea1d29c510b908a3.cjs",
+                "ts": "templates-zero/webinarjam/tools/get-webinar/332411d032d46fe958aa1812deb1fa20afc9c82223969cdbea1d29c510b908a3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-countries",
+            "integrationId": "webinarjam",
+            "description": "List countries and their states or provinces, including identifiers needed for webinar registration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_listcountries",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_listcountries",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_listcountries": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required to retrieve the complete registration geography catalog."
+                    },
+                    "FunctionOutput_webinarjam_listcountries": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque country registration identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Provider country display name."
+                                        },
+                                        "states": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Opaque state or province identifier scoped to this country."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "State or province display name."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A state or province associated with this country."
+                                            },
+                                            "description": "States or provinces associated with this country; an empty array means none are returned."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "states"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A country and its associated registration geography."
+                                },
+                                "description": "Countries and their registration geography identifiers."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete catalog of countries and their states or provinces."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this before `register-registrant` when providing country and state information. This returns the provider's complete geography collection, with states nested under countries. Preserve IDs as opaque strings; do not substitute country abbreviations unless they are the returned values."
+            },
+            "filePath": "./webinarjam/tools/list-countries.ts",
+            "version": "12478e67c80ab0e872da7b2abbf85211269f39eff6e85f7780a6f8340fbbcfd2",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/list-countries/12478e67c80ab0e872da7b2abbf85211269f39eff6e85f7780a6f8340fbbcfd2.cjs",
+                "ts": "templates-zero/webinarjam/tools/list-countries/12478e67c80ab0e872da7b2abbf85211269f39eff6e85f7780a6f8340fbbcfd2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-registrants",
+            "integrationId": "webinarjam",
+            "description": "List one page of a webinar's registrants and attendee activity, optionally filtered by schedule, attendance, purchases, relative date range, or provider search text.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_listregistrants",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_listregistrants",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_listregistrants": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from the same webinar and identical filters; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "search": {
+                                "description": "Provider search text; matched fields and matching rules are provider-defined.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "purchase": {
+                                "default": "all",
+                                "description": "Whether registrants purchased a product, according to the provider's aggregate purchase filter.",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "purchased",
+                                    "notPurchased"
+                                ]
+                            },
+                            "dateRange": {
+                                "default": "allTime",
+                                "description": "Provider relative date-range preset; timezone, boundaries, and date basis follow provider rules.",
+                                "type": "string",
+                                "enum": [
+                                    "allTime",
+                                    "today",
+                                    "yesterday",
+                                    "thisWeek",
+                                    "lastWeek",
+                                    "last7Days",
+                                    "thisMonth",
+                                    "lastMonth",
+                                    "last30Days"
+                                ]
+                            },
+                            "webinarId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque account webinar ID."
+                            },
+                            "scheduleId": {
+                                "description": "Optional API schedule ID from get-webinar; omission includes all schedules.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "liveAttendance": {
+                                "description": "Live-session attendance filter; omission means all registrants.",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": [
+                                            "all",
+                                            "attended",
+                                            "notAttended",
+                                            "leftBefore",
+                                            "leftAfter"
+                                        ],
+                                        "description": "Attendance match: all, attended, not attended, or departure before/after the threshold."
+                                    },
+                                    "thresholdSeconds": {
+                                        "description": "Provider departure threshold in seconds, required only for leftBefore or leftAfter; provisionally relative to the session timeline.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": [
+                                    "mode"
+                                ],
+                                "additionalProperties": false,
+                                "allOf": [
+                                    {
+                                        "if": {
+                                            "properties": {
+                                                "mode": {
+                                                    "enum": [
+                                                        "leftBefore",
+                                                        "leftAfter"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "required": [
+                                                "thresholdSeconds"
+                                            ],
+                                            "properties": {
+                                                "thresholdSeconds": true
+                                            }
+                                        },
+                                        "else": {
+                                            "not": {
+                                                "required": [
+                                                    "thresholdSeconds"
+                                                ],
+                                                "properties": {
+                                                    "thresholdSeconds": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "replayAttendance": {
+                                "description": "Replay-session attendance filter; omission means all registrants.",
+                                "type": "object",
+                                "properties": {
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": [
+                                            "all",
+                                            "attended",
+                                            "notAttended",
+                                            "leftBefore",
+                                            "leftAfter"
+                                        ],
+                                        "description": "Attendance match: all, attended, not attended, or departure before/after the threshold."
+                                    },
+                                    "thresholdSeconds": {
+                                        "description": "Provider departure threshold in seconds, required only for leftBefore or leftAfter; provisionally relative to the session timeline.",
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "required": [
+                                    "mode"
+                                ],
+                                "additionalProperties": false,
+                                "allOf": [
+                                    {
+                                        "if": {
+                                            "properties": {
+                                                "mode": {
+                                                    "enum": [
+                                                        "leftBefore",
+                                                        "leftAfter"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "required": [
+                                                "thresholdSeconds"
+                                            ],
+                                            "properties": {
+                                                "thresholdSeconds": true
+                                            }
+                                        },
+                                        "else": {
+                                            "not": {
+                                                "required": [
+                                                    "thresholdSeconds"
+                                                ],
+                                                "properties": {
+                                                    "thresholdSeconds": true
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "webinarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select a webinar, optional native report filters, and an optional continuation."
+                    },
+                    "FunctionOutput_webinarjam_listregistrants": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Webinar lead ID usable for unsubscribe-registrant; omitted if the provider does not expose it.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Registrant email address.",
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "description": "Phone number as returned; preserve digits and leading zeros.",
+                                            "type": "string"
+                                        },
+                                        "utmTerm": {
+                                            "description": "Provider campaign keyword value, retaining its original scalar type.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "lastName": {
+                                            "description": "Registrant family name, when configured.",
+                                            "type": "string"
+                                        },
+                                        "firstName": {
+                                            "description": "Registrant given name.",
+                                            "type": "string"
+                                        },
+                                        "ipAddress": {
+                                            "description": "Registrant IP address as returned.",
+                                            "type": "string"
+                                        },
+                                        "utmMedium": {
+                                            "description": "Provider campaign medium, retaining its original scalar type.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "utmSource": {
+                                            "description": "Provider campaign source; retain its original scalar type because the documented type is ambiguous.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "webinarId": {
+                                            "type": "string",
+                                            "description": "Opaque webinar ID identifying the parent webinar."
+                                        },
+                                        "gdprStatus": {
+                                            "description": "Provider GDPR acceptance status code.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "scheduleId": {
+                                            "description": "Opaque API schedule ID associated with this registration.",
+                                            "type": "string"
+                                        },
+                                        "signedUpAt": {
+                                            "description": "Registration instant normalized to UTC Z; provisional conversion from provider integer seconds.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "utmContent": {
+                                            "description": "Provider campaign link variation, retaining its original scalar type.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "liveRevenue": {
+                                            "description": "Provider live-room revenue value; currency and numeric scale are not inferred.",
+                                            "type": "string"
+                                        },
+                                        "liveRoomUrl": {
+                                            "description": "Registrant-specific live-room link.",
+                                            "type": "string"
+                                        },
+                                        "utmCampaign": {
+                                            "description": "Provider campaign identifier or name, retaining its original scalar type.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                }
+                                            ]
+                                        },
+                                        "gdprStatusAt": {
+                                            "description": "GDPR choice instant normalized to UTC Z when present; source integer-second interpretation is provisional.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "liveDuration": {
+                                            "description": "Provider live-room duration text, preserved without assuming units or format.",
+                                            "type": "string"
+                                        },
+                                        "gdprIpAddress": {
+                                            "description": "IP address associated with the GDPR choice.",
+                                            "type": "string"
+                                        },
+                                        "liveWatchedAt": {
+                                            "description": "Live viewing date normalized to UTC Z when a real date is present; integer-second interpretation is provisional.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "replayRevenue": {
+                                            "description": "Provider replay revenue value; currency and scale are not inferred.",
+                                            "type": "string"
+                                        },
+                                        "replayRoomUrl": {
+                                            "description": "Registrant-specific replay-room link.",
+                                            "type": "string"
+                                        },
+                                        "replayDuration": {
+                                            "description": "Provider replay-room duration text, with no inferred units.",
+                                            "type": "string"
+                                        },
+                                        "smsConsentedAt": {
+                                            "description": "SMS consent instant normalized to UTC Z when present; integer-second interpretation is provisional.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "unsubscribeUrl": {
+                                            "description": "Registrant's webinar-notification unsubscribe link.",
+                                            "type": "string"
+                                        },
+                                        "liveEnteredTime": {
+                                            "description": "Provider live-room entry time text; timezone and units are not inferred.",
+                                            "type": "string"
+                                        },
+                                        "replayWatchedAt": {
+                                            "description": "Replay viewing instant normalized to UTC Z when a real date is present; integer-second interpretation is provisional.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "phoneCountryCode": {
+                                            "description": "Phone dialing prefix as returned, including a leading plus if supplied.",
+                                            "type": "string"
+                                        },
+                                        "livePurchaseStatus": {
+                                            "description": "Provider live-room purchase status code.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "subscriptionStatus": {
+                                            "description": "Provider webinar-notification subscription code, preserved without assuming its value meanings.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "liveAttendanceStatus": {
+                                            "description": "Provider live attendance status code, preserved without inventing boolean meanings.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "replayPurchaseStatus": {
+                                            "description": "Provider replay purchase status code.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "replayAttendanceStatus": {
+                                            "description": "Provider replay attendance status code.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "gdprCommunicationsStatus": {
+                                            "description": "Provider GDPR communication-consent status code.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "webinarId"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One registration and its provider-reported attendee activity."
+                                },
+                                "description": "One provider-controlled page of matching registrant records."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation scoped to the same webinar and filters; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One native registrant page with continuation when documented provider metadata permits it."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain webinar and API schedule IDs from `get-webinar`. Use attendance and purchase filters for attendee reports, or search text to narrow the same collection. Return nextCursor as cursor with all other inputs unchanged to continue; page size is provider-controlled. The returned registrant id is the lead ID for `unsubscribe-registrant`, not necessarily the attendee ID from `register-registrant`. Relative date ranges use the provider's calendar rules."
+            },
+            "filePath": "./webinarjam/tools/list-registrants.ts",
+            "version": "1ba70c644f0c9bd8457c263f229e6e41c2e9eeae40511a5b0956f1d876af83ac",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/list-registrants/1ba70c644f0c9bd8457c263f229e6e41c2e9eeae40511a5b0956f1d876af83ac.cjs",
+                "ts": "templates-zero/webinarjam/tools/list-registrants/1ba70c644f0c9bd8457c263f229e6e41c2e9eeae40511a5b0956f1d876af83ac.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-webinars",
+            "integrationId": "webinarjam",
+            "description": "List the webinars published in the connected account, including their schedule descriptions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_listwebinars",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_listwebinars",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_listwebinars": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is needed to list the connected account's published webinars."
+                    },
+                    "FunctionOutput_webinarjam_listwebinars": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque account webinar ID, usable with get-webinar."
+                                        },
+                                        "name": {
+                                            "description": "Private account-facing webinar name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Provider presentation type; null means no type was supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "title": {
+                                            "description": "Public webinar title.",
+                                            "type": "string"
+                                        },
+                                        "timezone": {
+                                            "description": "Named timezone governing the webinar's local schedules.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Webinar description, preserved as supplied.",
+                                            "type": "string"
+                                        },
+                                        "webinarHash": {
+                                            "description": "Provider webinar hash, when returned.",
+                                            "type": "string"
+                                        },
+                                        "scheduleDescriptions": {
+                                            "description": "Human-readable schedules, not API schedule IDs or UTC instants.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A provider-supplied human-readable schedule description."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A published webinar summary from the connected account."
+                                },
+                                "description": "Published webinars returned by the account, in provider order; empty when none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete collection of published webinar summaries without the provider status envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover webinar IDs. Use `get-webinar` for API schedule IDs, presenters, registration links, and custom registration fields. This returns the provider's complete collection in one response; there is no pagination input."
+            },
+            "filePath": "./webinarjam/tools/list-webinars.ts",
+            "version": "140addb827b594f81f73a471913a56015fb7b5fcc8dbcee46acc79b0d69ba40b",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/list-webinars/140addb827b594f81f73a471913a56015fb7b5fcc8dbcee46acc79b0d69ba40b.cjs",
+                "ts": "templates-zero/webinarjam/tools/list-webinars/140addb827b594f81f73a471913a56015fb7b5fcc8dbcee46acc79b0d69ba40b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "register-registrant",
+            "integrationId": "webinarjam",
+            "description": "Register a person for a webinar schedule, including optional geography, phone consent, and custom registration answers. Registering through the first schedule of a series also registers the person for subsequent schedules.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_registerregistrant",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_registerregistrant",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_registerregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Registrant email address used for this registration."
+                            },
+                            "phone": {
+                                "description": "Phone number using digits only; retain leading zeros. May be required by webinar configuration.",
+                                "type": "string",
+                                "pattern": "^[0-9]+$"
+                            },
+                            "stateId": {
+                                "description": "State/province identifier from list-countries for the selected country.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "lastName": {
+                                "description": "Registrant family name; may be required by webinar configuration. Omission leaves it unspecified; empty text is submitted as empty.",
+                                "type": "string"
+                            },
+                            "countryId": {
+                                "description": "Country registration identifier from list-countries; omission supplies no country.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Registrant given name as ordinary Unicode text."
+                            },
+                            "ipAddress": {
+                                "description": "Registrant's IP address when intentionally supplied; omission does not substitute the integration server's address.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "webinarId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque webinar ID obtained from get-webinar."
+                            },
+                            "scheduleId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "API schedule ID from get-webinar; use the first schedule for a webinar series."
+                            },
+                            "smsConsent": {
+                                "description": "Registrant's actual consent to webinar SMS. Required by the provider when the phone field is enabled; omission never implies consent.",
+                                "type": "boolean"
+                            },
+                            "customFields": {
+                                "description": "Answers keyed by exact custom-field labels from get-webinar. Text fields accept ordinary strings; dropdowns accept one option ID string or an array of option ID strings. Omitted keys are not submitted; empty text and an empty selection are submitted explicitly and may be rejected by required-field rules.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "description": "Exact custom-field label from get-webinar."
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "description": "Ordinary text answer or one dropdown option ID."
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "description": "Dropdown option ID from get-webinar."
+                                            },
+                                            "uniqueItems": true,
+                                            "description": "Distinct selected dropdown option IDs; an empty array explicitly submits no selection."
+                                        }
+                                    ]
+                                }
+                            },
+                            "texasTimezone": {
+                                "description": "Required for a Texas, USA registrant: mountain maps to Mountain Time (US and Canada), central to Central Time (US and Canada).",
+                                "type": "string",
+                                "enum": [
+                                    "mountain",
+                                    "central"
+                                ]
+                            },
+                            "phoneCountryCode": {
+                                "description": "Phone dialing prefix including plus, such as +1; may be required by webinar configuration.",
+                                "type": "string",
+                                "pattern": "^\\+[0-9]+$"
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "firstName",
+                            "webinarId",
+                            "scheduleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Registration details and actual registrant choices for one API webinar schedule."
+                    },
+                    "FunctionOutput_webinarjam_registerregistrant": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "description": "Registrant email confirmed by the provider.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "Phone number as returned, preserving leading zeros.",
+                                "type": "string"
+                            },
+                            "stateId": {
+                                "description": "Opaque state/province identifier returned for the attendee.",
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "description": "Registrant family name when enabled and returned.",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "Attendee's room password when returned; null means no password was supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "timezone": {
+                                "description": "Named timezone governing localDateTime.",
+                                "type": "string"
+                            },
+                            "countryId": {
+                                "description": "Opaque country identifier returned for the attendee.",
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "description": "Registrant given name returned by the provider.",
+                                "type": "string"
+                            },
+                            "stateName": {
+                                "description": "State/province display name returned for the attendee.",
+                                "type": "string"
+                            },
+                            "webinarId": {
+                                "type": "string",
+                                "description": "Opaque webinar ID confirmed by the provider."
+                            },
+                            "attendeeId": {
+                                "type": "string",
+                                "description": "Attendee internal user ID, not assumed to be the lead ID needed for unsubscribe-registrant."
+                            },
+                            "scheduleId": {
+                                "type": "string",
+                                "description": "API schedule ID confirmed for this attendee."
+                            },
+                            "countryName": {
+                                "description": "Country display name returned for the attendee.",
+                                "type": "string"
+                            },
+                            "liveRoomUrl": {
+                                "description": "Attendee-specific live-room URL; treat as sensitive access information.",
+                                "type": "string"
+                            },
+                            "thankYouUrl": {
+                                "description": "Attendee-specific successful-registration page URL.",
+                                "type": "string"
+                            },
+                            "webinarHash": {
+                                "description": "Provider webinar hash.",
+                                "type": "string"
+                            },
+                            "localDateTime": {
+                                "description": "Scheduled local webinar date/time, with T separator and original time precision; not a UTC instant.",
+                                "type": "string"
+                            },
+                            "replayRoomUrl": {
+                                "description": "Attendee-specific replay-room URL; treat as sensitive access information.",
+                                "type": "string"
+                            },
+                            "phoneCountryCode": {
+                                "description": "Phone dialing prefix when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "webinarId",
+                            "attendeeId",
+                            "scheduleId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider-confirmed attendee registration receipt, not evidence of attendance or notification delivery."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-webinar` first for API schedule IDs and custom-field labels/options, and `list-countries` for geography. For a series, register once through its first schedule; do not repeat for every session. Collect the person's required privacy and communication consent before calling. Phone-enabled webinars require an explicit smsConsent value, and registrants from Texas require the appropriate texasTimezone choice. A successful result provides attendee-specific room links, not proof of attendance or message delivery. Do not retry an uncertain registration blindly; check `list-registrants` first."
+            },
+            "filePath": "./webinarjam/tools/register-registrant.ts",
+            "version": "7c0ebaf770e409942faa73e4e501d615573183c5fda1868b684eb927011c6e6d",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/register-registrant/7c0ebaf770e409942faa73e4e501d615573183c5fda1868b684eb927011c6e6d.cjs",
+                "ts": "templates-zero/webinarjam/tools/register-registrant/7c0ebaf770e409942faa73e4e501d615573183c5fda1868b684eb927011c6e6d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "unsubscribe-registrant",
+            "integrationId": "webinarjam",
+            "description": "Unsubscribe one webinar lead from pending webinar notifications without claiming to delete the registration or its attendance history.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_webinarjam_unsubscriberegistrant",
+            "output_schema_ref": "#/definitions/FunctionOutput_webinarjam_unsubscriberegistrant",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_webinarjam_unsubscriberegistrant": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Opaque webinar ID whose notifications are being stopped."
+                            },
+                            "registrantId": {
+                                "type": "string",
+                                "pattern": "^[0-9]+$",
+                                "description": "Lead ID returned as id by list-registrants for this webinar, not an assumed attendee user ID."
+                            }
+                        },
+                        "required": [
+                            "webinarId",
+                            "registrantId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The webinar and registrant lead whose pending webinar notifications should stop."
+                    },
+                    "FunctionOutput_webinarjam_unsubscriberegistrant": {
+                        "type": "object",
+                        "properties": {
+                            "webinarId": {
+                                "type": "string",
+                                "description": "Webinar ID from the successful request."
+                            },
+                            "registrantId": {
+                                "type": "string",
+                                "description": "Lead ID from the successful request."
+                            },
+                            "unsubscribed": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only after provider-confirmed successful opt-out; pending webinar notifications will not be sent."
+                            }
+                        },
+                        "required": [
+                            "webinarId",
+                            "registrantId",
+                            "unsubscribed"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A provider-confirmed notification opt-out receipt, not registration deletion or removal of attendance history."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain the webinar ID and registrant lead ID from `list-registrants`. Do not substitute the attendeeId returned by `register-registrant` unless you have independently confirmed it is the lead ID. This stops pending webinar notifications; it is not registration deletion. No resubscribe operation is available through these tools. Check notification status in `list-registrants` or the webinar dashboard after an uncertain result."
+            },
+            "filePath": "./webinarjam/tools/unsubscribe-registrant.ts",
+            "version": "f9fda15124f428b797d5379b57f46a06b728d5141bce7a6b30410d1c921a8133",
+            "location": {
+                "js": "templates-zero/webinarjam/tools/unsubscribe-registrant/f9fda15124f428b797d5379b57f46a06b728d5141bce7a6b30410d1c921a8133.cjs",
+                "ts": "templates-zero/webinarjam/tools/unsubscribe-registrant/f9fda15124f428b797d5379b57f46a06b728d5141bce7a6b30410d1c921a8133.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

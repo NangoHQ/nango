@@ -1,0 +1,3493 @@
+{
+    "providerConfigKey": "basin",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create a new webhook on a form.",
+            "endpoint": null,
+            "input": "ActionInput_basin_createformwebhook",
+            "name": "create-form-webhook",
+            "output": [
+                "ActionOutput_basin_createformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_createformwebhook",
+                "ActionOutput_basin_createformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_createformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form ID to attach the webhook to. Example: 72983"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Webhook name. Example: \"Nango Registry Test Webhook\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Webhook URL. Example: \"https://example.com/webhook\""
+                            },
+                            "format": {
+                                "type": "string",
+                                "enum": [
+                                    "json",
+                                    "slack"
+                                ],
+                                "description": "Webhook format. Use \"json\" or \"slack\". Example: \"json\""
+                            },
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "Whether the webhook is enabled. Example: true"
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "enabled"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_createformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "trigger_when_spam": {
+                                "type": "boolean"
+                            },
+                            "signing_secret": {
+                                "type": "string"
+                            },
+                            "failure_count": {
+                                "type": "number"
+                            },
+                            "last_failure_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "enabled",
+                            "signing_secret"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new form.",
+            "endpoint": null,
+            "input": "ActionInput_basin_createform",
+            "name": "create-form",
+            "output": [
+                "ActionOutput_basin_createform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_createform",
+                "ActionOutput_basin_createform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_createform": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Form name. Example: \"My Form\""
+                            },
+                            "project_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Project ID to associate the form with. Example: 59242"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "project_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_createform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_ajax": {
+                                "type": "boolean"
+                            },
+                            "notification_emails": {
+                                "type": "string"
+                            },
+                            "autoreply": {
+                                "type": "boolean"
+                            },
+                            "autoreply_body": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "whitelist_source_domains": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "force_recaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_hcaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_turnstile": {
+                                "type": "boolean"
+                            },
+                            "turnstile_site_key": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "turnstile_secret": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_cc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_bcc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_greeting": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_title": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "logo": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "data_receipt_email": {
+                                "type": "boolean"
+                            },
+                            "retention_days": {
+                                "type": "number"
+                            },
+                            "hide_dashboard_button": {
+                                "type": "boolean"
+                            },
+                            "exclude_submitter_from_reply": {
+                                "type": "boolean"
+                            },
+                            "custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "autoreply_custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "notification_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "auto_response_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "confirmation_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "honeypot_field": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "recaptcha_failed_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "domain_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "domain_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "duplicate_filter": {
+                                "type": "boolean"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "redirect_heading": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_message": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content_blacklist": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "allowed_domains": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "blocked_domains": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "smtp_email_validation": {
+                                "type": "boolean"
+                            },
+                            "contribute_to_spam_training": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "project_name": {
+                                "type": "string"
+                            },
+                            "form_webhooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "form_id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "format": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "trigger_when_spam": {
+                                            "type": "boolean"
+                                        },
+                                        "signing_secret": {
+                                            "type": "string"
+                                        },
+                                        "failure_count": {
+                                            "type": "number"
+                                        },
+                                        "last_failure_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "form_id",
+                                        "name",
+                                        "url",
+                                        "format",
+                                        "enabled"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "inbox_count": {
+                                "type": "number"
+                            },
+                            "spam_count": {
+                                "type": "number"
+                            },
+                            "trash_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "timezone",
+                            "use_ajax",
+                            "notification_emails",
+                            "autoreply",
+                            "force_recaptcha",
+                            "force_hcaptcha",
+                            "force_turnstile",
+                            "data_receipt_email",
+                            "retention_days",
+                            "hide_dashboard_button",
+                            "exclude_submitter_from_reply",
+                            "use_custom_template",
+                            "autoreply_use_custom_template",
+                            "duplicate_filter",
+                            "project_id",
+                            "smtp_email_validation",
+                            "contribute_to_spam_training",
+                            "created_at",
+                            "updated_at",
+                            "project_name",
+                            "form_webhooks",
+                            "inbox_count",
+                            "spam_count",
+                            "trash_count"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new project.",
+            "endpoint": null,
+            "input": "ActionInput_basin_createproject",
+            "name": "create-project",
+            "output": [
+                "ActionOutput_basin_createproject"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_createproject",
+                "ActionOutput_basin_createproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_createproject": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Project name. Example: \"My Project\""
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_createproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a form webhook.",
+            "endpoint": null,
+            "input": "ActionInput_basin_deleteformwebhook",
+            "name": "delete-form-webhook",
+            "output": [
+                "ActionOutput_basin_deleteformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_deleteformwebhook",
+                "ActionOutput_basin_deleteformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_deleteformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "ID of the form webhook to delete. Example: 10115"
+                            }
+                        },
+                        "required": [
+                            "webhook_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_deleteformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "trigger_when_spam": {
+                                "type": "boolean"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "failure_count": {
+                                "type": "number"
+                            },
+                            "last_failure_at": {
+                                "type": "string"
+                            },
+                            "signing_secret": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "created_at",
+                            "updated_at",
+                            "failure_count"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a form.",
+            "endpoint": null,
+            "input": "ActionInput_basin_deleteform",
+            "name": "delete-form",
+            "output": [
+                "ActionOutput_basin_deleteform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_deleteform",
+                "ActionOutput_basin_deleteform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "description": "Form ID to delete. Example: \"72983\"",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_ajax": {
+                                "type": "boolean"
+                            },
+                            "notification_emails": {
+                                "type": "string"
+                            },
+                            "autoreply": {
+                                "type": "boolean"
+                            },
+                            "autoreply_body": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "whitelist_source_domains": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "force_recaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_hcaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_turnstile": {
+                                "type": "boolean"
+                            },
+                            "turnstile_site_key": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "turnstile_secret": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_cc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_bcc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_greeting": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_title": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "logo": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "data_receipt_email": {
+                                "type": "boolean"
+                            },
+                            "retention_days": {
+                                "type": "number"
+                            },
+                            "hide_dashboard_button": {
+                                "type": "boolean"
+                            },
+                            "exclude_submitter_from_reply": {
+                                "type": "boolean"
+                            },
+                            "custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "autoreply_custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "notification_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "auto_response_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "confirmation_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "honeypot_field": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "recaptcha_failed_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "domain_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "domain_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "duplicate_filter": {
+                                "type": "boolean"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "redirect_heading": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_message": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content_blacklist": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "allowed_domains": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "blocked_domains": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "smtp_email_validation": {
+                                "type": "boolean"
+                            },
+                            "contribute_to_spam_training": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "project_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "form_webhooks": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "inbox_count": {
+                                "type": "number"
+                            },
+                            "spam_count": {
+                                "type": "number"
+                            },
+                            "trash_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name",
+                            "timezone",
+                            "redirect_url",
+                            "use_ajax",
+                            "notification_emails",
+                            "autoreply",
+                            "autoreply_body",
+                            "whitelist_source_domains",
+                            "force_recaptcha",
+                            "force_hcaptcha",
+                            "force_turnstile",
+                            "turnstile_site_key",
+                            "turnstile_secret",
+                            "logo",
+                            "data_receipt_email",
+                            "retention_days",
+                            "hide_dashboard_button",
+                            "exclude_submitter_from_reply",
+                            "custom_template",
+                            "use_custom_template",
+                            "autoreply_custom_template",
+                            "autoreply_use_custom_template",
+                            "notification_mail_template_id",
+                            "auto_response_mail_template_id",
+                            "confirmation_mail_template_id",
+                            "honeypot_field",
+                            "recaptcha_failed_url",
+                            "domain_id",
+                            "domain_email",
+                            "duplicate_filter",
+                            "project_id",
+                            "content_blacklist",
+                            "allowed_domains",
+                            "blocked_domains",
+                            "smtp_email_validation",
+                            "contribute_to_spam_training",
+                            "created_at",
+                            "updated_at",
+                            "form_webhooks",
+                            "inbox_count",
+                            "spam_count",
+                            "trash_count"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a project.",
+            "endpoint": null,
+            "input": "ActionInput_basin_deleteproject",
+            "name": "delete-project",
+            "output": [
+                "ActionOutput_basin_deleteproject"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_deleteproject",
+                "ActionOutput_basin_deleteproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_deleteproject": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Project ID. Example: 59615"
+                            }
+                        },
+                        "required": [
+                            "project_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_deleteproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a submission.",
+            "endpoint": null,
+            "input": "ActionInput_basin_deletesubmission",
+            "name": "delete-submission",
+            "output": [
+                "ActionOutput_basin_deletesubmission"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_deletesubmission",
+                "ActionOutput_basin_deletesubmission"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Submission ID to delete. Example: 61110051"
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source_host": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source_path": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source_query": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source_fragment": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "payload_params": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "spam": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "read": {
+                                "type": "boolean"
+                            },
+                            "trash": {
+                                "type": "boolean"
+                            },
+                            "spam_reason": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "webhook_sent_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "ip": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "referrer": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "user_agent": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "geocoded_country": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "geocoded_region": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "geocoded_city": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "attachments": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "form": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "uuid": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "uuid"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "created_at",
+                            "updated_at",
+                            "read",
+                            "trash"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single form webhook by id.",
+            "endpoint": null,
+            "input": "ActionInput_basin_getformwebhook",
+            "name": "get-form-webhook",
+            "output": [
+                "ActionOutput_basin_getformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_getformwebhook",
+                "ActionOutput_basin_getformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_getformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form webhook ID. Example: 10113"
+                            }
+                        },
+                        "required": [
+                            "webhook_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_getformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "trigger_when_spam": {
+                                "type": "boolean"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "failure_count": {
+                                "type": "number"
+                            },
+                            "last_failure_at": {
+                                "type": "string"
+                            },
+                            "signing_secret": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "failure_count"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single form by id.",
+            "endpoint": null,
+            "input": "ActionInput_basin_getform",
+            "name": "get-form",
+            "output": [
+                "ActionOutput_basin_getform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_getform",
+                "ActionOutput_basin_getform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_getform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form ID. Example: 72983"
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_getform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_ajax": {
+                                "type": "boolean"
+                            },
+                            "notification_emails": {
+                                "type": "string"
+                            },
+                            "notification_cc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_bcc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply": {
+                                "type": "boolean"
+                            },
+                            "autoreply_body": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "force_recaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_hcaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_turnstile": {
+                                "type": "boolean"
+                            },
+                            "retention_days": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "project_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "project_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "form_webhooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "inbox_count": {
+                                "type": "number"
+                            },
+                            "spam_count": {
+                                "type": "number"
+                            },
+                            "trash_count": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single project by id.",
+            "endpoint": null,
+            "input": "ActionInput_basin_getproject",
+            "name": "get-project",
+            "output": [
+                "ActionOutput_basin_getproject"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_getproject",
+                "ActionOutput_basin_getproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Project ID. Example: 59611"
+                            }
+                        },
+                        "required": [
+                            "project_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_getproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a single submission by id.",
+            "endpoint": null,
+            "input": "ActionInput_basin_getsubmission",
+            "name": "get-submission",
+            "output": [
+                "ActionOutput_basin_getsubmission"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_getsubmission",
+                "ActionOutput_basin_getsubmission"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Submission ID. Example: 60737785"
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "payload_params": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "spam": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "read": {
+                                "type": "boolean"
+                            },
+                            "trash": {
+                                "type": "boolean"
+                            },
+                            "source_url": {
+                                "type": "string"
+                            },
+                            "source_host": {
+                                "type": "string"
+                            },
+                            "source_path": {
+                                "type": "string"
+                            },
+                            "source_query": {
+                                "type": "string"
+                            },
+                            "source_fragment": {
+                                "type": "string"
+                            },
+                            "spam_reason": {
+                                "type": "string"
+                            },
+                            "webhook_sent_at": {
+                                "type": "string"
+                            },
+                            "ip": {
+                                "type": "string"
+                            },
+                            "referrer": {
+                                "type": "string"
+                            },
+                            "user_agent": {
+                                "type": "string"
+                            },
+                            "geocoded_country": {
+                                "type": "string"
+                            },
+                            "geocoded_region": {
+                                "type": "string"
+                            },
+                            "geocoded_city": {
+                                "type": "string"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "form_name": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "file_size": {
+                                            "type": "number"
+                                        },
+                                        "content_type": {
+                                            "type": "string"
+                                        },
+                                        "attachment_proxy_url": {
+                                            "type": "string"
+                                        },
+                                        "public_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "created_at",
+                                        "file_size",
+                                        "content_type",
+                                        "attachment_proxy_url",
+                                        "public_url"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "form": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "uuid": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "uuid"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "read",
+                            "trash"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List custom domains configured on this account for branded form/redirect URLs.",
+            "endpoint": null,
+            "input": "ActionInput_basin_listdomains",
+            "name": "list-domains",
+            "output": [
+                "ActionOutput_basin_listdomains"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listdomains",
+                "ActionOutput_basin_listdomains"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listdomains": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination page number from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Filter domains by id or domain name.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listdomains": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number",
+                                            "description": "Domain ID. Example: 123"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List Form Views configured on this account.",
+            "endpoint": null,
+            "input": "ActionInput_basin_listformviews",
+            "name": "list-form-views",
+            "output": [
+                "ActionOutput_basin_listformviews"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listformviews",
+                "ActionOutput_basin_listformviews"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listformviews": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Filter by id, uuid, form id, or form uuid.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listformviews": {
+                        "type": "object",
+                        "properties": {
+                            "form_views": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "form_id": {
+                                            "type": "number"
+                                        },
+                                        "form_uuid": {
+                                            "type": "string"
+                                        },
+                                        "schema": {},
+                                        "custom_css": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "iframe": {},
+                                        "embed_code": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "uuid",
+                                        "form_id",
+                                        "form_uuid"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "count",
+                                    "page",
+                                    "per_page"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_views",
+                            "meta"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhooks configured across forms in this account.",
+            "endpoint": null,
+            "input": "ActionInput_basin_listformwebhooks",
+            "name": "list-form-webhooks",
+            "output": [
+                "ActionOutput_basin_listformwebhooks"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listformwebhooks",
+                "ActionOutput_basin_listformwebhooks"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listformwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Page number for pagination. Example: \"1\"",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Filter webhooks by name, id, url, or associated form_id. Example: \"Nango\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listformwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "form_id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "format": {
+                                            "type": "string"
+                                        },
+                                        "trigger_when_spam": {
+                                            "type": "boolean"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "failure_count": {
+                                            "type": "number"
+                                        },
+                                        "last_failure_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "signing_secret": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "form_id",
+                                        "name",
+                                        "url",
+                                        "format",
+                                        "trigger_when_spam",
+                                        "enabled",
+                                        "created_at",
+                                        "updated_at",
+                                        "failure_count"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List forms in this account.",
+            "endpoint": null,
+            "input": "ActionInput_basin_listforms",
+            "name": "list-forms",
+            "output": [
+                "ActionOutput_basin_listforms"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listforms",
+                "ActionOutput_basin_listforms"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "description": "Page number for pagination. Defaults to 1.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "query": {
+                                "description": "Search query filtering by id, name, uuid, or project_id.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "uuid": {
+                                            "type": "string"
+                                        },
+                                        "project_id": {
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
+                                        },
+                                        "redirect_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "redirect_enabled": {
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "webhooks": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": "string"
+                                                            },
+                                                            "enabled": {
+                                                                "type": [
+                                                                    "boolean",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "trigger_when_spam": {
+                                                                "type": [
+                                                                    "boolean",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url"
+                                                        ],
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "honeypot_enabled": {
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "spam_filter_enabled": {
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "send_as_json": {
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
+                                        },
+                                        "created_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updated_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uuid"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "count",
+                                    "page",
+                                    "per_page"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "next_page": {
+                                "description": "Next page number if more results are available.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "forms",
+                            "meta"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List projects in this account.",
+            "endpoint": null,
+            "input": "ActionInput_basin_listprojects",
+            "name": "list-projects",
+            "output": [
+                "ActionOutput_basin_listprojects"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listprojects",
+                "ActionOutput_basin_listprojects"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page. Example: \"2\"",
+                                "type": "string"
+                            },
+                            "query": {
+                                "description": "Filter projects by id or name. Example: \"My Project\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listprojects": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_page": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List submissions for a form",
+            "endpoint": null,
+            "input": "ActionInput_basin_listsubmissions",
+            "name": "list-submissions",
+            "output": [
+                "ActionOutput_basin_listsubmissions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_listsubmissions",
+                "ActionOutput_basin_listsubmissions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_listsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form ID. Example: 72983"
+                            },
+                            "filter_by": {
+                                "description": "Filter submissions by status. Defaults to inbox-only if omitted. 'all' may not reliably include spam/trash items.",
+                                "type": "string",
+                                "enum": [
+                                    "new",
+                                    "spam",
+                                    "trash",
+                                    "all"
+                                ]
+                            },
+                            "query": {
+                                "description": "Search query string",
+                                "type": "string"
+                            },
+                            "order_by": {
+                                "description": "Sort order for results",
+                                "type": "string",
+                                "enum": [
+                                    "date_asc",
+                                    "date_desc",
+                                    "email_asc",
+                                    "email_desc"
+                                ]
+                            },
+                            "date_range": {
+                                "description": "Date range filter in YYYY-MM-DD+to+YYYY-MM-DD format",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_listsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "submissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "number"
+                                        },
+                                        "form_id": {
+                                            "type": "number"
+                                        },
+                                        "read": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "attachments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                    "type": "string"
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "meta": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "number"
+                                    },
+                                    "inbox_count": {
+                                        "type": "number"
+                                    },
+                                    "spam_count": {
+                                        "type": "number"
+                                    },
+                                    "trash_count": {
+                                        "type": "number"
+                                    },
+                                    "page": {
+                                        "type": "number"
+                                    },
+                                    "per_page": {
+                                        "type": "number"
+                                    },
+                                    "form_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "count",
+                                    "inbox_count",
+                                    "spam_count",
+                                    "trash_count",
+                                    "page",
+                                    "per_page",
+                                    "form_name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "next_page": {
+                                "description": "Next page number if more results are available",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "submissions",
+                            "meta"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Re-trigger the configured form webhooks for a single submission (useful for retrying a failed delivery).",
+            "endpoint": null,
+            "input": "ActionInput_basin_refiresubmissionwebhooks",
+            "name": "refire-submission-webhooks",
+            "output": [
+                "ActionOutput_basin_refiresubmissionwebhooks"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_refiresubmissionwebhooks",
+                "ActionOutput_basin_refiresubmissionwebhooks"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_refiresubmissionwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Submission ID. Example: 61109858"
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_refiresubmissionwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing form webhook.",
+            "endpoint": null,
+            "input": "ActionInput_basin_updateformwebhook",
+            "name": "update-form-webhook",
+            "output": [
+                "ActionOutput_basin_updateformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_updateformwebhook",
+                "ActionOutput_basin_updateformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_updateformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form webhook ID. Example: 10113"
+                            },
+                            "form_id": {
+                                "description": "ID of the associated form.",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "name": {
+                                "description": "Webhook name.",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "Webhook URL.",
+                                "type": "string"
+                            },
+                            "format": {
+                                "description": "Webhook format (e.g., json, slack).",
+                                "type": "string",
+                                "enum": [
+                                    "json",
+                                    "slack"
+                                ]
+                            },
+                            "trigger_when_spam": {
+                                "description": "Whether to trigger on spam submissions.",
+                                "type": "boolean"
+                            },
+                            "enabled": {
+                                "description": "Whether the webhook is enabled.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_updateformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "trigger_when_spam": {
+                                "type": "boolean"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "failure_count": {
+                                "type": "number"
+                            },
+                            "last_failure_at": {
+                                "type": "string"
+                            },
+                            "signing_secret": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "created_at",
+                            "updated_at",
+                            "failure_count"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update fields on an existing form.",
+            "endpoint": null,
+            "input": "ActionInput_basin_updateform",
+            "name": "update-form",
+            "output": [
+                "ActionOutput_basin_updateform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_updateform",
+                "ActionOutput_basin_updateform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_updateform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Form ID. Example: 73320"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "notification_emails": {
+                                "type": "string"
+                            },
+                            "autoreply": {
+                                "type": "boolean"
+                            },
+                            "honeypot_field": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "recaptcha_failed_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "force_recaptcha": {
+                                "type": "boolean"
+                            },
+                            "retention_days": {
+                                "type": "number"
+                            },
+                            "domain_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "duplicate_filter": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_updateform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "uuid": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "redirect_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_ajax": {
+                                "type": "boolean"
+                            },
+                            "notification_emails": {
+                                "type": "string"
+                            },
+                            "autoreply": {
+                                "type": "boolean"
+                            },
+                            "autoreply_body": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "force_recaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_hcaptcha": {
+                                "type": "boolean"
+                            },
+                            "force_turnstile": {
+                                "type": "boolean"
+                            },
+                            "notification_cc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_bcc_emails": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "notification_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_subject": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_from_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_greeting": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_title": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "logo": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "data_receipt_email": {
+                                "type": "boolean"
+                            },
+                            "retention_days": {
+                                "type": "number"
+                            },
+                            "hide_dashboard_button": {
+                                "type": "boolean"
+                            },
+                            "exclude_submitter_from_reply": {
+                                "type": "boolean"
+                            },
+                            "custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "autoreply_custom_template": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoreply_use_custom_template": {
+                                "type": "boolean"
+                            },
+                            "notification_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "auto_response_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "confirmation_mail_template_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "honeypot_field": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "recaptcha_failed_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "domain_id": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "domain_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "duplicate_filter": {
+                                "type": "boolean"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "redirect_heading": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_message": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_background_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirect_button_text_color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "smtp_email_validation": {
+                                "type": "boolean"
+                            },
+                            "contribute_to_spam_training": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "project_name": {
+                                "type": "string"
+                            },
+                            "form_webhooks": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "inbox_count": {
+                                "type": "number"
+                            },
+                            "spam_count": {
+                                "type": "number"
+                            },
+                            "trash_count": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a project's name.",
+            "endpoint": null,
+            "input": "ActionInput_basin_updateproject",
+            "name": "update-project",
+            "output": [
+                "ActionOutput_basin_updateproject"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_updateproject",
+                "ActionOutput_basin_updateproject"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_updateproject": {
+                        "type": "object",
+                        "properties": {
+                            "project_id": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Project ID. Example: 59612"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "New project name. Example: \"Updated Project Name\""
+                            }
+                        },
+                        "required": [
+                            "project_id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_updateproject": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Mark a submission as read, spam, and/or trash.",
+            "endpoint": null,
+            "input": "ActionInput_basin_updatesubmission",
+            "name": "update-submission",
+            "output": [
+                "ActionOutput_basin_updatesubmission"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_basin_updatesubmission",
+                "ActionOutput_basin_updatesubmission"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_basin_updatesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "Submission ID. Example: \"61109858\""
+                            },
+                            "read": {
+                                "description": "Mark the submission as read or unread.",
+                                "type": "boolean"
+                            },
+                            "spam": {
+                                "description": "Mark the submission as spam or not spam.",
+                                "type": "boolean"
+                            },
+                            "trash": {
+                                "description": "Mark the submission as trashed or not trashed.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_basin_updatesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "number"
+                            },
+                            "read": {
+                                "type": "boolean"
+                            },
+                            "spam": {
+                                "type": "boolean"
+                            },
+                            "trash": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync webhooks configured across forms in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "form_webhooks",
+            "output": [
+                "FormWebhook"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "FormWebhook"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "FormWebhook": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "form_id": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "signing_secret": {
+                                "type": "string"
+                            },
+                            "trigger_when_spam": {
+                                "type": "boolean"
+                            },
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "failure_count": {
+                                "type": "number"
+                            },
+                            "last_failure_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync forms across all projects in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "forms",
+            "output": [
+                "Form"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Form"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Form": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "project_id": {
+                                "type": "number"
+                            },
+                            "redirect_url": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync projects in this account.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "projects",
+            "output": [
+                "Project"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Project"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Project": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync submissions across all forms in this account",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "submissions",
+            "output": [
+                "Submission"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Submission"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Submission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "source_url": {
+                                "type": "string"
+                            },
+                            "source_host": {
+                                "type": "string"
+                            },
+                            "source_path": {
+                                "type": "string"
+                            },
+                            "source_query": {
+                                "type": "string"
+                            },
+                            "source_fragment": {
+                                "type": "string"
+                            },
+                            "payload_params": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "form_id": {
+                                "type": "number"
+                            },
+                            "spam": {
+                                "type": "boolean"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "type": "string"
+                            },
+                            "read": {
+                                "type": "boolean"
+                            },
+                            "trash": {
+                                "type": "boolean"
+                            },
+                            "spam_reason": {
+                                "type": "string"
+                            },
+                            "webhook_sent_at": {
+                                "type": "string"
+                            },
+                            "ip": {
+                                "type": "string"
+                            },
+                            "referrer": {
+                                "type": "string"
+                            },
+                            "user_agent": {
+                                "type": "string"
+                            },
+                            "geocoded_country": {
+                                "type": "string"
+                            },
+                            "geocoded_region": {
+                                "type": "string"
+                            },
+                            "geocoded_city": {
+                                "type": "string"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "form_name": {
+                                "type": "string"
+                            },
+                            "form_uuid": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "created_at",
+                            "updated_at",
+                            "read",
+                            "trash"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,44 @@
+---
+title: 'Pinata - How do I link my account?'
+sidebarTitle: 'Pinata'
+---
+
+## Overview
+
+To authenticate with Pinata, you need:
+
+1. **API Key (JWT)** — the JWT of a Pinata API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Pinata account. [Sign up](https://app.pinata.cloud/auth/sign-up) if you don't have one.
+
+### Step 1: Create an API key
+
+1. Sign in to the [Pinata app](https://app.pinata.cloud). In the left sidebar, under **Developer**, click **API Keys**.
+
+<img src="/api-integrations/pinata/sidebar_api_keys.png" alt="Pinata sidebar with API Keys highlighted under Developer"/>
+
+2. Click **New Key** in the top right.
+
+<img src="/api-integrations/pinata/new_key_button.png" alt="Pinata API Keys page with the New Key button highlighted"/>
+
+3. Enter a name for the key. Tick **Admin** for full access to every endpoint, or pick the permissions your integration needs. Then click **Create**.
+
+<img src="/api-integrations/pinata/create_api_key_dialog.png" alt="Pinata Create API Key dialog with permissions set and the Create button highlighted"/>
+
+4. In the **API Key Information** dialog, click the copy button next to **JWT (secret access token)**. Pinata shows the JWT only once, so store it somewhere safe.
+
+<img src="/api-integrations/pinata/copy_jwt.png" alt="Pinata API Key Information dialog with the JWT copy button highlighted"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Pinata.
+2. Paste the JWT in the **API Key (JWT)** field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/pinata/form.png" alt="Pinata Connect UI form with the API Key (JWT) field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Pinata.

@@ -1,0 +1,4257 @@
+{
+    "providerConfigKey": "box",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy a file to a different folder in Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_copyfile",
+            "name": "copy-file",
+            "output": [
+                "ActionOutput_box_copyfile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_copyfile",
+                "ActionOutput_box_copyfile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_copyfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the file to copy. Example: \"123456789\""
+                            },
+                            "parent_folder_id": {
+                                "type": "string",
+                                "description": "The ID of the destination folder. Example: \"987654321\""
+                            },
+                            "name": {
+                                "description": "An optional new name for the copied file. If not provided, the original name is used.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "file_id",
+                            "parent_folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_copyfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "parent_folder_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Copy a folder and its contents to a different location in Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_copyfolder",
+            "name": "copy-folder",
+            "output": [
+                "ActionOutput_box_copyfolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_copyfolder",
+                "ActionOutput_box_copyfolder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_copyfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "string",
+                                "description": "The ID of the folder to copy. Example: \"382204778319\""
+                            },
+                            "destination_folder_id": {
+                                "type": "string",
+                                "description": "The ID of the destination folder where the folder will be copied. Example: \"0\""
+                            },
+                            "name": {
+                                "description": "Optional new name for the copied folder. If not provided, the original name will be used with \" (copy)\" appended.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "folder_id",
+                            "destination_folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_copyfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "folder"
+                                ]
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a collaboration in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_createcollaboration",
+            "name": "create-collaboration",
+            "output": [
+                "ActionOutput_box_createcollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createcollaboration",
+                "ActionOutput_box_createcollaboration"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_createcollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "item_type": {
+                                "type": "string",
+                                "enum": [
+                                    "file",
+                                    "folder"
+                                ],
+                                "description": "The type of item to grant access to. Example: \"folder\""
+                            },
+                            "item_id": {
+                                "type": "string",
+                                "description": "The ID of the item to grant access to. Example: \"382205380769\""
+                            },
+                            "accessible_by_type": {
+                                "type": "string",
+                                "enum": [
+                                    "user",
+                                    "group"
+                                ],
+                                "description": "The type of collaborator to invite. Example: \"user\""
+                            },
+                            "accessible_by_id": {
+                                "description": "The ID of the user or group to invite. Use this OR accessible_by_login, not both. Example: \"23522323\"",
+                                "type": "string"
+                            },
+                            "accessible_by_login": {
+                                "description": "The email address of the user to invite. Use this OR accessible_by_id, not both. Example: \"john@example.com\"",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "editor",
+                                    "viewer",
+                                    "previewer",
+                                    "uploader",
+                                    "previewer uploader",
+                                    "viewer uploader",
+                                    "co-owner"
+                                ],
+                                "description": "The level of access granted. Example: \"editor\""
+                            },
+                            "is_access_only": {
+                                "description": "If true, collaborators have access but items are not visible in All Files list. Example: true",
+                                "type": "boolean"
+                            },
+                            "can_view_path": {
+                                "description": "If true, invited users can see the entire parent path to the folder. Example: true",
+                                "type": "boolean"
+                            },
+                            "expires_at": {
+                                "description": "Expiration date for the collaboration in ISO 8601 format. Example: \"2019-08-29T23:59:00-07:00\"",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "notify": {
+                                "description": "Whether to notify the user of the invitation. Example: true",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "item_type",
+                            "item_id",
+                            "accessible_by_type",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_createcollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "accessible_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "invite_email": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "is_access_only": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "acknowledged_at": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "role"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a comment in Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_createcomment",
+            "name": "create-comment",
+            "output": [
+                "ActionOutput_box_createcomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createcomment",
+                "ActionOutput_box_createcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the file to comment on. Example: \"2231568666314\""
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The text of the comment."
+                            }
+                        },
+                        "required": [
+                            "file_id",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_createcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "tagged_message": {
+                                "type": "string"
+                            },
+                            "is_reply_comment": {
+                                "type": "boolean"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a folder in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_createfolder",
+            "name": "create-folder",
+            "output": [
+                "ActionOutput_box_createfolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createfolder",
+                "ActionOutput_box_createfolder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the folder. Example: \"My New Folder\""
+                            },
+                            "parent_folder_id": {
+                                "type": "string",
+                                "description": "The ID of the parent folder. Use \"0\" for the root folder. Example: \"382205380769\""
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "parent_folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the folder"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the folder"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "folder",
+                                "description": "The type of the item"
+                            },
+                            "parent_id": {
+                                "description": "The ID of the parent folder",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "The timestamp when the folder was created",
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "description": "The timestamp when the folder was last modified",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description of the folder",
+                                "type": "string"
+                            },
+                            "path_collection": {
+                                "description": "The path from the root to this folder",
+                                "type": "object",
+                                "properties": {
+                                    "entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "entries"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Creates a user in Box. Requires an enterprise account.",
+            "endpoint": null,
+            "input": "ActionInput_box_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_box_createuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_createuser",
+                "ActionOutput_box_createuser"
+            ],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The full name of the user. Example: \"Jane Doe\""
+                            },
+                            "login": {
+                                "type": "string",
+                                "description": "The email address the user uses to log in. Example: \"jane@example.com\""
+                            },
+                            "role": {
+                                "description": "The user's enterprise role.",
+                                "type": "string",
+                                "enum": [
+                                    "coadmin",
+                                    "user"
+                                ]
+                            },
+                            "language": {
+                                "description": "The language of the user in ISO 639-1 format.",
+                                "type": "string"
+                            },
+                            "is_sync_enabled": {
+                                "description": "Whether the user can use Box Sync.",
+                                "type": "boolean"
+                            },
+                            "job_title": {
+                                "description": "The user's job title.",
+                                "type": "string"
+                            },
+                            "phone": {
+                                "description": "The user's phone number.",
+                                "type": "string"
+                            },
+                            "address": {
+                                "description": "The user's address.",
+                                "type": "string"
+                            },
+                            "space_amount": {
+                                "description": "The user's total available space in bytes.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "can_see_managed_users": {
+                                "description": "Whether the user can see other enterprise users in their contact list.",
+                                "type": "boolean"
+                            },
+                            "timezone": {
+                                "description": "The user's timezone.",
+                                "type": "string"
+                            },
+                            "is_external_collab_restricted": {
+                                "description": "Whether the user is restricted from collaborating with users outside their enterprise.",
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_device_limits": {
+                                "description": "Whether to exempt the user from enterprise device limits.",
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_login_verification": {
+                                "description": "Whether the user must use two-factor authentication.",
+                                "type": "boolean"
+                            },
+                            "is_platform_access_only": {
+                                "description": "Whether the user is an App User.",
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "description": "The user's account status.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
+                            },
+                            "external_app_user_id": {
+                                "description": "An external identifier for an app user.",
+                                "type": "string"
+                            },
+                            "tracking_codes": {
+                                "description": "Tracking codes for analytics purposes.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "const": "tracking_code"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "login"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "login": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "space_amount": {
+                                "type": "number"
+                            },
+                            "space_used": {
+                                "type": "number"
+                            },
+                            "max_upload_size": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            },
+                            "is_sync_enabled": {
+                                "type": "boolean"
+                            },
+                            "can_see_managed_users": {
+                                "type": "boolean"
+                            },
+                            "is_external_collab_restricted": {
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_device_limits": {
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_login_verification": {
+                                "type": "boolean"
+                            },
+                            "is_platform_access_only": {
+                                "type": "boolean"
+                            },
+                            "external_app_user_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a collaboration in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_deletecollaboration",
+            "name": "delete-collaboration",
+            "output": [
+                "ActionOutput_box_deletecollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletecollaboration",
+                "ActionOutput_box_deletecollaboration"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_deletecollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "collaboration_id": {
+                                "type": "string",
+                                "description": "The ID of the collaboration to delete. Example: \"72837978884\""
+                            }
+                        },
+                        "required": [
+                            "collaboration_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_deletecollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "collaboration_id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "collaboration_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a comment in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_box_deletecomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletecomment",
+                "ActionOutput_box_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the comment to delete. Example: \"12345\""
+                            }
+                        },
+                        "required": [
+                            "commentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the comment was successfully deleted"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user in Box. Requires an enterprise account.",
+            "endpoint": null,
+            "input": "ActionInput_box_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_box_deleteuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_deleteuser",
+                "ActionOutput_box_deleteuser"
+            ],
+            "version": "3.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the user to delete. Example: \"12345\""
+                            },
+                            "force": {
+                                "description": "Whether to force the deletion even if the user has content. Defaults to false.",
+                                "type": "boolean"
+                            },
+                            "notify": {
+                                "description": "Whether to notify the user that they have been removed. Defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the user deletion succeeded"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "The ID of the deleted user"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a file in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_deletefile",
+            "name": "delete-file",
+            "output": [
+                "ActionOutput_box_deletefile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletefile",
+                "ActionOutput_box_deletefile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The unique identifier for the file to delete. Example: \"123456789\""
+                            },
+                            "force_delete": {
+                                "description": "If true, permanently deletes the file bypassing the trash. If false or omitted, the file is moved to trash.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_deletefile": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "file_id": {
+                                "type": "string"
+                            },
+                            "permanently_deleted": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "file_id",
+                            "permanently_deleted",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete or archive a folder in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_deletefolder",
+            "name": "delete-folder",
+            "output": [
+                "ActionOutput_box_deletefolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletefolder",
+                "ActionOutput_box_deletefolder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_deletefolder": {
+                        "type": "object",
+                        "properties": {
+                            "folderId": {
+                                "type": "string",
+                                "description": "The ID of the folder to delete. Example: \"382204778319\""
+                            },
+                            "recursive": {
+                                "description": "Whether to delete the folder and all its contents. If false and folder is not empty, the operation will fail. Defaults to true.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "folderId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_deletefolder": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Whether the folder deletion succeeded"
+                            },
+                            "folderId": {
+                                "type": "string",
+                                "description": "The ID of the deleted folder"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "folderId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download file content from Box",
+            "endpoint": null,
+            "input": "ActionInput_box_downloadfile",
+            "name": "download-file",
+            "output": [
+                "ActionOutput_box_downloadfile"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_downloadfile",
+                "ActionOutput_box_downloadfile"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_downloadfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the file to download. Example: \"123456789\""
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_downloadfile": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "The file content as a base64-encoded string"
+                            },
+                            "file_id": {
+                                "type": "string",
+                                "description": "The ID of the downloaded file"
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Fetches the top-level content (files and folders) of a folder given its ID. If no folder ID is provided, it fetches content from the root folder.",
+            "endpoint": null,
+            "input": "ActionInput_box_foldercontent",
+            "name": "folder-content",
+            "output": [
+                "ActionOutput_box_foldercontent"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_foldercontent",
+                "ActionOutput_box_foldercontent"
+            ],
+            "version": "3.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_foldercontent": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "description": "The ID of the folder to fetch content from. Defaults to the root folder (\"0\"). Example: \"123456789\"",
+                                "type": "string"
+                            },
+                            "marker": {
+                                "description": "A pagination cursor returned by a previous call. Use this to fetch the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_foldercontent": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "modified_at": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "modified_at"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "modified_at": {
+                                            "type": "string"
+                                        },
+                                        "download_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "modified_at",
+                                        "download_url"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_marker": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "folders",
+                            "files"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single collaboration from Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_getcollaboration",
+            "name": "get-collaboration",
+            "output": [
+                "ActionOutput_box_getcollaboration"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getcollaboration",
+                "ActionOutput_box_getcollaboration"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_getcollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "collaboration_id": {
+                                "type": "string",
+                                "description": "The ID of the collaboration. Example: \"1234\""
+                            }
+                        },
+                        "required": [
+                            "collaboration_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_getcollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "collaboration"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "accessible_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "invite_email": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "is_access_only": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "accepted",
+                                    "pending",
+                                    "rejected"
+                                ]
+                            },
+                            "acknowledged_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status",
+                            "created_at",
+                            "modified_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single comment from Box",
+            "endpoint": null,
+            "input": "ActionInput_box_getcomment",
+            "name": "get-comment",
+            "output": [
+                "ActionOutput_box_getcomment"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getcomment",
+                "ActionOutput_box_getcomment"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "comment_id": {
+                                "type": "string",
+                                "description": "The ID of the comment to retrieve. Example: \"12345\""
+                            }
+                        },
+                        "required": [
+                            "comment_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_getcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "comment"
+                            },
+                            "is_reply_comment": {
+                                "type": "boolean"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "tagged_message": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "const": "user"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single file from Box",
+            "endpoint": null,
+            "input": "ActionInput_box_getfile",
+            "name": "get-file",
+            "output": [
+                "ActionOutput_box_getfile"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getfile",
+                "ActionOutput_box_getfile"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the file. Example: \"12345\""
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_getfile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "etag": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "modified_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "owned_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "item_status": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "name",
+                            "size",
+                            "created_at",
+                            "modified_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single folder from Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_getfolder",
+            "name": "get-folder",
+            "output": [
+                "ActionOutput_box_getfolder"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getfolder",
+                "ActionOutput_box_getfolder"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_getfolder": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "string",
+                                "description": "The unique identifier that represent a folder. The root folder is always represented by the ID 0. Example: \"12345\""
+                            }
+                        },
+                        "required": [
+                            "folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_getfolder": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "folder"
+                            },
+                            "id": {
+                                "type": "string"
+                            },
+                            "sequence_id": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "etag": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "modified_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "path_collection": {
+                                "type": "object",
+                                "properties": {
+                                    "total_count": {
+                                        "type": "number"
+                                    },
+                                    "entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "folder"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "sequence_id": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "etag": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "type",
+                                                "id",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "total_count",
+                                    "entries"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "user"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "modified_by": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "user"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "trashed_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "purged_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content_created_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "content_modified_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "owned_by": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "const": "user"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "shared_link": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "url": {
+                                                "type": "string"
+                                            },
+                                            "download_url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "vanity_url": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "vanity_name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "access": {
+                                                "type": "string"
+                                            },
+                                            "effective_access": {
+                                                "type": "string"
+                                            },
+                                            "effective_permission": {
+                                                "type": "string"
+                                            },
+                                            "is_password_enabled": {
+                                                "type": "boolean"
+                                            },
+                                            "download_count": {
+                                                "type": "number"
+                                            },
+                                            "preview_count": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": [
+                                            "url"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "folder_upload_email": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "access": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "access",
+                                            "email"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "parent": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "const": "folder"
+                                            },
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "sequence_id": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "etag": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "type",
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "item_status": {
+                                "type": "string"
+                            },
+                            "item_collection": {
+                                "type": "object",
+                                "properties": {
+                                    "total_count": {
+                                        "type": "number"
+                                    },
+                                    "entries": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "sequence_id": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "etag": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "type",
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "offset": {
+                                        "type": "number"
+                                    },
+                                    "limit": {
+                                        "type": "number"
+                                    },
+                                    "order": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "by": {
+                                                    "type": "string"
+                                                },
+                                                "direction": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "by",
+                                                "direction"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "total_count",
+                                    "entries"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "has_collaborations": {
+                                "type": "boolean"
+                            },
+                            "permissions": {
+                                "type": "object",
+                                "properties": {
+                                    "can_delete": {
+                                        "type": "boolean"
+                                    },
+                                    "can_download": {
+                                        "type": "boolean"
+                                    },
+                                    "can_invite_collaborator": {
+                                        "type": "boolean"
+                                    },
+                                    "can_rename": {
+                                        "type": "boolean"
+                                    },
+                                    "can_set_share_access": {
+                                        "type": "boolean"
+                                    },
+                                    "can_share": {
+                                        "type": "boolean"
+                                    },
+                                    "can_upload": {
+                                        "type": "boolean"
+                                    },
+                                    "can_apply_watermark": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "can_non_owners_invite": {
+                                "type": "boolean"
+                            },
+                            "is_externally_owned": {
+                                "type": "boolean"
+                            },
+                            "is_collaboration_restricted_to_enterprise": {
+                                "type": "boolean"
+                            },
+                            "allowed_shared_link_access_levels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "allowed_invitee_roles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "watermark_info": {
+                                "type": "object",
+                                "properties": {
+                                    "is_watermarked": {
+                                        "type": "boolean"
+                                    },
+                                    "is_watermark_inherited": {
+                                        "type": "boolean"
+                                    },
+                                    "is_watermarked_by_access_policy": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "is_watermarked"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "is_accessible_via_shared_link": {
+                                "type": "boolean"
+                            },
+                            "can_non_owners_view_collaborators": {
+                                "type": "boolean"
+                            },
+                            "classification": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "definition": {
+                                                "type": "string"
+                                            },
+                                            "color": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "is_associated_with_app_item": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user from Box",
+            "endpoint": null,
+            "input": "ActionInput_box_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_box_getuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_getuser",
+                "ActionOutput_box_getuser"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The ID of the user. Example: \"123\""
+                            }
+                        },
+                        "required": [
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "login": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "space_amount": {
+                                "type": "number"
+                            },
+                            "space_used": {
+                                "type": "number"
+                            },
+                            "max_upload_size": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List collaborations from Box. Retrieves pending collaboration invites for this user.",
+            "endpoint": null,
+            "input": "ActionInput_box_listcollaborations",
+            "name": "list-collaborations",
+            "output": [
+                "ActionOutput_box_listcollaborations"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listcollaborations",
+                "ActionOutput_box_listcollaborations"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_listcollaborations": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "description": "The status of the collaborations to retrieve. Defaults to pending.",
+                                "type": "string",
+                                "enum": [
+                                    "pending"
+                                ]
+                            },
+                            "offset": {
+                                "description": "The offset of the item at which to begin the response.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return per page.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_listcollaborations": {
+                        "type": "object",
+                        "properties": {
+                            "collaborations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "collaboration"
+                                        },
+                                        "item": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "file",
+                                                                "folder",
+                                                                "web_link"
+                                                            ]
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "accessible_by": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": {
+                                                            "type": "string",
+                                                            "const": "user"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "login": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "invite_email": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "accepted",
+                                                "pending",
+                                                "rejected"
+                                            ]
+                                        },
+                                        "acknowledged_at": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "modified_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "total_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "has_more": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "collaborations"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List comments for a file",
+            "endpoint": null,
+            "input": "ActionInput_box_listcomments",
+            "name": "list-comments",
+            "output": [
+                "ActionOutput_box_listcomments"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listcomments",
+                "ActionOutput_box_listcomments"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the file. Example: \"12345\""
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return per page. Default: 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "offset": {
+                                "description": "The 0-based offset of the first item to return. Default: 0.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_listcomments": {
+                        "type": "object",
+                        "properties": {
+                            "total_count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "order": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "by": {
+                                            "type": "string"
+                                        },
+                                        "direction": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ASC",
+                                                "DESC"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "comment"
+                                        },
+                                        "is_reply_comment": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "tagged_message": {
+                                            "type": "string"
+                                        },
+                                        "created_by": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "user"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "login": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "name",
+                                                "login"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "modified_at": {
+                                            "type": "string"
+                                        },
+                                        "item": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "entries"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List files from Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_listfiles",
+            "name": "list-files",
+            "output": [
+                "ActionOutput_box_listfiles"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listfiles",
+                "ActionOutput_box_listfiles"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "string",
+                                "description": "The unique identifier for the folder. The root folder is always represented by the ID `0`. Example: \"0\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return per page. Maximum is 1000.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 1000
+                            },
+                            "sort": {
+                                "description": "Defines the second attribute by which items are sorted.",
+                                "type": "string",
+                                "enum": [
+                                    "id",
+                                    "name",
+                                    "date",
+                                    "size"
+                                ]
+                            },
+                            "direction": {
+                                "description": "The direction to sort results in.",
+                                "type": "string",
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_listfiles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List folders from Box",
+            "endpoint": null,
+            "input": "ActionInput_box_listfolders",
+            "name": "list-folders",
+            "output": [
+                "ActionOutput_box_listfolders"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listfolders",
+                "ActionOutput_box_listfolders"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "description": "The ID of the folder to list items from. Use \"0\" for the root folder. Defaults to \"0\".",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "The maximum number of items to return per page. Maximum is 1000.",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "const": "folder"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "sequence_id": {
+                                            "type": "string"
+                                        },
+                                        "etag": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "folders"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search for files, folders, and other content in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_search",
+            "name": "search",
+            "output": [
+                "ActionOutput_box_search"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_search",
+                "ActionOutput_box_search"
+            ],
+            "version": "1.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_search": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The string to search for. This query is matched against item names, descriptions, text content of files, and various other fields."
+                            },
+                            "type": {
+                                "description": "Limits the search results to items of this type.",
+                                "type": "string",
+                                "enum": [
+                                    "file",
+                                    "folder",
+                                    "web_link"
+                                ]
+                            },
+                            "file_extensions": {
+                                "description": "Limits results to files matching any of the provided extensions (comma-separated list without dots).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "ancestor_folder_ids": {
+                                "description": "Limits results to items within the given folders (comma-separated list of folder IDs).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "created_at_range": {
+                                "description": "Limits results to items created within a date range (comma-separated RFC3339 timestamps).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "updated_at_range": {
+                                "description": "Limits results to items updated within a date range (comma-separated RFC3339 timestamps).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "size_range": {
+                                "description": "Limits results to items within a file size range (comma-separated byte sizes).",
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            },
+                            "owner_user_ids": {
+                                "description": "Limits results to items owned by the given users (comma-separated list of user IDs).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "recent_updater_user_ids": {
+                                "description": "Limits results to items recently updated by the given users (comma-separated list of user IDs).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "content_types": {
+                                "description": "Limits search to match specific content parts (comma-separated list).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "name",
+                                        "description",
+                                        "file_content",
+                                        "comments",
+                                        "tags"
+                                    ]
+                                }
+                            },
+                            "trash_content": {
+                                "description": "Determines if the search should look in trash. Defaults to non_trashed_only.",
+                                "type": "string",
+                                "enum": [
+                                    "non_trashed_only",
+                                    "trashed_only",
+                                    "all_items"
+                                ]
+                            },
+                            "sort": {
+                                "description": "Defines the order of search results. Defaults to relevance.",
+                                "type": "string",
+                                "enum": [
+                                    "relevance",
+                                    "modified_at"
+                                ]
+                            },
+                            "direction": {
+                                "description": "Defines the direction of ordering. Defaults to DESC.",
+                                "type": "string",
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Maximum number of items to return per page. Defaults to 30, max 200.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                            },
+                            "offset": {
+                                "description": "The offset of the first item to return. Defaults to 0.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "scope": {
+                                "description": "Limits results to user content or enterprise content. Defaults to user_content.",
+                                "type": "string",
+                                "enum": [
+                                    "user_content",
+                                    "enterprise_content"
+                                ]
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of attributes to include in the response.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "include_recent_shared_links": {
+                                "description": "Whether to include items accessed through shared links.",
+                                "type": "boolean"
+                            },
+                            "deleted_user_ids": {
+                                "description": "Limits results to items deleted by the given users (requires trash_content=trashed_only).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "deleted_at_range": {
+                                "description": "Limits results to items deleted within a date range (requires trash_content=trashed_only).",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "query"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_search": {
+                        "type": "object",
+                        "properties": {
+                            "total_count": {
+                                "type": "number"
+                            },
+                            "limit": {
+                                "type": "number"
+                            },
+                            "offset": {
+                                "type": "number"
+                            },
+                            "entries": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "modified_at": {
+                                            "type": "string"
+                                        },
+                                        "path_collection": {
+                                            "type": "object",
+                                            "properties": {
+                                                "entries": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "type",
+                                                            "id"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "entries"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "total_count",
+                            "limit",
+                            "offset",
+                            "entries"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a collaboration in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_updatecollaboration",
+            "name": "update-collaboration",
+            "output": [
+                "ActionOutput_box_updatecollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatecollaboration",
+                "ActionOutput_box_updatecollaboration"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_updatecollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "collaboration_id": {
+                                "type": "string",
+                                "description": "The ID of the collaboration. Example: \"12345678\""
+                            },
+                            "role": {
+                                "description": "The level of access granted.",
+                                "type": "string",
+                                "enum": [
+                                    "editor",
+                                    "viewer",
+                                    "previewer",
+                                    "uploader",
+                                    "previewer uploader",
+                                    "viewer uploader",
+                                    "co-owner",
+                                    "owner"
+                                ]
+                            },
+                            "status": {
+                                "description": "Set the status of a pending collaboration invitation, effectively accepting or rejecting the invite.",
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "rejected"
+                                ]
+                            },
+                            "expires_at": {
+                                "description": "Update the expiration date for the collaboration. Format: ISO 8601 date-time. Example: \"2019-08-29T23:59:00-07:00\"",
+                                "type": "string"
+                            },
+                            "can_view_path": {
+                                "description": "Determines if the invited users can see the entire parent path to the associated folder. Only for folder collaborations.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "collaboration_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_updatecollaboration": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "collaboration"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "file",
+                                            "folder",
+                                            "web_link"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": {}
+                            },
+                            "accessible_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "const": "user"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "login": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "name",
+                                            "login"
+                                        ],
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "invite_email": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "is_access_only": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "accepted",
+                                    "pending",
+                                    "rejected"
+                                ]
+                            },
+                            "acknowledged_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "created_by": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "const": "user"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "login": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "name",
+                                            "login"
+                                        ],
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a comment in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_updatecomment",
+            "name": "update-comment",
+            "output": [
+                "ActionOutput_box_updatecomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatecomment",
+                "ActionOutput_box_updatecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "commentId": {
+                                "type": "string",
+                                "description": "The ID of the comment to update. Example: \"12345\""
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The new text of the comment. Example: \"Updated comment message\""
+                            }
+                        },
+                        "required": [
+                            "commentId",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "isReplyComment": {
+                                "type": "boolean"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "modifiedAt": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "taggedMessage": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "message"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a file in Box. This can be used to rename or move a file.",
+            "endpoint": null,
+            "input": "ActionInput_box_updatefile",
+            "name": "update-file",
+            "output": [
+                "ActionOutput_box_updatefile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatefile",
+                "ActionOutput_box_updatefile"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_updatefile": {
+                        "type": "object",
+                        "properties": {
+                            "file_id": {
+                                "type": "string",
+                                "description": "The unique identifier that represents a file. Example: \"2231571097476\""
+                            },
+                            "name": {
+                                "description": "An optional different name for the file. This can be used to rename the file.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The description for a file. Max length 256 characters.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "parent": {
+                                "description": "An optional new parent folder for the file. This can be used to move the file to a new folder.",
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "description": "The ID of parent folder. Use \"0\" for the root folder."
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "description": "The tags for this item. There is a limit of 100 tags per item.",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "file_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_updatefile": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a folder in Box.",
+            "endpoint": null,
+            "input": "ActionInput_box_updatefolder",
+            "name": "update-folder",
+            "output": [
+                "ActionOutput_box_updatefolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatefolder",
+                "ActionOutput_box_updatefolder"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_updatefolder": {
+                        "type": "object",
+                        "properties": {
+                            "folder_id": {
+                                "type": "string",
+                                "description": "The unique identifier for the folder to update. Example: \"12345\""
+                            },
+                            "name": {
+                                "description": "The new name for the folder.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The optional description of this folder.",
+                                "type": "string",
+                                "maxLength": 256
+                            },
+                            "parent_id": {
+                                "description": "The ID of the new parent folder to move this folder into.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "The tags for this item.",
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "can_non_owners_invite": {
+                                "description": "Specifies if users who are not the owner of the folder can invite new collaborators.",
+                                "type": "boolean"
+                            },
+                            "is_collaboration_restricted_to_enterprise": {
+                                "description": "Specifies if new invites to this folder are restricted to users within the enterprise.",
+                                "type": "boolean"
+                            },
+                            "can_non_owners_view_collaborators": {
+                                "description": "Restricts collaborators who are not the owner from viewing other collaborations on this folder.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "folder_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_updatefolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "parent_id": {
+                                "type": "string"
+                            },
+                            "sync_state": {
+                                "type": "string",
+                                "enum": [
+                                    "synced",
+                                    "not_synced",
+                                    "partially_synced"
+                                ]
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "can_non_owners_invite": {
+                                "type": "boolean"
+                            },
+                            "is_collaboration_restricted_to_enterprise": {
+                                "type": "boolean"
+                            },
+                            "can_non_owners_view_collaborators": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a user in Box",
+            "endpoint": null,
+            "input": "ActionInput_box_updateuser",
+            "name": "update-user",
+            "output": [
+                "ActionOutput_box_updateuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_updateuser",
+                "ActionOutput_box_updateuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_box_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "user_id": {
+                                "type": "string",
+                                "description": "The ID of the user to update. Example: \"12345\""
+                            },
+                            "name": {
+                                "description": "The name of the user.",
+                                "type": "string",
+                                "maxLength": 50
+                            },
+                            "login": {
+                                "description": "The email address the user uses to log in.",
+                                "type": "string"
+                            },
+                            "role": {
+                                "description": "The user's enterprise role.",
+                                "type": "string",
+                                "enum": [
+                                    "coadmin",
+                                    "user"
+                                ]
+                            },
+                            "language": {
+                                "description": "The language of the user in ISO 639-1 format.",
+                                "type": "string"
+                            },
+                            "is_sync_enabled": {
+                                "description": "Whether the user can use Box Sync.",
+                                "type": "boolean"
+                            },
+                            "job_title": {
+                                "description": "The user's job title.",
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            "phone": {
+                                "description": "The user's phone number.",
+                                "type": "string",
+                                "maxLength": 100
+                            },
+                            "address": {
+                                "description": "The user's address.",
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "can_see_managed_users": {
+                                "description": "Whether the user can see other enterprise users in their contact list.",
+                                "type": "boolean"
+                            },
+                            "timezone": {
+                                "description": "The user's timezone.",
+                                "type": "string"
+                            },
+                            "is_external_collab_restricted": {
+                                "description": "Whether the user is allowed to collaborate with users outside their enterprise.",
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_device_limits": {
+                                "description": "Whether to exempt the user from enterprise device limits.",
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_login_verification": {
+                                "description": "Whether the user must use two-factor authentication.",
+                                "type": "boolean"
+                            },
+                            "is_password_reset_required": {
+                                "description": "Whether the user is required to reset their password.",
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "description": "The user's account status.",
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
+                            },
+                            "space_amount": {
+                                "description": "The user's total available space in bytes. Set to -1 for unlimited storage.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "external_app_user_id": {
+                                "description": "An external identifier for an app user.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "user_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_box_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "user"
+                                ]
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "login": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "admin",
+                                    "coadmin",
+                                    "user"
+                                ]
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "space_amount": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "space_used": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "max_upload_size": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            },
+                            "is_sync_enabled": {
+                                "type": "boolean"
+                            },
+                            "can_see_managed_users": {
+                                "type": "boolean"
+                            },
+                            "is_external_collab_restricted": {
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_device_limits": {
+                                "type": "boolean"
+                            },
+                            "is_exempt_from_login_verification": {
+                                "type": "boolean"
+                            },
+                            "is_platform_access_only": {
+                                "type": "boolean"
+                            },
+                            "external_app_user_id": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync collaborations from Box",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/collaborations",
+                    "method": "POST"
+                }
+            ],
+            "input": null,
+            "name": "collaborations",
+            "output": [
+                "Collaboration"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "root_readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Collaboration"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Collaboration": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "item": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "accessible_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "invite_email": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "expires_at": {
+                                "type": "string"
+                            },
+                            "is_access_only": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "acknowledged_at": {
+                                "type": "string"
+                            },
+                            "created_by": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status",
+                            "created_at",
+                            "modified_at"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync folders from Box",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/folders"
+                }
+            ],
+            "input": null,
+            "name": "folders",
+            "output": [
+                "Folder"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "root_readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Folder"
+            ],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string",
+                                "const": "folder"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            },
+                            "trashed_at": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "parent": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync the metadata of specified files or folder paths from Box. A file or folder ID can be provided.",
+            "auto_start": false,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/files",
+                    "group": "Files"
+                }
+            ],
+            "input": "SyncMetadata_box_files",
+            "name": "files",
+            "output": [
+                "BoxDocument"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "root_readonly"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "BoxDocument",
+                "SyncMetadata_box_files"
+            ],
+            "version": "3.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "BoxDocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "download_url": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "modified_at"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_box_files": {
+                        "type": "object",
+                        "properties": {
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "folders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "files",
+                            "folders"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Box. Requires an enterprise account.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": null,
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "3.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "login": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "space_amount": {
+                                "type": "number"
+                            },
+                            "space_used": {
+                                "type": "number"
+                            },
+                            "max_upload_size": {
+                                "type": "number"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "job_title": {
+                                "type": "string"
+                            },
+                            "phone": {
+                                "type": "string"
+                            },
+                            "address": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string"
+                            },
+                            "modified_at": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

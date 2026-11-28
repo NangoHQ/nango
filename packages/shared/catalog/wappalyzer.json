@@ -1,0 +1,2824 @@
+{
+    "providerConfigKey": "wappalyzer",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync lead lists: maintain account lead-list metadata, including lifecycle status, selection criteria, credit costs, row-count dimensions and available export links. Records describe lead lists, not the websites in their exported files.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-lead-lists",
+            "output": [
+                "LeadLists"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "LeadLists"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "LeadLists": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque account lead-list identifier and record identity."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Calculating",
+                                    "Ready",
+                                    "Failed",
+                                    "Insufficient",
+                                    "Complete"
+                                ],
+                                "description": "Provider lifecycle state without collapsing calculation or failure states."
+                            },
+                            "criteria": {
+                                "description": "Known stored selection criteria; omitted source properties remain omitted.",
+                                "type": "object",
+                                "properties": {
+                                    "sets": {
+                                        "description": "Export field sets; signals adds technologySpend and trafficLevel columns.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "tlds": {
+                                        "description": "Top-level domain selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "maxAge": {
+                                        "description": "Oldest verification calendar month in months before the current UTC month.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "minAge": {
+                                        "description": "Newest verification calendar month in months before the current UTC month.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "subset": {
+                                        "description": "Opaque provider subset selector.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "keywords": {
+                                        "description": "Keyword selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "countries": {
+                                        "description": "Provider country selectors.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "languages": {
+                                        "description": "Provider language selectors.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "industries": {
+                                        "description": "Provider industry selectors.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "subsetSlice": {
+                                        "description": "Provider subset slice selector.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "companySizes": {
+                                        "description": "Provider company-size selectors without inferred units.",
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "requiredSets": {
+                                        "description": "Stored required result field sets.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "technologies": {
+                                        "description": "Stored technology selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Technology display name, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "slug": {
+                                                    "description": "Technology slug.",
+                                                    "type": "string"
+                                                },
+                                                "version": {
+                                                    "description": "Version criterion, preserving null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "operator": {
+                                                    "description": "Version comparison operator.",
+                                                    "type": "string"
+                                                },
+                                                "categories": {
+                                                    "description": "Category metadata, when supplied.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "description": "Opaque category ID represented as text, when supplied.",
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Category display name."
+                                                            },
+                                                            "slug": {
+                                                                "type": "string",
+                                                                "description": "Category slug."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "slug"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Technology category metadata."
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Stored technology selection criterion."
+                                        }
+                                    },
+                                    "excludeNoTraffic": {
+                                        "description": "Stored exclusion of websites classified as having no traffic.",
+                                        "type": "boolean"
+                                    },
+                                    "matchTechnologies": {
+                                        "description": "Technology criteria matching mode.",
+                                        "type": "string",
+                                        "enum": [
+                                            "or",
+                                            "and",
+                                            "not"
+                                        ]
+                                    },
+                                    "suppressionListId": {
+                                        "description": "Referenced immutable suppression-list ID, or null when no reference exists.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "excludeMultilingual": {
+                                        "description": "Stored exclusion of multilingual websites.",
+                                        "type": "boolean"
+                                    },
+                                    "matchCountryLanguage": {
+                                        "description": "Stored country/language matching option.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "rowCounts": {
+                                "description": "Detail endpoint's row counts keyed by provider dimension names.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "sampleUrl": {
+                                "description": "Sample link, when supplied.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "downloadUrl": {
+                                "description": "Export link, when supplied; null indicates no link is currently available.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "setRowCounts": {
+                                "description": "Counts keyed by exported field set, when supplied.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "totalCredits": {
+                                "description": "Provider-reported total credit cost, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Account lead-list metadata, lifecycle, stored selection criteria, credit costs, row-count dimensions and available export links."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Maintain account suppression-list metadata, including validation states, immutable snapshot sizes, domain counts and retirement information. Uploaded domain content is not part of this dataset.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-suppression-lists",
+            "output": [
+                "SuppressionLists"
+            ],
+            "runs": "every 5 minutes",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "SuppressionLists"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "SuppressionLists": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque suppression-list identifier and record identity."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Account label for the suppression list."
+                            },
+                            "error": {
+                                "description": "Provider validation explanation, including content or storage-quota rejection, when supplied.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Pending",
+                                    "Validating",
+                                    "Ready",
+                                    "Invalid",
+                                    "Retired",
+                                    "Deleted"
+                                ],
+                                "description": "Current validation or lifecycle state; only Ready allows new lead-list references."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant normalized to UTC at integral-second precision."
+                            },
+                            "retiredAt": {
+                                "description": "Retirement instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sizeBytes": {
+                                "description": "Validated snapshot size in bytes, when supplied; retirement does not imply it is reclaimed.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "domainCount": {
+                                "description": "Validated unique-domain count, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 250000
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Account suppression-list metadata, including validation, immutable snapshot size, domain count and retirement information; excludes uploaded content."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-get-website-intelligence",
+            "integrationId": "wappalyzer",
+            "description": "Look up technologies and optional traffic/spend signals for up to ten websites in one native request, returning per-website complete, pending or failed results.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_batchgetwebsiteintelligence",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_batchgetwebsiteintelligence",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_batchgetwebsiteintelligence": {
+                        "type": "object",
+                        "properties": {
+                            "live": {
+                                "description": "Allow real-time scanning when needed.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "urls": {
+                                "minItems": 1,
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^https?:\\/\\/",
+                                    "description": "An HTTP(S) website URL.",
+                                    "format": "uri"
+                                },
+                                "description": "Distinct HTTP(S) website URLs to look up in one native request.",
+                                "uniqueItems": true
+                            },
+                            "maxAge": {
+                                "description": "Oldest verification month in calendar months before the current UTC month.",
+                                "default": 2,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "minAge": {
+                                "description": "Newest verification month in calendar months before the current UTC month.",
+                                "default": 0,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "denoise": {
+                                "description": "Exclude low-confidence detections.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "includeSignals": {
+                                "description": "Request relative traffic and technology-spend levels when available.",
+                                "default": false,
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "urls"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Website URLs and shared intelligence lookup options."
+                    },
+                    "FunctionOutput_wappalyzer_batchgetwebsiteintelligence": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Website associated with this result, as returned by the provider; use for correlation rather than array position."
+                                        },
+                                        "errors": {
+                                            "description": "Provider per-site failure explanations for failed items; exact provider strings are preserved, with no invented success or error codes.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "An exact provider per-site failure explanation."
+                                            }
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "complete",
+                                                "pending",
+                                                "failed"
+                                            ],
+                                            "description": "Complete intelligence, pending crawl, or a provider per-site failure."
+                                        },
+                                        "technologies": {
+                                            "description": "Detected technologies when supplied; may be partial while pending.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "cpe": {
+                                                        "description": "CPE identifier, when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Technology display name."
+                                                    },
+                                                    "slug": {
+                                                        "type": "string",
+                                                        "description": "Technology identifier slug."
+                                                    },
+                                                    "versions": {
+                                                        "description": "Detected version strings, when supplied.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "A detected version string."
+                                                        }
+                                                    },
+                                                    "categories": {
+                                                        "description": "Technology category metadata, when supplied.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "description": "Opaque category ID represented as text, when supplied.",
+                                                                    "type": "string"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Category display name."
+                                                                },
+                                                                "slug": {
+                                                                    "type": "string",
+                                                                    "description": "Category slug."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "name",
+                                                                "slug"
+                                                            ],
+                                                            "additionalProperties": false,
+                                                            "description": "Technology category metadata."
+                                                        }
+                                                    },
+                                                    "confirmedAt": {
+                                                        "description": "Confirmation instant in UTC after validated unit conversion, when supplied.",
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                    },
+                                                    "trafficRank": {
+                                                        "description": "Provider traffic-rank value, when supplied.",
+                                                        "type": "integer",
+                                                        "minimum": -9007199254740991,
+                                                        "maximum": 9007199254740991
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "slug"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A detected website technology."
+                                            }
+                                        },
+                                        "trafficLevel": {
+                                            "description": "Relative monthly hostname traffic level, when available.",
+                                            "type": "string",
+                                            "enum": [
+                                                "Very low",
+                                                "Low",
+                                                "Medium",
+                                                "High",
+                                                "Very high"
+                                            ]
+                                        },
+                                        "technologySpend": {
+                                            "description": "Relative estimated technology spend, when requested and available.",
+                                            "type": "string",
+                                            "enum": [
+                                                "Very low",
+                                                "Low",
+                                                "Medium",
+                                                "High",
+                                                "Very high"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "url",
+                                        "status"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-returned website result."
+                                },
+                                "description": "Provider-returned URL-correlated results, not fabricated successes for every input."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete, pending, or failed website intelligence results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–10 website URLs. Use `get-website-intelligence` for one URL when you need recursive:false. Batch lookup is recursive and may return pending crawl markers; it does not wait for crawls. Inspect pending URLs later. Do not blindly replay live scans after an unclear outcome."
+            },
+            "filePath": "./wappalyzer/tools/batch-get-website-intelligence.ts",
+            "version": "1b686e558dfde3f0d13a426232be13d0b83d1ec0a32e885cdc16904cffc1b28e",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/batch-get-website-intelligence/1b686e558dfde3f0d13a426232be13d0b83d1ec0a32e885cdc16904cffc1b28e.cjs",
+                "ts": "templates-zero/wappalyzer/tools/batch-get-website-intelligence/1b686e558dfde3f0d13a426232be13d0b83d1ec0a32e885cdc16904cffc1b28e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-list-subdomains",
+            "integrationId": "wappalyzer",
+            "description": "Get one native discovery page for up to ten domains, preserving each domain's separate continuation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_batchlistsubdomains",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_batchlistsubdomains",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_batchlistsubdomains": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Requested maximum subdomains, using the provider's native batch limit semantics; default 10.",
+                                "type": "integer",
+                                "minimum": 10,
+                                "maximum": 100,
+                                "multipleOf": 10
+                            },
+                            "domains": {
+                                "minItems": 1,
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "pattern": "^[^\\s/,]+$",
+                                    "description": "Domain name to discover subdomains for."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct domain names for one native initial-page request."
+                            }
+                        },
+                        "required": [
+                            "domains"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One to ten distinct domains and an optional shared native page limit."
+                    },
+                    "FunctionOutput_wappalyzer_batchlistsubdomains": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "hostname": {
+                                                        "type": "string",
+                                                        "description": "Hostname from the upstream subdomains map key."
+                                                    },
+                                                    "createdAt": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                        "description": "Provider record creation instant in UTC."
+                                                    },
+                                                    "updatedAt": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                                        "description": "Provider record update instant in UTC."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "hostname",
+                                                    "createdAt",
+                                                    "updatedAt"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A discovered website-serving subdomain and its record timestamps."
+                                            },
+                                            "description": "Discovered website-serving subdomains returned for this domain in the native page."
+                                        },
+                                        "domain": {
+                                            "type": "string",
+                                            "description": "Parent domain for this group."
+                                        },
+                                        "nextCursor": {
+                                            "description": "Opaque continuation for this domain, usable with list-subdomains and the same limit; omitted without provider continuation.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "items",
+                                        "domain"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-returned domain group with an independent continuation."
+                                },
+                                "description": "Provider-returned domain groups; correlate by domain, not array position."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One native discovery page, grouped by the domains returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for 1–10 domains. Each result has its own nextCursor; continue a particular domain with `list-subdomains`, passing that token and the same limit. Use `list-subdomains` directly for one domain or an existing continuation. Limit defaults to 10, with multiples of ten from 10 to 100."
+            },
+            "filePath": "./wappalyzer/tools/batch-list-subdomains.ts",
+            "version": "410a32912bb731bde6f6748fdc62da8264d981782382c4de00857df86ec9c18d",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/batch-list-subdomains/410a32912bb731bde6f6748fdc62da8264d981782382c4de00857df86ec9c18d.cjs",
+                "ts": "templates-zero/wappalyzer/tools/batch-list-subdomains/410a32912bb731bde6f6748fdc62da8264d981782382c4de00857df86ec9c18d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-lead-list",
+            "integrationId": "wappalyzer",
+            "description": "Start calculating a lead list using technology, geography, business, verification-age, and exclusion criteria. Return its ID without waiting for calculation or purchasing the result.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_createleadlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_createleadlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_createleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "sets": {
+                                "description": "Export field sets to include; signals adds technologySpend and trafficLevel.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Export field set."
+                                }
+                            },
+                            "tlds": {
+                                "description": "Top-level domain selectors.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Top-level domain selector."
+                                }
+                            },
+                            "format": {
+                                "description": "Desired exported row format; omitted uses the provider default.",
+                                "type": "string",
+                                "enum": [
+                                    "json",
+                                    "csv"
+                                ]
+                            },
+                            "maxAge": {
+                                "description": "Oldest verification month, counted in calendar months before the current UTC month; default 2 includes two previous months.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 12,
+                                "default": 2
+                            },
+                            "minAge": {
+                                "description": "Newest verification month, counted in calendar months before the current UTC month; 0 includes the current month.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 11,
+                                "default": 0
+                            },
+                            "subset": {
+                                "description": "Optional provider subset selector; retain a known Wappalyzer value without interpreting undocumented scale.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "keywords": {
+                                "description": "Keyword criteria as ordinary text.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Keyword criterion as ordinary text."
+                                }
+                            },
+                            "rootPath": {
+                                "description": "Apply the provider's root-path selection option; omitted uses its default.",
+                                "type": "boolean"
+                            },
+                            "countries": {
+                                "description": "Provider country selectors.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider country selector."
+                                }
+                            },
+                            "languages": {
+                                "description": "Provider language selectors.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider language selector."
+                                }
+                            },
+                            "baseListId": {
+                                "description": "Existing lead list used as the provider's base-list selection source.",
+                                "type": "string",
+                                "pattern": "^lst_"
+                            },
+                            "categories": {
+                                "description": "Provider technology-category selectors.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider technology-category selector."
+                                }
+                            },
+                            "industries": {
+                                "description": "Provider industry selectors.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider industry selector."
+                                }
+                            },
+                            "subdomains": {
+                                "description": "Provider treatment of subdomains: include them, exclude them, or merge them.",
+                                "type": "string",
+                                "enum": [
+                                    "include",
+                                    "exclude",
+                                    "merge"
+                                ]
+                            },
+                            "subsetSlice": {
+                                "description": "Optional provider subset slice, from 0 through 4.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 4
+                            },
+                            "companySizes": {
+                                "description": "Provider company-size selectors; values retain provider-defined meaning rather than an assumed employee-count unit.",
+                                "type": "array",
+                                "items": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991,
+                                    "description": "Provider-defined company-size selector."
+                                }
+                            },
+                            "requiredSets": {
+                                "description": "Provider result field sets required for a website to qualify.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Required provider result field set."
+                                }
+                            },
+                            "technologies": {
+                                "description": "Technology criteria identified by provider slugs; obtain slugs from website intelligence or the user's Wappalyzer criteria.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "slug": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Provider technology slug, such as wordpress."
+                                        },
+                                        "version": {
+                                            "description": "Optional version criterion; omission leaves the version unspecified.",
+                                            "type": "string"
+                                        },
+                                        "operator": {
+                                            "description": "Comparison to the version criterion, when specified.",
+                                            "type": "string",
+                                            "enum": [
+                                                "=",
+                                                "<=",
+                                                ">="
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "slug"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A technology selection criterion."
+                                }
+                            },
+                            "excludeListId": {
+                                "description": "Existing lead list whose websites should be excluded.",
+                                "type": "string",
+                                "pattern": "^lst_"
+                            },
+                            "excludeNoTraffic": {
+                                "description": "Exclude websites classified by the provider as having no traffic.",
+                                "type": "boolean"
+                            },
+                            "matchTechnologies": {
+                                "description": "Match any technology, all technologies, or exclude matching technologies; omitted uses the provider default.",
+                                "type": "string",
+                                "enum": [
+                                    "or",
+                                    "and",
+                                    "not"
+                                ]
+                            },
+                            "suppressionListId": {
+                                "description": "Ready account suppression list whose immutable domains are excluded before limits and credit calculation.",
+                                "type": "string",
+                                "pattern": "^sup_[a-f0-9]{32}$"
+                            },
+                            "excludeMultilingual": {
+                                "description": "Exclude websites classified by the provider as multilingual.",
+                                "type": "boolean"
+                            },
+                            "matchCountryLanguage": {
+                                "description": "Apply the provider's country/language matching option; omitted uses its default.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Criteria for starting a lead-list calculation without purchasing its results."
+                    },
+                    "FunctionOutput_wappalyzer_createleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New lead-list ID to inspect with get-lead-list."
+                            },
+                            "status": {
+                                "type": "string",
+                                "const": "Calculating",
+                                "description": "The request has started calculation; results are not yet purchased."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created lead list and its initial calculation status."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use to generate a new lead list. Get existing list IDs from `list-lead-lists` and use only a Ready suppression ID from `get-suppression-list`. After creation, check `get-lead-list`; when Ready, use `finalize-lead-list` to spend credits. Calculation is asynchronous and this tool does not wait for it."
+            },
+            "filePath": "./wappalyzer/tools/create-lead-list.ts",
+            "version": "60439ce4f1fd3293ec004c81bbbe5ac020963cf8d0a6972c178a71561d9e3271",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/create-lead-list/60439ce4f1fd3293ec004c81bbbe5ac020963cf8d0a6972c178a71561d9e3271.cjs",
+                "ts": "templates-zero/wappalyzer/tools/create-lead-list/60439ce4f1fd3293ec004c81bbbe5ac020963cf8d0a6972c178a71561d9e3271.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-suppression-list",
+            "integrationId": "wappalyzer",
+            "description": "Create an immutable domain suppression list from domains or website URLs. Return the reusable ID after upload without waiting for asynchronous validation.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_createsuppressionlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_createsuppressionlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_createsuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Optional account label; omission lets the provider use the returned ID.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "entries": {
+                                "minItems": 1,
+                                "maxItems": 250000,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "pattern": "^[^\\r\\n]+$",
+                                    "description": "A domain or HTTP(S) URL without embedded line breaks."
+                                },
+                                "description": "Domains or HTTP(S) URLs to exclude, one entry per array item; no embedded line breaks. At most 250,000 submitted entries and 20 MiB after UTF-8 serialization."
+                            }
+                        },
+                        "required": [
+                            "entries"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Domains or website URLs to upload as one immutable suppression list, with an optional account label."
+                    },
+                    "FunctionOutput_wappalyzer_createsuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Reusable suppression-list identifier; usable in lead-list creation only when Ready."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Label returned by the provider, defaulting to its ID if omitted on creation."
+                            },
+                            "error": {
+                                "description": "Provider validation explanation, including rejected content or storage quota, when supplied.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Pending",
+                                    "Validating",
+                                    "Ready",
+                                    "Invalid",
+                                    "Retired",
+                                    "Deleted"
+                                ],
+                                "description": "Current validation or lifecycle state; upload success does not imply Ready."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant normalized to UTC with integral-second precision."
+                            },
+                            "retiredAt": {
+                                "description": "Retirement instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sizeBytes": {
+                                "description": "Validated snapshot size in bytes, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "domainCount": {
+                                "description": "Validated unique-domain count, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 250000
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Initial suppression-list metadata after upload; validation may still be pending."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use to exclude known websites from future lead lists. Supply ordinary domains or HTTP(S) URLs, not encoded file content. This uses no credits, but every upload creates a new ID and counts toward shared account limits. Check `get-suppression-list` until Ready before using the ID in `create-lead-list`. After an unclear outcome, use `list-suppression-lists` before uploading again."
+            },
+            "filePath": "./wappalyzer/tools/create-suppression-list.ts",
+            "version": "10ee5be52019839740ecaf32e8cb0324fce3f265e1494aa651f77f139bf7eaa9",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/create-suppression-list/10ee5be52019839740ecaf32e8cb0324fce3f265e1494aa651f77f139bf7eaa9.cjs",
+                "ts": "templates-zero/wappalyzer/tools/create-suppression-list/10ee5be52019839740ecaf32e8cb0324fce3f265e1494aa651f77f139bf7eaa9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-lead-list",
+            "integrationId": "wappalyzer",
+            "description": "Delete an account lead list. No restore operation is available in this integration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_deleteleadlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_deleteleadlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_deleteleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "leadListId": {
+                                "type": "string",
+                                "pattern": "^lst_",
+                                "description": "Opaque account lead-list ID to delete."
+                            }
+                        },
+                        "required": [
+                            "leadListId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the account lead list to delete."
+                    },
+                    "FunctionOutput_wappalyzer_deleteleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Lead-list ID whose deletion request succeeded."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Correlation identifier for the accepted lead-list deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the ID from `list-lead-lists` and inspect it with `get-lead-list` if needed. This removes the lead list, not the websites it describes. Deleting a list can release a reference to a retired suppression snapshot, but storage cleanup is delayed. Do not assume deletion is recoverable."
+            },
+            "filePath": "./wappalyzer/tools/delete-lead-list.ts",
+            "version": "b206f3a32817396784812856b5fff7d6eafda8af4382844d54c1e2ec9405ce9c",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/delete-lead-list/b206f3a32817396784812856b5fff7d6eafda8af4382844d54c1e2ec9405ce9c.cjs",
+                "ts": "templates-zero/wappalyzer/tools/delete-lead-list/b206f3a32817396784812856b5fff7d6eafda8af4382844d54c1e2ec9405ce9c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "finalize-lead-list",
+            "integrationId": "wappalyzer",
+            "description": "Spend the specified credits to finalize a Ready lead list and obtain its export link when available.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_finalizeleadlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_finalizeleadlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_finalizeleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "leadListId": {
+                                "type": "string",
+                                "pattern": "^lst_",
+                                "description": "Ready lead-list ID to finalize."
+                            },
+                            "spendCredits": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Credit amount to submit for finalization, normally the list's reported totalCredits; this is a financial parameter, not a confirmation gate."
+                            }
+                        },
+                        "required": [
+                            "leadListId",
+                            "spendCredits"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The Ready lead list and the exact credit amount to spend on finalization."
+                    },
+                    "FunctionOutput_wappalyzer_finalizeleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Finalized lead-list identifier."
+                            },
+                            "status": {
+                                "type": "string",
+                                "const": "Complete",
+                                "description": "Provider reports the lead list as Complete."
+                            },
+                            "downloadUrl": {
+                                "description": "Export download link when supplied by the provider; omission does not imply finalization failed.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The completed lead list and its export link when provided, without downloading the export."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "First use `get-lead-list` to check Ready status and totalCredits, and `get-credit-balance` if needed. Finalizing spends credits. Supply the intended credit amount, not a confirmation flag. If the outcome is unclear, inspect the same list before retrying. This tool does not download the export."
+            },
+            "filePath": "./wappalyzer/tools/finalize-lead-list.ts",
+            "version": "29558faff22f267158fd7ac0dc8ca4d3ac07aa137c5a581c057328508b05117e",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/finalize-lead-list/29558faff22f267158fd7ac0dc8ca4d3ac07aa137c5a581c057328508b05117e.cjs",
+                "ts": "templates-zero/wappalyzer/tools/finalize-lead-list/29558faff22f267158fd7ac0dc8ca4d3ac07aa137c5a581c057328508b05117e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-credit-balance",
+            "integrationId": "wappalyzer",
+            "description": "Get the current credit balance for the connected account.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_getcreditbalance",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_getcreditbalance",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_getcreditbalance": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input is required to read the connected account credit balance."
+                    },
+                    "FunctionOutput_wappalyzer_getcreditbalance": {
+                        "type": "object",
+                        "properties": {
+                            "credits": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Current account credit balance, in credits."
+                            }
+                        },
+                        "required": [
+                            "credits"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The current credit balance for the connected account."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use before credit-consuming tasks to check the available balance. A balance is a point-in-time value, not a reservation."
+            },
+            "filePath": "./wappalyzer/tools/get-credit-balance.ts",
+            "version": "c65da71eedbd0f194a4398367871b300f3fc4e4af114bc172464d11c440b5180",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/get-credit-balance/c65da71eedbd0f194a4398367871b300f3fc4e4af114bc172464d11c440b5180.cjs",
+                "ts": "templates-zero/wappalyzer/tools/get-credit-balance/c65da71eedbd0f194a4398367871b300f3fc4e4af114bc172464d11c440b5180.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-lead-list",
+            "integrationId": "wappalyzer",
+            "description": "Get one lead list's status, criteria, estimated credits, counts, and available sample or export links.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_getleadlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_getleadlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_getleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "leadListId": {
+                                "type": "string",
+                                "pattern": "^lst_",
+                                "description": "Opaque lead-list ID from creation or account listing."
+                            }
+                        },
+                        "required": [
+                            "leadListId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one lead list to inspect without purchasing or downloading rows."
+                    },
+                    "FunctionOutput_wappalyzer_getleadlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this lead list."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Calculating",
+                                    "Ready",
+                                    "Failed",
+                                    "Insufficient",
+                                    "Complete"
+                                ],
+                                "description": "Current provider calculation or completion state."
+                            },
+                            "criteria": {
+                                "type": "object",
+                                "properties": {
+                                    "sets": {
+                                        "description": "Included export field sets; signals adds traffic and technology-spend columns.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "tlds": {
+                                        "description": "Top-level domain selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "maxAge": {
+                                        "description": "Oldest verification calendar month, in months before the current UTC month.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "minAge": {
+                                        "description": "Newest verification calendar month, in months before the current UTC month.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "subset": {
+                                        "description": "Provider subset selector retained without interpreting its undocumented scale.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "keywords": {
+                                        "description": "Keyword selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "countries": {
+                                        "description": "Provider country identifiers used for selection.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "languages": {
+                                        "description": "Provider language identifiers used for selection.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "industries": {
+                                        "description": "Provider industry identifiers used for selection.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "subsetSlice": {
+                                        "description": "Provider slice selector within the subset.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "companySizes": {
+                                        "description": "Provider company-size selectors preserved without assigning undocumented units.",
+                                        "type": "array",
+                                        "items": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "requiredSets": {
+                                        "description": "Provider field-set requirements used for selection.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "technologies": {
+                                        "description": "Technology selection criteria.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Technology display name, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "slug": {
+                                                    "description": "Technology criterion slug.",
+                                                    "type": "string"
+                                                },
+                                                "version": {
+                                                    "description": "Version criterion; preserves returned null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "operator": {
+                                                    "description": "Version comparison operator.",
+                                                    "type": "string"
+                                                },
+                                                "categories": {
+                                                    "description": "Technology category metadata, when supplied.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "description": "Opaque category ID represented as text, when supplied.",
+                                                                "type": "string"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Category display name."
+                                                            },
+                                                            "slug": {
+                                                                "type": "string",
+                                                                "description": "Category slug."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name",
+                                                            "slug"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "excludeNoTraffic": {
+                                        "description": "Whether the list excludes sites classified by the provider as having no traffic.",
+                                        "type": "boolean"
+                                    },
+                                    "matchTechnologies": {
+                                        "description": "Logical matching mode for technology criteria.",
+                                        "type": "string",
+                                        "enum": [
+                                            "or",
+                                            "and",
+                                            "not"
+                                        ]
+                                    },
+                                    "suppressionListId": {
+                                        "description": "Referenced immutable suppression list, or null if none is associated.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "excludeMultilingual": {
+                                        "description": "Whether the list excludes sites classified as multilingual.",
+                                        "type": "boolean"
+                                    },
+                                    "matchCountryLanguage": {
+                                        "description": "Stored country/language matching option.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Known stored selection criteria; absent upstream properties stay absent."
+                            },
+                            "createdAt": {
+                                "description": "Creation instant normalized to UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "rowCounts": {
+                                "description": "Provider-named row-count dimensions from the detail response; keys are preserved as opaque dimension names.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "sampleUrl": {
+                                "description": "Provider sample download link, when supplied.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "downloadUrl": {
+                                "description": "Export download link, when supplied; null means no link is currently available.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "setRowCounts": {
+                                "description": "Counts keyed by provider result field set, when supplied.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                }
+                            },
+                            "totalCredits": {
+                                "description": "Provider-reported total credits for this list, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Lead-list state, stored criteria, credit estimate, counts, and available links without exported rows."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain an ID from `create-lead-list` or `list-lead-lists`. Use this to check calculation progress without waiting for completion in one invocation. Only a Ready list should be passed to `finalize-lead-list`; Complete lists may have an export link. This tool does not download exported rows."
+            },
+            "filePath": "./wappalyzer/tools/get-lead-list.ts",
+            "version": "dcee137ee15d4b75856f7180b19a453f276f31330bee64143d5b034ab38bf95c",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/get-lead-list/dcee137ee15d4b75856f7180b19a453f276f31330bee64143d5b034ab38bf95c.cjs",
+                "ts": "templates-zero/wappalyzer/tools/get-lead-list/dcee137ee15d4b75856f7180b19a453f276f31330bee64143d5b034ab38bf95c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-suppression-list",
+            "integrationId": "wappalyzer",
+            "description": "Get a suppression list's validation state, lifecycle metadata, validated size and domain count.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_getsuppressionlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_getsuppressionlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_getsuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "suppressionListId": {
+                                "type": "string",
+                                "pattern": "^sup_[a-f0-9]{32}$",
+                                "description": "Account suppression-list identifier to inspect."
+                            }
+                        },
+                        "required": [
+                            "suppressionListId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the account suppression list whose metadata should be returned."
+                    },
+                    "FunctionOutput_wappalyzer_getsuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque suppression-list identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Account label for the suppression list."
+                            },
+                            "error": {
+                                "description": "Provider validation failure explanation, when supplied.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Pending",
+                                    "Validating",
+                                    "Ready",
+                                    "Invalid",
+                                    "Retired",
+                                    "Deleted"
+                                ],
+                                "description": "Current validation or lifecycle state; only Ready is usable for new lead lists."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Creation instant in UTC at integral-second precision."
+                            },
+                            "retiredAt": {
+                                "description": "Retirement instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sizeBytes": {
+                                "description": "Validated snapshot size in bytes, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "domainCount": {
+                                "description": "Validated unique-domain count, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 250000
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Suppression-list validation and lifecycle metadata, without uploaded domain content."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an ID from `create-suppression-list` or `list-suppression-lists`. While Pending or Validating, inspect again no more frequently than every two seconds. Use the ID in `create-lead-list` only when Ready. Invalid includes a reason; this tool returns metadata, not the uploaded domain content."
+            },
+            "filePath": "./wappalyzer/tools/get-suppression-list.ts",
+            "version": "bfbf4f024d67cfc7adb0013e8bd02427a8c343d60d48b112503eeb51a6fec64c",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/get-suppression-list/bfbf4f024d67cfc7adb0013e8bd02427a8c343d60d48b112503eeb51a6fec64c.cjs",
+                "ts": "templates-zero/wappalyzer/tools/get-suppression-list/bfbf4f024d67cfc7adb0013e8bd02427a8c343d60d48b112503eeb51a6fec64c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-website-intelligence",
+            "integrationId": "wappalyzer",
+            "description": "Get detected technologies and optional traffic/spend signals for one website, or return a pending crawl state without waiting for the crawl.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_getwebsiteintelligence",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_getwebsiteintelligence",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_getwebsiteintelligence": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "pattern": "^https?:\\/\\/",
+                                "format": "uri",
+                                "description": "HTTP(S) website URL to inspect."
+                            },
+                            "live": {
+                                "default": false,
+                                "description": "Allow real-time scanning when needed rather than relying only on cached results.",
+                                "type": "boolean"
+                            },
+                            "maxAge": {
+                                "default": 2,
+                                "description": "Oldest verification calendar month, counted before the current UTC month.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "minAge": {
+                                "default": 0,
+                                "description": "Newest verification calendar month, counted before the current UTC month; zero includes this month.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "denoise": {
+                                "default": true,
+                                "description": "Exclude low-confidence detections.",
+                                "type": "boolean"
+                            },
+                            "recursive": {
+                                "default": true,
+                                "description": "Follow internal links for coverage; a required recursive crawl returns pending instead of blocking.",
+                                "type": "boolean"
+                            },
+                            "includeSignals": {
+                                "default": false,
+                                "description": "Request relative technology-spend and monthly traffic levels when available.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Lookup options for one HTTP(S) website, with optional live scanning and intelligence signals."
+                    },
+                    "FunctionOutput_wappalyzer_getwebsiteintelligence": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Website URL associated with this result, as returned by the provider."
+                            },
+                            "errors": {
+                                "description": "Provider per-website error explanations when status is failed; not invented item status codes.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "complete",
+                                    "pending",
+                                    "failed"
+                                ],
+                                "description": "Complete intelligence, a pending crawl, or a per-website failure; pending technology data may be partial."
+                            },
+                            "technologies": {
+                                "description": "Detected technologies when supplied; an empty array means no reported detections, not failure.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cpe": {
+                                            "description": "Common Platform Enumeration identifier, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Technology display name."
+                                        },
+                                        "slug": {
+                                            "type": "string",
+                                            "description": "Technology identifier slug usable in lead-list criteria."
+                                        },
+                                        "versions": {
+                                            "description": "Detected versions, when supplied; an empty array is preserved.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "categories": {
+                                            "description": "Technology categories, when supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "Opaque provider category ID, represented losslessly as text when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Category display name."
+                                                    },
+                                                    "slug": {
+                                                        "type": "string",
+                                                        "description": "Category identifier slug."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name",
+                                                    "slug"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A category assigned to the detected technology."
+                                            }
+                                        },
+                                        "confirmedAt": {
+                                            "description": "Confirmation instant normalized to UTC, when supplied and its upstream units are validated.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "trafficRank": {
+                                            "description": "Provider traffic-rank value on this detection, when supplied; no conversion or invented ranking population.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "slug"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One detected technology and its supplied verification details."
+                                }
+                            },
+                            "trafficLevel": {
+                                "description": "Relative monthly hostname traffic level, when requested and current data is available.",
+                                "type": "string",
+                                "enum": [
+                                    "Very low",
+                                    "Low",
+                                    "Medium",
+                                    "High",
+                                    "Very high"
+                                ]
+                            },
+                            "technologySpend": {
+                                "description": "Relative estimated technology spend, when requested and available; not a currency amount.",
+                                "type": "string",
+                                "enum": [
+                                    "Very low",
+                                    "Low",
+                                    "Medium",
+                                    "High",
+                                    "Very high"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "url",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Complete website intelligence, a pending crawl with any partial data, or a per-website failure."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for one known website URL; use `batch-get-website-intelligence` for up to ten URLs. Recursive lookups can start an asynchronous crawl and return pending. Inspect again later with the same URL rather than expecting this call to wait. Live scans may consume credits and must not be blindly replayed after an unclear result. No notification subscription is created."
+            },
+            "filePath": "./wappalyzer/tools/get-website-intelligence.ts",
+            "version": "bc1f3744cb63d1f25a03f1b1f43818b52d43625fd82901baf4538ca6ea573f2d",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/get-website-intelligence/bc1f3744cb63d1f25a03f1b1f43818b52d43625fd82901baf4538ca6ea573f2d.cjs",
+                "ts": "templates-zero/wappalyzer/tools/get-website-intelligence/bc1f3744cb63d1f25a03f1b1f43818b52d43625fd82901baf4538ca6ea573f2d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-lead-lists",
+            "integrationId": "wappalyzer",
+            "description": "List the connected account's lead lists and their calculation or completion status.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_listleadlists",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_listleadlists",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_listleadlists": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are required to list account lead lists."
+                    },
+                    "FunctionOutput_wappalyzer_listleadlists": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque account lead-list identifier."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Calculating",
+                                                "Ready",
+                                                "Failed",
+                                                "Insufficient",
+                                                "Complete"
+                                            ],
+                                            "description": "Provider calculation or completion state, preserved without collapsing failures."
+                                        },
+                                        "keywords": {
+                                            "description": "Keyword criteria, when supplied; an empty array is preserved.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "rowCount": {
+                                            "description": "Summary row count reported by the collection endpoint, when supplied.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant in UTC, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "technologies": {
+                                            "description": "Technology criteria associated with this list, when supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Display name, when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "slug": {
+                                                        "description": "Technology slug used in list criteria.",
+                                                        "type": "string"
+                                                    },
+                                                    "version": {
+                                                        "description": "Version criterion; null is preserved when returned.",
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "operator": {
+                                                        "description": "Version comparison operator, when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "categories": {
+                                                        "description": "Categories associated with the technology, when supplied.",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "description": "Opaque category identifier converted losslessly to text, when supplied.",
+                                                                    "type": "string"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "description": "Category display name."
+                                                                },
+                                                                "slug": {
+                                                                    "type": "string",
+                                                                    "description": "Provider category slug."
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "name",
+                                                                "slug"
+                                                            ],
+                                                            "additionalProperties": false
+                                                        }
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "totalCredits": {
+                                            "description": "Provider-reported total credit cost, when supplied; not a reservation.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "status"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Lead-list summaries returned by the account collection request; empty when none exist."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The connected account lead-list summaries and their calculation or completion states."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find lead-list IDs and estimated credits. Use `get-lead-list` for detailed criteria, sample and export links, and per-set counts. This returns the provider's unpaginated collection in one call."
+            },
+            "filePath": "./wappalyzer/tools/list-lead-lists.ts",
+            "version": "60163856b8bf118b3344f7578eb2dd9fd1b28406c2f3865d7ae8ac1088b739fa",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/list-lead-lists/60163856b8bf118b3344f7578eb2dd9fd1b28406c2f3865d7ae8ac1088b739fa.cjs",
+                "ts": "templates-zero/wappalyzer/tools/list-lead-lists/60163856b8bf118b3344f7578eb2dd9fd1b28406c2f3865d7ae8ac1088b739fa.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-subdomains",
+            "integrationId": "wappalyzer",
+            "description": "List one page of website-serving subdomains discovered for a domain.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_listsubdomains",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_listsubdomains",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_listsubdomains": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "default": 10,
+                                "description": "Requested page maximum; a multiple of ten, from 10 to 100.",
+                                "type": "integer",
+                                "minimum": 10,
+                                "maximum": 100,
+                                "multipleOf": 10
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for this domain and unchanged limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "domain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^\\s/,]+$",
+                                "description": "Domain name to inspect, without scheme, path, whitespace or comma."
+                            }
+                        },
+                        "required": [
+                            "domain"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Domain and optional page size and continuation for subdomain discovery."
+                    },
+                    "FunctionOutput_wappalyzer_listsubdomains": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "hostname": {
+                                            "type": "string",
+                                            "description": "Subdomain hostname taken from the provider's subdomains map key."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Provider record creation instant in UTC; not asserted to be the DNS registration date."
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Provider record update instant in UTC."
+                                        }
+                                    },
+                                    "required": [
+                                        "hostname",
+                                        "createdAt",
+                                        "updatedAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One website-serving subdomain and its provider record timestamps."
+                                },
+                                "description": "Website-serving subdomains on this provider page."
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "Parent domain associated with the provider result."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page; omitted when the provider supplies no moreAfter value.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "domain"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of discovered subdomains with an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for one domain name without a URL scheme. For several domains use `batch-list-subdomains`. Pass nextCursor back as cursor with the same domain and limit. The limit defaults to 10 and must be a multiple of 10 from 10 to 100. This discovers website-serving subdomains, not every DNS record."
+            },
+            "filePath": "./wappalyzer/tools/list-subdomains.ts",
+            "version": "7859e808f1380cfa123cc68ac6266c6dc22a160f42cc529196887d2157ca8c92",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/list-subdomains/7859e808f1380cfa123cc68ac6266c6dc22a160f42cc529196887d2157ca8c92.cjs",
+                "ts": "templates-zero/wappalyzer/tools/list-subdomains/7859e808f1380cfa123cc68ac6266c6dc22a160f42cc529196887d2157ca8c92.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-suppression-lists",
+            "integrationId": "wappalyzer",
+            "description": "List one page of account suppression lists together with storage allocation and actionable capacity limits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_listsuppressionlists",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_listsuppressionlists",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_listsuppressionlists": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque nextCursor from this account's preceding suppression-list page; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of account suppression lists."
+                    },
+                    "FunctionOutput_wappalyzer_listsuppressionlists": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque suppression-list identifier."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Account label for this suppression list."
+                                        },
+                                        "error": {
+                                            "description": "Provider validation explanation, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Pending",
+                                                "Validating",
+                                                "Ready",
+                                                "Invalid",
+                                                "Retired",
+                                                "Deleted"
+                                            ],
+                                            "description": "Current validation or lifecycle state."
+                                        },
+                                        "createdAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Creation instant normalized to UTC at integral-second precision."
+                                        },
+                                        "retiredAt": {
+                                            "description": "Retirement instant in UTC, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "sizeBytes": {
+                                            "description": "Validated snapshot size in bytes, when supplied.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "domainCount": {
+                                            "description": "Validated unique-domain count, when supplied.",
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 250000
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "status",
+                                        "createdAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Suppression-list validation and lifecycle metadata."
+                                },
+                                "description": "Suppression metadata records in this provider page."
+                            },
+                            "limits": {
+                                "type": "object",
+                                "properties": {
+                                    "domains": {
+                                        "description": "Maximum unique validated domains in one suppression list.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "fileBytes": {
+                                        "description": "Maximum uncompressed upload size in bytes.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "accountBytes": {
+                                        "description": "Maximum validated account storage in bytes, including retained snapshots.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "uploadsPerDay": {
+                                        "description": "Maximum uploads shared across account keys per UTC day.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "pendingUploads": {
+                                        "description": "Maximum simultaneous uploads for the account.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Provider-reported actionable storage and upload capacity limits."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when upstream nextCursor is null.",
+                                "type": "string"
+                            },
+                            "allocatedBytes": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Validated file storage in bytes, including immutable snapshots retained for existing lead lists."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "limits",
+                            "allocatedBytes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One suppression-list page with account storage allocation and actionable capacity limits."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find suppression IDs, inspect existing uploads after an unclear result, or check storage allocation. Pass nextCursor back as cursor for the next page; each page has at most 100 records. Use `get-suppression-list` for one ID and `retire-suppression-list` to prevent future use. Retiring does not necessarily reclaim storage immediately."
+            },
+            "filePath": "./wappalyzer/tools/list-suppression-lists.ts",
+            "version": "fc592b8560cae0d867aec60d5fbe38b96948f60efcbc968f42d4e21ddf752b10",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/list-suppression-lists/fc592b8560cae0d867aec60d5fbe38b96948f60efcbc968f42d4e21ddf752b10.cjs",
+                "ts": "templates-zero/wappalyzer/tools/list-suppression-lists/fc592b8560cae0d867aec60d5fbe38b96948f60efcbc968f42d4e21ddf752b10.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "retire-suppression-list",
+            "integrationId": "wappalyzer",
+            "description": "Prevent a suppression ID from being used for new lead lists and schedule unreferenced snapshot data for deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_retiresuppressionlist",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_retiresuppressionlist",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_retiresuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "suppressionListId": {
+                                "type": "string",
+                                "pattern": "^sup_[a-f0-9]{32}$",
+                                "description": "Account suppression-list ID to retire from future use."
+                            }
+                        },
+                        "required": [
+                            "suppressionListId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select the account suppression list to retire."
+                    },
+                    "FunctionOutput_wappalyzer_retiresuppressionlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Suppression-list identifier whose retirement was requested."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Account label for the suppression list."
+                            },
+                            "error": {
+                                "description": "Provider validation explanation, when supplied.",
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "Pending",
+                                    "Validating",
+                                    "Ready",
+                                    "Invalid",
+                                    "Retired",
+                                    "Deleted"
+                                ],
+                                "description": "Provider-reported lifecycle state after the request; no immediate physical deletion is implied."
+                            },
+                            "createdAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Original creation instant in UTC at integral-second precision."
+                            },
+                            "retiredAt": {
+                                "description": "Retirement instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sizeBytes": {
+                                "description": "Validated snapshot bytes, when supplied; these may remain allocated.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "domainCount": {
+                                "description": "Validated unique-domain count, when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 250000
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "createdAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Provider metadata after retirement was requested, without implying storage reclamation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "true",
+                "instructions": "Get an ID from `list-suppression-lists`. Retiring prevents future use but preserves snapshots needed by existing lead lists and repeat jobs. Cleanup waits at least 24 hours and referenced snapshots still count against storage. Use `delete-lead-list` separately if you intend to remove a referencing lead list. There is no restore tool."
+            },
+            "filePath": "./wappalyzer/tools/retire-suppression-list.ts",
+            "version": "d7070657121c62fbb18cf3d644db3f1e07809da1558729c495190ccfbb6c4a25",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/retire-suppression-list/d7070657121c62fbb18cf3d644db3f1e07809da1558729c495190ccfbb6c4a25.cjs",
+                "ts": "templates-zero/wappalyzer/tools/retire-suppression-list/d7070657121c62fbb18cf3d644db3f1e07809da1558729c495190ccfbb6c4a25.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "verify-email-address",
+            "integrationId": "wappalyzer",
+            "description": "Check an email address and return the provider's reachability assessment and individual verification signals.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_wappalyzer_verifyemailaddress",
+            "output_schema_ref": "#/definitions/FunctionOutput_wappalyzer_verifyemailaddress",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_wappalyzer_verifyemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address to verify; local-part case and supplied characters are preserved."
+                            }
+                        },
+                        "required": [
+                            "email"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One email address to verify."
+                    },
+                    "FunctionOutput_wappalyzer_verifyemailaddress": {
+                        "type": "object",
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Address verified, as returned by the provider."
+                            },
+                            "domain": {
+                                "type": "string",
+                                "description": "Email domain identified by the provider."
+                            },
+                            "mxValid": {
+                                "type": "boolean",
+                                "description": "Provider's mail-exchanger validity check."
+                            },
+                            "catchAll": {
+                                "type": "boolean",
+                                "description": "Whether the domain is reported to accept arbitrary recipient addresses."
+                            },
+                            "disabled": {
+                                "type": "boolean",
+                                "description": "Whether the provider reports the mailbox disabled."
+                            },
+                            "inboxFull": {
+                                "type": "boolean",
+                                "description": "Whether the provider reports a full inbox."
+                            },
+                            "reachable": {
+                                "type": "string",
+                                "enum": [
+                                    "safe",
+                                    "risky",
+                                    "invalid",
+                                    "unknown"
+                                ],
+                                "description": "Provider reachability classification; unknown is not converted to invalid."
+                            },
+                            "connection": {
+                                "type": "boolean",
+                                "description": "Provider's mail-server connection check result."
+                            },
+                            "disposable": {
+                                "type": "boolean",
+                                "description": "Whether the provider identifies a disposable email service."
+                            },
+                            "deliverable": {
+                                "type": "boolean",
+                                "description": "Provider's current deliverability assessment, not a message-delivery guarantee."
+                            },
+                            "roleAccount": {
+                                "type": "boolean",
+                                "description": "Whether the address is classified as a role account rather than an individual mailbox."
+                            },
+                            "syntaxValid": {
+                                "type": "boolean",
+                                "description": "Provider's syntax-validity assessment for the address."
+                            }
+                        },
+                        "required": [
+                            "email",
+                            "domain",
+                            "mxValid",
+                            "catchAll",
+                            "disabled",
+                            "inboxFull",
+                            "reachable",
+                            "connection",
+                            "disposable",
+                            "deliverable",
+                            "roleAccount",
+                            "syntaxValid"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current provider reachability assessment and individual verification signals."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use before relying on an email address. A safe or deliverable assessment is not a guarantee of future delivery. This tool verifies one address and does not send a message. Treat risky, invalid and unknown as distinct results rather than errors."
+            },
+            "filePath": "./wappalyzer/tools/verify-email-address.ts",
+            "version": "3c5e63aa09fc4a0e347d8071ba308bd917d6e1ba010bb0899e43fd9a7aeb8bc0",
+            "location": {
+                "js": "templates-zero/wappalyzer/tools/verify-email-address/3c5e63aa09fc4a0e347d8071ba308bd917d6e1ba010bb0899e43fd9a7aeb8bc0.cjs",
+                "ts": "templates-zero/wappalyzer/tools/verify-email-address/3c5e63aa09fc4a0e347d8071ba308bd917d6e1ba010bb0899e43fd9a7aeb8bc0.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

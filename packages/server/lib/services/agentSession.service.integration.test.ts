@@ -9,7 +9,6 @@ import { seeders } from '@nangohq/shared';
 import { Err } from '@nangohq/utils';
 
 import {
-    createAgentSession,
     createAgentSessionToken,
     endAgentSession,
     expireAgentSessions,
@@ -20,6 +19,7 @@ import {
     listExpiredAgentSessions,
     terminateAgentSession
 } from './agentSession.service.js';
+import * as agentSessionCreationService from './agentSessionCreation.service.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type {
@@ -300,7 +300,7 @@ describe('agentSession service', () => {
         } as unknown as LogContextOrigin);
         vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Err(new Error('keystore failed')) as any);
 
-        const result = await createAgentSession({
+        const result = await agentSessionCreationService.createAgentSession({
             account,
             environment,
             plan: null,

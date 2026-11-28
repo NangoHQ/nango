@@ -1,0 +1,3123 @@
+{
+    "providerConfigKey": "nexthink",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make records selected by a saved NQL API query available as a dataset. Configuration identifies the query and a stable, unique identifier column so the dataset can represent devices, users, packages, executions or another query-defined record collection.",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_nexthink_syncnqlrecords",
+            "name": "sync-nql-records",
+            "output": [
+                "NqlRecords"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "NqlRecords",
+                "SyncMetadata_nexthink_syncnqlrecords"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "NqlRecords": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Stable record identifier taken without numeric coercion from the configured identifier column."
+                            },
+                            "data": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "description": "Unmodified JSON value of a selected NQL column."
+                                },
+                                "description": "Selected NQL columns keyed by their exact names. Values retain their JSON meaning, including nulls, empty strings and numeric-looking identifiers."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "data"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One query-selected NQL record with its configured stable identifier and unmodified selected columns."
+                    },
+                    "SyncMetadata_nexthink_syncnqlrecords": {
+                        "type": "object",
+                        "properties": {
+                            "idField": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact selected column name containing a non-null, stable, unique string identifier for each record; identifiers must be unique within this configured dataset."
+                            },
+                            "queryId": {
+                                "type": "string",
+                                "maxLength": 255,
+                                "pattern": "^#[a-z0-9_]{2,255}$",
+                                "description": "Saved NQL API query defining this dataset's records and columns."
+                            },
+                            "parameters": {
+                                "description": "Optional fixed substitution values defining this dataset's selection; omitted means no substitutions.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Fixed substitution value passed unchanged to the saved NQL query."
+                                }
+                            }
+                        },
+                        "required": [
+                            "idField",
+                            "queryId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Saved NQL query, fixed selection parameters and exact identifier column defining this dataset."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make remote-action configurations available as records, including platform support, execution settings, input definitions and output definitions.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-remote-actions",
+            "output": [
+                "RemoteActions"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "RemoteActions"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "RemoteActions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Remote-action NQL ID and record identifier."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Action display name."
+                            },
+                            "uuid": {
+                                "type": "string",
+                                "description": "Opaque internal UUID, distinct from the NQL ID."
+                            },
+                            "origin": {
+                                "description": "Provider-reported content origin, when supplied.",
+                                "type": "string"
+                            },
+                            "purpose": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "DATA_COLLECTION",
+                                        "REMEDIATION"
+                                    ]
+                                },
+                                "description": "Declared action purposes."
+                            },
+                            "targeting": {
+                                "type": "object",
+                                "properties": {
+                                    "apiEnabled": {
+                                        "description": "Whether API execution is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "manualEnabled": {
+                                        "description": "Whether manual execution is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "workflowEnabled": {
+                                        "description": "Whether workflow execution is enabled, when supplied.",
+                                        "type": "boolean"
+                                    },
+                                    "manualAllowMultipleDevices": {
+                                        "description": "Whether manual execution can target multiple devices.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Configured execution entry points."
+                            },
+                            "scriptInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "runAs": {
+                                        "description": "Script security context.",
+                                        "type": "string",
+                                        "enum": [
+                                            "LOCAL_SYSTEM",
+                                            "INTERACTIVE_USER",
+                                            "DELEGATE_TO_SERVICE"
+                                        ]
+                                    },
+                                    "inputs": {
+                                        "description": "Script parameter definitions.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Parameter identifier used for execution."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Parameter display name."
+                                                },
+                                                "options": {
+                                                    "description": "Configured string choices.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "description": {
+                                                    "description": "Parameter explanation, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "usedByMacOs": {
+                                                    "description": "Whether macOS scripts use the parameter.",
+                                                    "type": "boolean"
+                                                },
+                                                "usedByWindows": {
+                                                    "description": "Whether Windows scripts use the parameter.",
+                                                    "type": "boolean"
+                                                },
+                                                "allowCustomValue": {
+                                                    "description": "Whether custom values outside options are allowed.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Remote-action script parameter definition."
+                                        }
+                                    },
+                                    "outputs": {
+                                        "description": "Script output definitions.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Output identifier."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Output display name."
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "description": "Opaque provider output-type label."
+                                                },
+                                                "description": {
+                                                    "description": "Output explanation, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "usedByMacOs": {
+                                                    "description": "Whether macOS scripts produce the output.",
+                                                    "type": "boolean"
+                                                },
+                                                "usedByWindows": {
+                                                    "description": "Whether Windows scripts produce the output.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Remote-action script output definition."
+                                        }
+                                    },
+                                    "hasScriptMacOs": {
+                                        "description": "Whether a macOS script exists.",
+                                        "type": "boolean"
+                                    },
+                                    "timeoutSeconds": {
+                                        "description": "Configured execution timeout in seconds.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "hasScriptWindows": {
+                                        "description": "Whether a Windows script exists.",
+                                        "type": "boolean"
+                                    },
+                                    "executionServiceDelegate": {
+                                        "description": "Configured execution-service delegate, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Script execution settings and interface."
+                            },
+                            "description": {
+                                "description": "Action explanation, when supplied.",
+                                "type": "string"
+                            },
+                            "builtInContentVersion": {
+                                "description": "Built-in content version, when supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "uuid",
+                            "purpose",
+                            "targeting",
+                            "scriptInfo"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Remote-action configuration, supported platforms, execution settings, and script interface."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Make workflow configurations available as records, including activation state, internal identity and the provider's trigger-method and version configuration.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-workflows",
+            "output": [
+                "Workflows"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Workflows"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Workflows": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Workflow NQL ID and dataset record identifier."
+                            },
+                            "uuid": {
+                                "type": "string",
+                                "description": "Internal workflow UUID, distinct from its NQL ID."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Workflow display name."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Workflow explanation; empty text is preserved."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ],
+                                "description": "Configuration activation state."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last configuration update instant normalized to UTC Z, preserving fractional precision."
+                            },
+                            "triggerMethods": {
+                                "description": "Provider trigger-method configuration preserved structurally because its published shape is ambiguous."
+                            },
+                            "versions": {
+                                "description": "Provider version configuration entries preserved structurally and in order.",
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name",
+                            "description",
+                            "status",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workflow configurations including activation state, internal identity, trigger methods and versions."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-schedule-device-deletions",
+            "integrationId": "nexthink",
+            "description": "Schedule asynchronous inventory removal for up to 100 devices and return the ordered per-device scheduling outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_batchscheduledevicedeletions",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_batchscheduledevicedeletions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_batchscheduledevicedeletions": {
+                        "type": "object",
+                        "properties": {
+                            "devices": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deviceUid": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                            "description": "Device UID as reported by the Nexthink Collector."
+                                        },
+                                        "deviceName": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "pattern": "\\S",
+                                            "description": "Nonblank Collector-reported device name paired with this UID."
+                                        }
+                                    },
+                                    "required": [
+                                        "deviceUid",
+                                        "deviceName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Collector-reported identity pair for one device to schedule for inventory removal."
+                                },
+                                "description": "Devices to queue for inventory removal, with a public maximum of 100; supplied order is retained."
+                            }
+                        },
+                        "required": [
+                            "devices"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A single native batch of device inventory removals to schedule."
+                    },
+                    "FunctionOutput_nexthink_batchscheduledevicedeletions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "SCHEDULED",
+                                                "INVALID",
+                                                "FAILED"
+                                            ],
+                                            "description": "SCHEDULED means queued; INVALID means a malformed UID was skipped; FAILED means a downstream scheduling failure. Only SCHEDULED is successful queuing."
+                                        },
+                                        "deviceUid": {
+                                            "type": "string",
+                                            "description": "UID echoed for this submitted device."
+                                        },
+                                        "deviceName": {
+                                            "type": "string",
+                                            "description": "Name echoed for this submitted device."
+                                        }
+                                    },
+                                    "required": [
+                                        "status",
+                                        "deviceUid",
+                                        "deviceName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "The provider scheduling outcome for one submitted device."
+                                },
+                                "description": "Per-device outcomes in request order; no completed-deletion assertion."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ACCEPTED"
+                                ],
+                                "description": "Whole request accepted for scheduling; this does not establish success for every device."
+                            },
+                            "requestId": {
+                                "description": "Provider correlation identifier from x-request-id when available, for support diagnostics.",
+                                "type": "string"
+                            },
+                            "scheduledCount": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Provider-reported number of devices successfully queued, not already deleted."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "status",
+                            "scheduledCount"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted batch scheduling results, not confirmation of completed inventory deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a suitable saved query through `execute-nql-query` to obtain each device's Collector-reported UID and name. Maximum 100 devices per call, or the deployment's smaller configured limit. Use `schedule-device-deletion` for one device. This queues inventory removal, not immediate deletion; reversibility is undocumented. Inspect each status, including FAILED, and retry only after checking whether a prior ambiguous request was applied."
+            },
+            "filePath": "./nexthink/tools/batch-schedule-device-deletions.ts",
+            "version": "608b83c32cc33af508f4e07b2202493ce31112e0e315ae5f70edc2ea8a997a05",
+            "location": {
+                "js": "templates-zero/nexthink/tools/batch-schedule-device-deletions/608b83c32cc33af508f4e07b2202493ce31112e0e315ae5f70edc2ea8a997a05.cjs",
+                "ts": "templates-zero/nexthink/tools/batch-schedule-device-deletions/608b83c32cc33af508f4e07b2202493ce31112e0e315ae5f70edc2ea8a997a05.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-trigger-remote-actions",
+            "integrationId": "nexthink",
+            "description": "Request the same remote action with shared parameters on up to 100 devices. Return the provider's aggregate request ID without inventing per-device execution outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_batchtriggerremoteactions",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_batchtriggerremoteactions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_batchtriggerremoteactions": {
+                        "type": "object",
+                        "properties": {
+                            "parameters": {
+                                "description": "Shared script parameter values keyed by input ID; omitted means an empty map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "description": "Script input ID."
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Shared script parameter value."
+                                }
+                            },
+                            "triggerInfo": {
+                                "description": "Shared audit context for this request.",
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "description": "Reason for triggering these executions.",
+                                        "type": "string",
+                                        "maxLength": 500
+                                    },
+                                    "externalSource": {
+                                        "description": "External application requesting execution.",
+                                        "type": "string"
+                                    },
+                                    "externalReference": {
+                                        "description": "External ticket or incident reference.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "collectorIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Nexthink Collector ID of a target device."
+                                },
+                                "uniqueItems": true,
+                                "description": "Distinct Nexthink Collector IDs, up to 100 per invocation; these are not device inventory UIDs."
+                            },
+                            "remoteActionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the one action to execute on all targets."
+                            },
+                            "expiresInMinutes": {
+                                "description": "Minutes before an offline target's unprocessed execution request expires; omitted uses the provider default.",
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 10080
+                            }
+                        },
+                        "required": [
+                            "collectorIds",
+                            "remoteActionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One remote action and shared parameters to submit for up to 100 distinct Collector IDs."
+                    },
+                    "FunctionOutput_nexthink_batchtriggerremoteactions": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "Aggregate request identifier for the spawned executions; not a per-device success report."
+                            },
+                            "expiresInMinutes": {
+                                "description": "Effective offline expiry in minutes, if returned.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10080
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate submission acknowledgement, without per-device acceptance or execution outcomes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-remote-action` to inspect the action and its parameters. Obtain Collector IDs with `execute-nql-query`. Use `trigger-remote-action` for one device. Maximum 100 devices per call. Submission does not establish device execution; scripts may modify devices, and replay may run them again. Use the returned requestId in a saved NQL execution query to inspect later outcomes."
+            },
+            "filePath": "./nexthink/tools/batch-trigger-remote-actions.ts",
+            "version": "de1033c5a9dd698e3ff5cc233da61448ee7120e56d9d08ab6548a7cd7c32da1e",
+            "location": {
+                "js": "templates-zero/nexthink/tools/batch-trigger-remote-actions/de1033c5a9dd698e3ff5cc233da61448ee7120e56d9d08ab6548a7cd7c32da1e.cjs",
+                "ts": "templates-zero/nexthink/tools/batch-trigger-remote-actions/de1033c5a9dd698e3ff5cc233da61448ee7120e56d9d08ab6548a7cd7c32da1e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-trigger-workflows",
+            "integrationId": "nexthink",
+            "description": "Submit one configured workflow for multiple users and/or devices with shared parameters. Accept up to 100 users and 100 devices and return aggregate request and execution IDs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_batchtriggerworkflows",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_batchtriggerworkflows",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_batchtriggerworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "description": "User target identifiers, up to 100; omitted maps to an empty array.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sid": {
+                                            "description": "User security identifier.",
+                                            "type": "string",
+                                            "pattern": "^S(-\\d+){2,10}$|^0$"
+                                        },
+                                        "uid": {
+                                            "description": "Nexthink global user UID.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "upn": {
+                                            "description": "User principal name in the provider-supported email-like form.",
+                                            "type": "string",
+                                            "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "User target with at least one identifier; multiple identifier fields are preserved."
+                                }
+                            },
+                            "devices": {
+                                "description": "Device target identifiers, up to 100; omitted maps to an empty array. No positional pairing with users is promised.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "uid": {
+                                            "description": "Nexthink global device UID.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        },
+                                        "name": {
+                                            "description": "Device name; ambiguous matches select the most recently active device.",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "collectorId": {
+                                            "description": "Collector UUID mapped to collectorUid, distinct from the inventory UID.",
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "minProperties": 1,
+                                    "description": "Device target with at least one identifier; multiple identifier fields are preserved."
+                                }
+                            },
+                            "parameters": {
+                                "description": "Shared workflow parameter values; omitted sends an empty map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Shared workflow parameter value."
+                                }
+                            },
+                            "workflowId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the one workflow to start for these targets."
+                            }
+                        },
+                        "required": [
+                            "workflowId"
+                        ],
+                        "additionalProperties": false,
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "users"
+                                ],
+                                "properties": {
+                                    "users": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "description": "User target identifiers, up to 100; omitted maps to an empty array."
+                                    }
+                                }
+                            },
+                            {
+                                "required": [
+                                    "devices"
+                                ],
+                                "properties": {
+                                    "devices": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "description": "Device target identifiers, up to 100; omitted maps to an empty array. No positional pairing with users is promised."
+                                    }
+                                }
+                            }
+                        ],
+                        "description": "One workflow and shared parameters for a nonempty batch of up to 100 users and 100 devices."
+                    },
+                    "FunctionOutput_nexthink_batchtriggerworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "Shared request identifier for the spawned workflow executions."
+                            },
+                            "executionIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider-reported workflow execution identifier."
+                                },
+                                "description": "Provider-reported execution identifiers, without invented input correlation, per-target success or completion claims."
+                            }
+                        },
+                        "required": [
+                            "requestId",
+                            "executionIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate identifiers acknowledging workflow submission, not execution completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get an API-triggerable workflow NQL ID and its dependency with `list-workflows` or `get-workflow`. Use `trigger-workflow` for one target, one user-device context, or a targetless workflow. Maximum 100 users and 100 devices per call; supply at least one target. Do not assume positional user/device pairing or per-target completion. Ambiguous external identifiers select the most recently active match. Workflow effects may be destructive and replay may repeat them."
+            },
+            "filePath": "./nexthink/tools/batch-trigger-workflows.ts",
+            "version": "6f5efc6732e4f78c16fd5c1a24cfbc967ca6a9e5df5c4d073dc0c6c171a8d200",
+            "location": {
+                "js": "templates-zero/nexthink/tools/batch-trigger-workflows/6f5efc6732e4f78c16fd5c1a24cfbc967ca6a9e5df5c4d073dc0c6c171a8d200.cjs",
+                "ts": "templates-zero/nexthink/tools/batch-trigger-workflows/6f5efc6732e4f78c16fd5c1a24cfbc967ca6a9e5df5c4d073dc0c6c171a8d200.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-update-inventory-objects",
+            "integrationId": "nexthink",
+            "description": "Apply partial enrichment updates to up to 100 inventory objects in one native request, preserving the provider's aggregate status and object-specific error reports.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_batchupdateinventoryobjects",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_batchupdateinventoryobjects",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_batchupdateinventoryobjects": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Enrichment source/domain label shared by the request, primarily for tracking."
+                            },
+                            "objects": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "target": {
+                                            "type": "object",
+                                            "properties": {
+                                                "field": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "device/device/name",
+                                                        "device/device/uid",
+                                                        "user/user/sid",
+                                                        "user/user/uid",
+                                                        "user/user/upn",
+                                                        "binary/binary/uid",
+                                                        "package/package/uid"
+                                                    ],
+                                                    "description": "Supported identity field selecting this object's resource type."
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "Exact identity value, retained as an opaque string."
+                                                }
+                                            },
+                                            "required": [
+                                                "field",
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One field/value identity for this object; identities must be distinct within the batch."
+                                        },
+                                        "fields": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string",
+                                                "pattern": "^(device\\/device\\/(configuration_tag|virtualization\\/(desktop_broker|desktop_pool|disk_image|environment_name|hostname|hypervisor_name|instance_size|last_update|region|type)|#[^/]+)|user\\/user\\/(ad\\/(city|country_code|department|distinguished_name|email_address|full_name|job_title|last_update|office|organizational_unit|username)|#[^/]+|organization\\/#[^/]+)|binary\\/binary\\/#[^/]+|package\\/package\\/#[^/]+)$",
+                                                "description": "Supported enrichment field path."
+                                            },
+                                            "additionalProperties": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "integer",
+                                                        "minimum": -9007199254740991,
+                                                        "maximum": 9007199254740991
+                                                    }
+                                                ],
+                                                "description": "Literal string or integer enrichment value; null is unsupported."
+                                            },
+                                            "minProperties": 1,
+                                            "description": "Partial field updates keyed by supported enrichment paths. Omitted fields remain outside the update; empty string is literal, null is rejected, and date-valued fields use YYYY-MM-DD strings."
+                                        }
+                                    },
+                                    "required": [
+                                        "target",
+                                        "fields"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One inventory object identity and its partial enrichment updates."
+                                },
+                                "description": "Up to 100 object updates. The public maximum is deliberately below the documented intended native 10,000-object limit."
+                            }
+                        },
+                        "required": [
+                            "domain",
+                            "objects"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A shared enrichment domain and a bounded batch of partial inventory object updates."
+                    },
+                    "FunctionOutput_nexthink_batchupdateinventoryobjects": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "success",
+                                    "partial_success",
+                                    "error"
+                                ],
+                                "description": "Provider aggregate processing status; does not imply atomicity or per-field rollback."
+                            },
+                            "errors": {
+                                "description": "Only object errors explicitly reported by Nexthink; omitted when no errors are returned. No individual success records are invented.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "target": {
+                                            "type": "object",
+                                            "properties": {
+                                                "field": {
+                                                    "type": "string",
+                                                    "description": "Identification field returned for the object with errors."
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "description": "Identification value returned for the object with errors."
+                                                }
+                                            },
+                                            "required": [
+                                                "field",
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "Provider identification of the object with errors; not a fabricated input-position success report."
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string",
+                                                        "description": "Provider's individual enrichment error code, unchanged."
+                                                    },
+                                                    "message": {
+                                                        "type": "string",
+                                                        "description": "Provider's descriptive object error text."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "code",
+                                                    "message"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "An individual enrichment error reported by the provider."
+                                            },
+                                            "description": "Reported errors for this object; correct field/type/identity issues using the provider detail before retrying."
+                                        }
+                                    },
+                                    "required": [
+                                        "target",
+                                        "errors"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Provider-reported identification and errors for an inventory object."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider aggregate enrichment result and any explicitly reported object errors."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `update-inventory-object` for one object. Provide up to 100 objects with one identification field/value each and supported enrichment field paths. Obtain object identifiers through saved queries using `execute-nql-query`. Only supplied fields are updated; null clearing is unsupported. Results can be partial and are not atomic. Inspect errors before retrying, and do not assume errors imply every field was unchanged."
+            },
+            "filePath": "./nexthink/tools/batch-update-inventory-objects.ts",
+            "version": "49baefb33ff9ce8067a924aa1cc1fa86d14c98db9a598b9f3e124962572c19fb",
+            "location": {
+                "js": "templates-zero/nexthink/tools/batch-update-inventory-objects/49baefb33ff9ce8067a924aa1cc1fa86d14c98db9a598b9f3e124962572c19fb.cjs",
+                "ts": "templates-zero/nexthink/tools/batch-update-inventory-objects/49baefb33ff9ce8067a924aa1cc1fa86d14c98db9a598b9f3e124962572c19fb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "execute-nql-query",
+            "integrationId": "nexthink",
+            "description": "Execute a saved, optionally parameterized NQL query and return directly usable result rows. Synchronous execution returns at most 1,000 rows and is not a complete inventory export.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_executenqlquery",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_executenqlquery",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_nexthink_executenqlquery",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_executenqlquery": {
+                        "type": "object",
+                        "properties": {
+                            "logTag": {
+                                "description": "Optional categorization tag stored in Nexthink platform logs; do not include sensitive data.",
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "queryId": {
+                                "type": "string",
+                                "maxLength": 255,
+                                "pattern": "^#[a-z0-9_]{2,255}$",
+                                "description": "ID of a saved NQL API query configured in this Nexthink instance, including its leading #."
+                            },
+                            "parameters": {
+                                "description": "Named substitution values for the saved query. Omit to send no substitutions; empty strings are preserved.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "A substitution value, passed unchanged to the saved query."
+                                }
+                            }
+                        },
+                        "required": [
+                            "queryId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Execute one saved NQL API query with optional named substitutions and a platform log tag."
+                    },
+                    "FunctionOutput_nexthink_executenqlquery": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                        "type": "string"
+                                    },
+                                    "additionalProperties": {
+                                        "description": "The original JSON cell value, without type coercion."
+                                    },
+                                    "description": "One result row keyed by the original NQL column names."
+                                },
+                                "description": "Query result rows keyed by NQL column name. Values retain their JSON types; numeric-looking identifiers and opaque strings are not coerced."
+                            },
+                            "queryId": {
+                                "description": "ID of the query that was executed, when returned.",
+                                "type": "string"
+                            },
+                            "rowCount": {
+                                "description": "Provider-reported number of rows in this result, not the total number of matching inventory objects.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "executedAt": {
+                                "description": "Execution instant normalized to UTC with Z, when returned.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "executedQuery": {
+                                "description": "Final NQL source after parameter substitution, when returned.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A single bounded synchronous NQL result, with optional provider execution metadata and no continuation token."
+                    },
+                    "FunctionMetadata_nexthink_executenqlquery": {
+                        "type": "object",
+                        "properties": {
+                            "nqlApiVersion": {
+                                "description": "Deployment compatibility override. Omit for V2; select V1 only for a legacy deployment.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "v1",
+                                            "v2"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain the saved query ID from Administration > NQL API queries; this tool does not accept arbitrary NQL source. Use it for small lookups, including execution tracking. Use `start-nql-export` for larger datasets, then `get-nql-export` to check that export. There is no continuation token for the synchronous result."
+            },
+            "filePath": "./nexthink/tools/execute-nql-query.ts",
+            "version": "e04da34aff0b565d9ba72ddbcb93e45922f00932a4fafd28659d46be9ed31dfb",
+            "location": {
+                "js": "templates-zero/nexthink/tools/execute-nql-query/e04da34aff0b565d9ba72ddbcb93e45922f00932a4fafd28659d46be9ed31dfb.cjs",
+                "ts": "templates-zero/nexthink/tools/execute-nql-query/e04da34aff0b565d9ba72ddbcb93e45922f00932a4fafd28659d46be9ed31dfb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-nql-export",
+            "integrationId": "nexthink",
+            "description": "Get an export's current state and, when ready, its temporary result-file URL. Explicitly identify results truncated by the license limit.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_getnqlexport",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_getnqlexport",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_getnqlexport": {
+                        "type": "object",
+                        "properties": {
+                            "exportId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier returned when the export was submitted."
+                            }
+                        },
+                        "required": [
+                            "exportId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifier of the NQL export whose current state should be retrieved."
+                    },
+                    "FunctionOutput_nexthink_getnqlexport": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Export identifier supplied for this lookup."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "SUBMITTED",
+                                    "IN_PROGRESS",
+                                    "ERROR",
+                                    "COMPLETED"
+                                ],
+                                "description": "Current export lifecycle state; ERROR is a job outcome rather than a successful file."
+                            },
+                            "truncated": {
+                                "type": "boolean",
+                                "description": "True when the status response reports that license limits truncated the query results."
+                            },
+                            "downloadUrl": {
+                                "description": "Temporary result-file URL when returned; valid for 15 minutes after generation. Omitted when absent or null.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "errorDescription": {
+                                "description": "Provider's export failure explanation when present; omitted for absent or null values.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "truncated"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current NQL export state, license-truncation flag, and available file URL or failure explanation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the id returned by `start-nql-export`. Each call checks status once; if still submitted or in progress, check again later rather than starting another export. Download a ready file promptly: the URL is valid for 15 minutes after generation. A GZIP or ZSTD file must be decompressed after downloading. Inspect truncated before treating a result as complete."
+            },
+            "filePath": "./nexthink/tools/get-nql-export.ts",
+            "version": "9270afab80a10af3dd9a3f8c08726d323969b91b6d64e1e2d7393e1a4c91546e",
+            "location": {
+                "js": "templates-zero/nexthink/tools/get-nql-export/9270afab80a10af3dd9a3f8c08726d323969b91b6d64e1e2d7393e1a4c91546e.cjs",
+                "ts": "templates-zero/nexthink/tools/get-nql-export/9270afab80a10af3dd9a3f8c08726d323969b91b6d64e1e2d7393e1a4c91546e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-remote-action",
+            "integrationId": "nexthink",
+            "description": "Get the configuration of a remote action by its NQL ID, including parameter definitions and API targeting settings.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_getremoteaction",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_getremoteaction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_getremoteaction": {
+                        "type": "object",
+                        "properties": {
+                            "remoteActionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Remote-action NQL ID, including its leading # when present; not the internal UUID."
+                            }
+                        },
+                        "required": [
+                            "remoteActionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the remote action whose configuration to read."
+                    },
+                    "FunctionOutput_nexthink_getremoteaction": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Remote-action NQL ID used for execution."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Remote-action display name."
+                            },
+                            "uuid": {
+                                "type": "string",
+                                "description": "Opaque internal remote-action UUID, distinct from its NQL ID."
+                            },
+                            "origin": {
+                                "description": "Provider-reported content origin, when supplied.",
+                                "type": "string"
+                            },
+                            "purpose": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "DATA_COLLECTION",
+                                        "REMEDIATION"
+                                    ]
+                                },
+                                "description": "Declared purposes of the remote action."
+                            },
+                            "targeting": {
+                                "type": "object",
+                                "properties": {
+                                    "apiEnabled": {
+                                        "description": "Whether API execution is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "manualEnabled": {
+                                        "description": "Whether manual execution is enabled.",
+                                        "type": "boolean"
+                                    },
+                                    "workflowEnabled": {
+                                        "description": "Whether workflow execution is enabled, when supplied.",
+                                        "type": "boolean"
+                                    },
+                                    "manualAllowMultipleDevices": {
+                                        "description": "Whether manual execution may target several devices.",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Configured execution entry points and targeting permissions."
+                            },
+                            "scriptInfo": {
+                                "type": "object",
+                                "properties": {
+                                    "runAs": {
+                                        "description": "Script security context.",
+                                        "type": "string",
+                                        "enum": [
+                                            "LOCAL_SYSTEM",
+                                            "INTERACTIVE_USER",
+                                            "DELEGATE_TO_SERVICE"
+                                        ]
+                                    },
+                                    "inputs": {
+                                        "description": "Script parameter definitions; use their IDs as trigger parameter keys.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Script parameter identifier."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Parameter display name."
+                                                },
+                                                "options": {
+                                                    "description": "Configured string choices.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "description": {
+                                                    "description": "Parameter explanation, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "usedByMacOs": {
+                                                    "description": "Whether macOS scripts use the parameter.",
+                                                    "type": "boolean"
+                                                },
+                                                "usedByWindows": {
+                                                    "description": "Whether Windows scripts use the parameter.",
+                                                    "type": "boolean"
+                                                },
+                                                "allowCustomValue": {
+                                                    "description": "Whether values outside options are allowed.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "outputs": {
+                                        "description": "Script output definitions.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "description": "Script output identifier."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Output display name."
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "description": "Provider output-type label, retained without interpretation."
+                                                },
+                                                "description": {
+                                                    "description": "Output explanation, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "usedByMacOs": {
+                                                    "description": "Whether macOS scripts produce the output.",
+                                                    "type": "boolean"
+                                                },
+                                                "usedByWindows": {
+                                                    "description": "Whether Windows scripts produce the output.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "hasScriptMacOs": {
+                                        "description": "Whether a macOS script exists.",
+                                        "type": "boolean"
+                                    },
+                                    "timeoutSeconds": {
+                                        "description": "Script execution timeout in seconds.",
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    "hasScriptWindows": {
+                                        "description": "Whether a Windows script exists.",
+                                        "type": "boolean"
+                                    },
+                                    "executionServiceDelegate": {
+                                        "description": "Configured execution-service delegate, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Execution settings, platform support, input and output definitions."
+                            },
+                            "description": {
+                                "description": "Configuration description, when supplied.",
+                                "type": "string"
+                            },
+                            "builtInContentVersion": {
+                                "description": "Built-in content version, when supplied; empty text is retained.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "uuid",
+                            "purpose",
+                            "targeting",
+                            "scriptInfo"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Remote-action configuration, including execution settings and script parameter definitions."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an id from `list-remote-actions`, not the internal UUID. Inspect the inputs and targeting before calling `trigger-remote-action` or `batch-trigger-remote-actions`. This call reads configuration; it does not execute the script."
+            },
+            "filePath": "./nexthink/tools/get-remote-action.ts",
+            "version": "19d15f0802a283327326c8b78a6282df046a7cbf8e0392b8b74af0856f1447ff",
+            "location": {
+                "js": "templates-zero/nexthink/tools/get-remote-action/19d15f0802a283327326c8b78a6282df046a7cbf8e0392b8b74af0856f1447ff.cjs",
+                "ts": "templates-zero/nexthink/tools/get-remote-action/19d15f0802a283327326c8b78a6282df046a7cbf8e0392b8b74af0856f1447ff.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-workflow",
+            "integrationId": "nexthink",
+            "description": "Get one configured workflow by its NQL ID, including its internal UUID, activation state and version configuration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_getworkflow",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_getworkflow",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_getworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "workflowId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the configured workflow, distinct from its internal UUID."
+                            }
+                        },
+                        "required": [
+                            "workflowId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one configured workflow by its NQL ID."
+                    },
+                    "FunctionOutput_nexthink_getworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Workflow NQL ID used to start executions."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Workflow display name."
+                            },
+                            "uuid": {
+                                "type": "string",
+                                "description": "Internal workflow UUID used for a waiting execution trigger."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ],
+                                "description": "Configured activation state."
+                            },
+                            "versions": {
+                                "description": "Structured provider version entries in returned order, without invented version semantics.",
+                                "type": "array",
+                                "items": {}
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last configuration update instant normalized to UTC Z without loss of precision."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Workflow explanation; empty text is retained."
+                            },
+                            "triggerMethods": {
+                                "description": "Structured provider trigger-method configuration; its published shape is ambiguous, so values are preserved rather than guessed."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "uuid",
+                            "status",
+                            "updatedAt",
+                            "description"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The uniquely matching workflow configuration, with its last update normalized to UTC."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an id from `list-workflows`, not its internal uuid. Use `trigger-workflow` to start a new execution; use `trigger-waiting-workflow-execution` with the internal workflow UUID and an existing execution ID to release a waiting execution. This tool reads configuration only."
+            },
+            "filePath": "./nexthink/tools/get-workflow.ts",
+            "version": "28d9ea17683492b78aa2276aa396f70421d3f991fce7cd52a4760983c0f982c8",
+            "location": {
+                "js": "templates-zero/nexthink/tools/get-workflow/28d9ea17683492b78aa2276aa396f70421d3f991fce7cd52a4760983c0f982c8.cjs",
+                "ts": "templates-zero/nexthink/tools/get-workflow/28d9ea17683492b78aa2276aa396f70421d3f991fce7cd52a4760983c0f982c8.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "hand-off-conversation-to-spark",
+            "integrationId": "nexthink",
+            "description": "Hand off a user's message, including ordered text and optional file parts, so responses are redirected to Spark in Microsoft Teams.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_handoffconversationtospark",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_handoffconversationtospark",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_handoffconversationtospark": {
+                        "type": "object",
+                        "properties": {
+                            "parts": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "User message text, including Unicode, sent as ordinary text without caller encoding."
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "text",
+                                                    "description": "Identifies an ordinary text message part."
+                                                }
+                                            },
+                                            "required": [
+                                                "text",
+                                                "type"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An ordinary text message part."
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "const": "file",
+                                                    "description": "Identifies an exact-byte file message part."
+                                                },
+                                                "mimeType": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "description": "Media type describing the file bytes, for example application/pdf."
+                                                },
+                                                "contentBase64": {
+                                                    "type": "string",
+                                                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                                                    "contentEncoding": "base64",
+                                                    "description": "Standard padded base64 representation of the exact file bytes; empty content represents an empty file. The implementation handles the provider's fileContent representation."
+                                                }
+                                            },
+                                            "required": [
+                                                "type",
+                                                "mimeType",
+                                                "contentBase64"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "An exact-byte file message part."
+                                        }
+                                    ],
+                                    "description": "A text or file message part."
+                                },
+                                "description": "Message parts in display order; text is ordinary text and file content preserves exact bytes."
+                            },
+                            "metadata": {
+                                "description": "Optional string-valued metadata passed through the handoff flow. Omission, null and an empty map are preserved distinctly.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "string",
+                                            "description": "A metadata string value passed through the handoff flow."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "timezone": {
+                                "description": "Optional timezone label used for this request; omitted leaves the provider's default. Accepted label vocabulary must be validated for the deployment.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userPrincipalName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Principal name of the user whose conversation is being handed off, sent as the User-Principal-Name header."
+                            }
+                        },
+                        "required": [
+                            "parts",
+                            "userPrincipalName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "User context and ordered message parts to hand off to Spark in Microsoft Teams."
+                    },
+                    "FunctionOutput_nexthink_handoffconversationtospark": {
+                        "type": "object",
+                        "properties": {
+                            "accepted": {
+                                "const": true,
+                                "description": "Nexthink returned its successful handoff acknowledgement; this does not establish a Spark reply or recipient delivery."
+                            }
+                        },
+                        "required": [
+                            "accepted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgement that Nexthink accepted the handoff request, not a Spark response or delivery receipt."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use when transferring a user's live conversation to Spark, not for querying workflow or device records. Supply the user's principal name and message parts in their intended order. This initiates a conversation handoff; it does not return Spark's reply or prove the user received it. File parts contain exact bytes represented as base64, not encoded ordinary text. Repeating the handoff may create duplicate interactions."
+            },
+            "filePath": "./nexthink/tools/hand-off-conversation-to-spark.ts",
+            "version": "93030fcaed965fe2dd2febf99f2989dff41f1d0955de85c1042e206c4ade3d57",
+            "location": {
+                "js": "templates-zero/nexthink/tools/hand-off-conversation-to-spark/93030fcaed965fe2dd2febf99f2989dff41f1d0955de85c1042e206c4ade3d57.cjs",
+                "ts": "templates-zero/nexthink/tools/hand-off-conversation-to-spark/93030fcaed965fe2dd2febf99f2989dff41f1d0955de85c1042e206c4ade3d57.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-remote-actions",
+            "integrationId": "nexthink",
+            "description": "List remote actions and their execution, targeting, input and output configuration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_listremoteactions",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_listremoteactions",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_listremoteactions": {
+                        "type": "object",
+                        "properties": {
+                            "hasMacOsScript": {
+                                "description": "Optional exact filter for whether a macOS script exists; omission does not filter on macOS support.",
+                                "type": "boolean"
+                            },
+                            "hasWindowsScript": {
+                                "description": "Optional exact filter for whether a Windows script exists; omission does not filter on Windows support.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Optional script-presence filters for discovering remote actions."
+                    },
+                    "FunctionOutput_nexthink_listremoteactions": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Remote-action NQL ID used for lookups and execution."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Display name of the remote action."
+                                        },
+                                        "uuid": {
+                                            "type": "string",
+                                            "description": "Opaque internal remote-action UUID, distinct from its NQL ID."
+                                        },
+                                        "origin": {
+                                            "description": "Provider-reported content origin, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "purpose": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "DATA_COLLECTION",
+                                                    "REMEDIATION"
+                                                ]
+                                            },
+                                            "description": "Declared purposes of the remote action."
+                                        },
+                                        "targeting": {
+                                            "type": "object",
+                                            "properties": {
+                                                "apiEnabled": {
+                                                    "description": "Whether the action can be triggered through the API.",
+                                                    "type": "boolean"
+                                                },
+                                                "manualEnabled": {
+                                                    "description": "Whether manual execution is enabled.",
+                                                    "type": "boolean"
+                                                },
+                                                "workflowEnabled": {
+                                                    "description": "Whether workflow execution is enabled, when supplied.",
+                                                    "type": "boolean"
+                                                },
+                                                "manualAllowMultipleDevices": {
+                                                    "description": "Whether manual execution may target several devices.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Configured execution entry points and manual targeting permissions."
+                                        },
+                                        "scriptInfo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "runAs": {
+                                                    "description": "Security context used by the script.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "LOCAL_SYSTEM",
+                                                        "INTERACTIVE_USER",
+                                                        "DELEGATE_TO_SERVICE"
+                                                    ]
+                                                },
+                                                "inputs": {
+                                                    "description": "Script parameter definitions; IDs are parameter-map keys for triggering.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Parameter ID used as a key when triggering the action."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Parameter display name."
+                                                            },
+                                                            "options": {
+                                                                "description": "Configured suggested or allowed string values.",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "description": {
+                                                                "description": "Parameter explanation, when supplied.",
+                                                                "type": "string"
+                                                            },
+                                                            "usedByMacOs": {
+                                                                "description": "Whether macOS scripts use this parameter.",
+                                                                "type": "boolean"
+                                                            },
+                                                            "usedByWindows": {
+                                                                "description": "Whether Windows scripts use this parameter.",
+                                                                "type": "boolean"
+                                                            },
+                                                            "allowCustomValue": {
+                                                                "description": "Whether values outside the configured options are permitted.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "A script input parameter definition."
+                                                    }
+                                                },
+                                                "outputs": {
+                                                    "description": "Definitions of values produced by script execution.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "description": "Output field identifier."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Output display name."
+                                                            },
+                                                            "type": {
+                                                                "type": "string",
+                                                                "description": "Provider output data-type name; retained without guessing its representation."
+                                                            },
+                                                            "description": {
+                                                                "description": "Output explanation, when supplied.",
+                                                                "type": "string"
+                                                            },
+                                                            "usedByMacOs": {
+                                                                "description": "Whether macOS scripts produce this output.",
+                                                                "type": "boolean"
+                                                            },
+                                                            "usedByWindows": {
+                                                                "description": "Whether Windows scripts produce this output.",
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "type"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "A script output field definition."
+                                                    }
+                                                },
+                                                "hasScriptMacOs": {
+                                                    "description": "Whether a macOS script is present.",
+                                                    "type": "boolean"
+                                                },
+                                                "timeoutSeconds": {
+                                                    "description": "Configured script execution timeout in seconds.",
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "hasScriptWindows": {
+                                                    "description": "Whether a Windows script is present.",
+                                                    "type": "boolean"
+                                                },
+                                                "executionServiceDelegate": {
+                                                    "description": "Configured execution-service delegate, when supplied.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Script execution settings and parameter definitions."
+                                        },
+                                        "description": {
+                                            "description": "Configuration description, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "builtInContentVersion": {
+                                            "description": "Built-in content version, when supplied; empty text is preserved.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uuid",
+                                        "purpose",
+                                        "targeting",
+                                        "scriptInfo"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A remote action and its execution, targeting, input and output configuration."
+                                },
+                                "description": "Remote-action configurations in the provider's returned order; an empty list means no matching actions."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The remote-action configurations returned by Nexthink."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to discover remote-action IDs and check whether API execution is enabled. Use `get-remote-action` for a known ID, `trigger-remote-action` for one device, or `batch-trigger-remote-actions` for several devices. This endpoint returns its collection in one response and has no documented continuation token."
+            },
+            "filePath": "./nexthink/tools/list-remote-actions.ts",
+            "version": "7420f88126a00350c2e40aeaafd3a2318443c1fff86d758a5ff417bbfa4afbe5",
+            "location": {
+                "js": "templates-zero/nexthink/tools/list-remote-actions/7420f88126a00350c2e40aeaafd3a2318443c1fff86d758a5ff417bbfa4afbe5.cjs",
+                "ts": "templates-zero/nexthink/tools/list-remote-actions/7420f88126a00350c2e40aeaafd3a2318443c1fff86d758a5ff417bbfa4afbe5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-workflows",
+            "integrationId": "nexthink",
+            "description": "List workflow configurations for a selected target dependency and trigger method, optionally restricting the result to active workflows.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_listworkflows",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_listworkflows",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_listworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "activeOnly": {
+                                "description": "When true, request only active workflows; false explicitly requests that inactive workflows not be excluded.",
+                                "type": "boolean"
+                            },
+                            "dependency": {
+                                "type": "string",
+                                "enum": [
+                                    "USER",
+                                    "DEVICE",
+                                    "USER_AND_DEVICE",
+                                    "NONE"
+                                ],
+                                "description": "Workflow target dependency to select: user, device, both, or no target."
+                            },
+                            "triggerMethod": {
+                                "type": "string",
+                                "enum": [
+                                    "API",
+                                    "MANUAL",
+                                    "MANUAL_MULTIPLE",
+                                    "SCHEDULER"
+                                ],
+                                "description": "Configured trigger method to select."
+                            }
+                        },
+                        "required": [
+                            "dependency",
+                            "triggerMethod"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Filters selecting workflow configurations by target dependency, trigger method, and activation state."
+                    },
+                    "FunctionOutput_nexthink_listworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Workflow NQL ID used for configuration lookup and starting executions."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Workflow display name."
+                                        },
+                                        "uuid": {
+                                            "type": "string",
+                                            "description": "Internal workflow UUID used to trigger a waiting execution."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "ACTIVE",
+                                                "INACTIVE"
+                                            ],
+                                            "description": "Configured activation state."
+                                        },
+                                        "versions": {
+                                            "description": "Provider version configuration entries preserved structurally and in order; no guessed version fields are introduced.",
+                                            "type": "array",
+                                            "items": {
+                                                "description": "An unchanged provider version configuration entry."
+                                            }
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                            "description": "Configuration's last update instant, normalized to UTC Z without precision loss."
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Workflow explanation; empty text is preserved."
+                                        },
+                                        "triggerMethods": {
+                                            "description": "Provider trigger-method configuration, preserved structurally because the published schema is ambiguous; omitted only when absent."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uuid",
+                                        "status",
+                                        "updatedAt",
+                                        "description"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A workflow configuration with opaque provider configuration values preserved."
+                                },
+                                "description": "Workflow configurations matching the filters, in provider order; empty when none match."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workflow configurations returned by the selected filters."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Choose the dependency and trigger method for the workflows you need; API is the useful trigger method for execution through this integration. Use `get-workflow` for a known NQL ID and `trigger-workflow` or `batch-trigger-workflows` to start executions. This endpoint returns one unpaginated collection response."
+            },
+            "filePath": "./nexthink/tools/list-workflows.ts",
+            "version": "41d74252f1b26bf3a6d8897ba8de9570bcf55a1e64d71d46907a39c8f93a813f",
+            "location": {
+                "js": "templates-zero/nexthink/tools/list-workflows/41d74252f1b26bf3a6d8897ba8de9570bcf55a1e64d71d46907a39c8f93a813f.cjs",
+                "ts": "templates-zero/nexthink/tools/list-workflows/41d74252f1b26bf3a6d8897ba8de9570bcf55a1e64d71d46907a39c8f93a813f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "schedule-device-deletion",
+            "integrationId": "nexthink",
+            "description": "Schedule one device for asynchronous removal from the Nexthink inventory using its Collector-reported UID and name. The result reports scheduling, not completed removal.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_scheduledevicedeletion",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_scheduledevicedeletion",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_scheduledevicedeletion": {
+                        "type": "object",
+                        "properties": {
+                            "deviceUid": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Device UID as reported by the Nexthink Collector, not an arbitrary inventory lookup key."
+                            },
+                            "deviceName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "\\S",
+                                "description": "Nonblank device name as reported by the Nexthink Collector; supplied together with its UID."
+                            }
+                        },
+                        "required": [
+                            "deviceUid",
+                            "deviceName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Collector-reported UID and exact name of the one device whose inventory removal should be scheduled."
+                    },
+                    "FunctionOutput_nexthink_scheduledevicedeletion": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "SCHEDULED",
+                                    "INVALID",
+                                    "FAILED"
+                                ],
+                                "description": "SCHEDULED means queued, INVALID means skipped for an invalid UID, and FAILED means a downstream error prevented scheduling; none means deletion has completed."
+                            },
+                            "deviceUid": {
+                                "type": "string",
+                                "description": "Device UID echoed by the scheduling result."
+                            },
+                            "requestId": {
+                                "description": "Provider correlation ID from the x-request-id response header, when available; useful for support.",
+                                "type": "string"
+                            },
+                            "deviceName": {
+                                "type": "string",
+                                "description": "Device name echoed by the scheduling result."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "deviceUid",
+                            "deviceName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Per-device scheduling outcome, not confirmation of completed inventory removal."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain both the device UID and exact Collector-reported name through a suitable saved query using `execute-nql-query`. Use `batch-schedule-device-deletions` for several devices. This schedules inventory removal; it does not uninstall software or establish immediate deletion. Reversibility is not documented. Inspect the returned status before assuming the device was queued, and do not blindly replay an ambiguous request."
+            },
+            "filePath": "./nexthink/tools/schedule-device-deletion.ts",
+            "version": "125407ded61b4373236f54f69b4ad201880ea407cbdfe32285b87c76a5b8a1d5",
+            "location": {
+                "js": "templates-zero/nexthink/tools/schedule-device-deletion/125407ded61b4373236f54f69b4ad201880ea407cbdfe32285b87c76a5b8a1d5.cjs",
+                "ts": "templates-zero/nexthink/tools/schedule-device-deletion/125407ded61b4373236f54f69b4ad201880ea407cbdfe32285b87c76a5b8a1d5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "send-campaign",
+            "integrationId": "nexthink",
+            "description": "Trigger sending a configured campaign to selected users with shared question parameters and an explicit expiry duration. Report each distinct user's request ID or rejection message.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_sendcampaign",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_sendcampaign",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_sendcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "userSids": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Recipient user security identifier."
+                                },
+                                "description": "Recipient user security identifiers. Duplicate SIDs are permitted but yield one provider outcome per distinct SID."
+                            },
+                            "campaignId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the configured campaign to send."
+                            },
+                            "parameters": {
+                                "description": "Replacement values for campaign question parameters. Keys must exactly match the configured parameter IDs; omit for a campaign requiring no replacements.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "description": "Configured campaign parameter ID."
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Replacement question parameter value."
+                                },
+                                "maxProperties": 30
+                            },
+                            "expiresInMinutes": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 525600,
+                                "description": "Minutes from submission until the campaign response expires and stops being shown, regardless of postponement or display time."
+                            }
+                        },
+                        "required": [
+                            "userSids",
+                            "campaignId",
+                            "expiresInMinutes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One configured campaign, its recipients, shared question replacements, and explicit expiry duration."
+                    },
+                    "FunctionOutput_nexthink_sendcampaign": {
+                        "type": "object",
+                        "properties": {
+                            "requests": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "userSid": {
+                                            "type": "string",
+                                            "description": "Recipient security identifier for this outcome."
+                                        },
+                                        "requestId": {
+                                            "description": "Created campaign request ID when accepted for this user; not evidence of display or response.",
+                                            "type": "string"
+                                        },
+                                        "errorMessage": {
+                                            "description": "Provider rejection reason when a request could not be created for this user; preserve the original text.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "userSid"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Provider request-creation outcome for one distinct recipient."
+                                },
+                                "description": "Per-distinct-user request creation outcomes; duplicate input SIDs are filtered by Nexthink."
+                            }
+                        },
+                        "required": [
+                            "requests"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Campaign request creation outcomes, not recipient display, response, or delivery confirmation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Obtain the campaign NQL ID and parameter IDs from the campaign configuration in Nexthink. Obtain user SIDs through an appropriate saved query with `execute-nql-query`. This sends one campaign to up to 100 recipients, not multiple different campaigns. Expiry starts at the API call, not at display time. A request ID establishes request creation, not display, response or delivery; inspect per-user rejection messages. Repeating the call can create new campaign requests."
+            },
+            "filePath": "./nexthink/tools/send-campaign.ts",
+            "version": "4eb7903874fff5f39ea4405e4f552563c526dbccc0d3f9a455e84795d4266e36",
+            "location": {
+                "js": "templates-zero/nexthink/tools/send-campaign/4eb7903874fff5f39ea4405e4f552563c526dbccc0d3f9a455e84795d4266e36.cjs",
+                "ts": "templates-zero/nexthink/tools/send-campaign/4eb7903874fff5f39ea4405e4f552563c526dbccc0d3f9a455e84795d4266e36.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "start-nql-export",
+            "integrationId": "nexthink",
+            "description": "Submit a saved NQL query for asynchronous export to a provider-managed S3 file. Return the export identifier without waiting for the export to finish.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_startnqlexport",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_startnqlexport",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_startnqlexport": {
+                        "type": "object",
+                        "properties": {
+                            "logTag": {
+                                "description": "Optional non-sensitive request categorization tag stored in Nexthink platform logs.",
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "queryId": {
+                                "type": "string",
+                                "maxLength": 255,
+                                "pattern": "^#[a-z0-9_]{2,255}$",
+                                "description": "ID of the saved NQL API query to export, including #."
+                            },
+                            "parameters": {
+                                "description": "Named query substitution values; omit for no substitutions. Empty strings are retained.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Named query substitution value, preserved unchanged including empty strings."
+                                }
+                            },
+                            "compression": {
+                                "description": "Export file compression. NONE is the public default; compressed files require decompression after download.",
+                                "type": "string",
+                                "enum": [
+                                    "NONE",
+                                    "GZIP",
+                                    "ZSTD"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "queryId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Saved NQL query and configuration for starting an asynchronous export."
+                    },
+                    "FunctionOutput_nexthink_startnqlexport": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque export identifier to pass as exportId to get-nql-export; submission does not establish completion."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifier of the submitted export, without waiting for completion or downloading results."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for datasets larger than a synchronous lookup. Obtain the saved query ID from Administration > NQL API queries. After submission, call `get-nql-export` with the returned id. This tool only starts the export; it does not wait for or download the file. Use `execute-nql-query` for small immediate results. Repeating this call may create another export."
+            },
+            "filePath": "./nexthink/tools/start-nql-export.ts",
+            "version": "f6222eb65636e68c34f190148f24ab066aa171c1de0f233f9fdefc9ef4a98545",
+            "location": {
+                "js": "templates-zero/nexthink/tools/start-nql-export/f6222eb65636e68c34f190148f24ab066aa171c1de0f233f9fdefc9ef4a98545.cjs",
+                "ts": "templates-zero/nexthink/tools/start-nql-export/f6222eb65636e68c34f190148f24ab066aa171c1de0f233f9fdefc9ef4a98545.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "trigger-remote-action",
+            "integrationId": "nexthink",
+            "description": "Request execution of a configured remote action on one device. A request ID establishes submission, not successful script completion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_triggerremoteaction",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_triggerremoteaction",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_triggerremoteaction": {
+                        "type": "object",
+                        "properties": {
+                            "parameters": {
+                                "description": "Script parameter values keyed by configured input IDs; defaults to an empty map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Value of a configured script input."
+                                }
+                            },
+                            "collectorId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Nexthink Collector identifier of the target device, not a device name or inventory UID."
+                            },
+                            "triggerInfo": {
+                                "description": "Optional execution audit context.",
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "description": "Reason for requesting the action.",
+                                        "type": "string",
+                                        "maxLength": 500
+                                    },
+                                    "externalSource": {
+                                        "description": "Name of the external application requesting the action.",
+                                        "type": "string"
+                                    },
+                                    "externalReference": {
+                                        "description": "External ticket or incident reference associated with the action.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "remoteActionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the configured remote action to execute."
+                            },
+                            "expiresInMinutes": {
+                                "description": "Minutes before an unprocessed request expires while the device remains offline. Omit to use Nexthink's default.",
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 10080
+                            }
+                        },
+                        "required": [
+                            "collectorId",
+                            "remoteActionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configured remote action, target Collector, and optional script inputs and execution audit context."
+                    },
+                    "FunctionOutput_nexthink_triggerremoteaction": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "Identifier of the request that spawned execution; use in a saved NQL execution query."
+                            },
+                            "expiresInMinutes": {
+                                "description": "Effective offline execution expiry in minutes, when returned by Nexthink.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10080
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission identifier and optional effective offline expiry; not evidence of script completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the remote-action NQL ID and parameter definitions from `get-remote-action` or `list-remote-actions`. Obtain the device's Collector ID through a saved query with `execute-nql-query`. Use `batch-trigger-remote-actions` for several devices. Scripts can modify device state; inspect the action first. Track later execution results through a suitable saved NQL query using the returned requestId. Do not replay blindly."
+            },
+            "filePath": "./nexthink/tools/trigger-remote-action.ts",
+            "version": "0466a4dcc9ab77dda438dd350cf752f1a4639dc30fdbaa55af57d74e61cb316c",
+            "location": {
+                "js": "templates-zero/nexthink/tools/trigger-remote-action/0466a4dcc9ab77dda438dd350cf752f1a4639dc30fdbaa55af57d74e61cb316c.cjs",
+                "ts": "templates-zero/nexthink/tools/trigger-remote-action/0466a4dcc9ab77dda438dd350cf752f1a4639dc30fdbaa55af57d74e61cb316c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "trigger-waiting-workflow-execution",
+            "integrationId": "nexthink",
+            "description": "Trigger the wait-for-event step of an existing workflow execution, optionally passing event parameters. This does not start a new workflow.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_triggerwaitingworkflowexecution",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_triggerwaitingworkflowexecution",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_triggerwaitingworkflowexecution": {
+                        "type": "object",
+                        "properties": {
+                            "parameters": {
+                                "description": "Event parameters for the waiting step. Omit to send an empty map; supplied values must be nonempty strings.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "A nonempty string event parameter value."
+                                }
+                            },
+                            "executionId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "UUID of the existing execution currently waiting for an event."
+                            },
+                            "workflowUuid": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                "description": "Internal UUID of the workflow, not its NQL ID."
+                            }
+                        },
+                        "required": [
+                            "executionId",
+                            "workflowUuid"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The existing waiting workflow execution and optional event parameters."
+                    },
+                    "FunctionOutput_nexthink_triggerwaitingworkflowexecution": {
+                        "type": "object",
+                        "properties": {
+                            "requestIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+                                    "description": "A request identifier returned by Nexthink, unchanged."
+                                },
+                                "description": "Request identifiers returned by Nexthink for this trigger; the array is preserved rather than assuming exactly one."
+                            }
+                        },
+                        "required": [
+                            "requestIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Trigger acknowledgements, not confirmation that downstream workflow steps completed."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use only for an existing execution currently waiting for an event. Obtain the internal workflow uuid from `get-workflow` and the execution ID from a trigger result or a saved execution query through `execute-nql-query`. Use `trigger-workflow` to start a new execution instead. Releasing the wait can continue destructive workflow steps; replay safety is not guaranteed."
+            },
+            "filePath": "./nexthink/tools/trigger-waiting-workflow-execution.ts",
+            "version": "050a99fbb8b1e8c5d961ab8de3b9b6d60ba237dd2756ad8176e5aac1ddcf01bf",
+            "location": {
+                "js": "templates-zero/nexthink/tools/trigger-waiting-workflow-execution/050a99fbb8b1e8c5d961ab8de3b9b6d60ba237dd2756ad8176e5aac1ddcf01bf.cjs",
+                "ts": "templates-zero/nexthink/tools/trigger-waiting-workflow-execution/050a99fbb8b1e8c5d961ab8de3b9b6d60ba237dd2756ad8176e5aac1ddcf01bf.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "trigger-workflow",
+            "integrationId": "nexthink",
+            "description": "Start a configured workflow for one user, one device, a user-device context, or no target when the workflow has no target dependency. User and device identifiers can be external identifiers.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_triggerworkflow",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_triggerworkflow",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_triggerworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "user": {
+                                "description": "One target user; omit when the workflow does not require a user.",
+                                "type": "object",
+                                "properties": {
+                                    "sid": {
+                                        "description": "User security identifier.",
+                                        "type": "string",
+                                        "pattern": "^S(-\\d+){2,10}$|^0$"
+                                    },
+                                    "uid": {
+                                        "description": "Nexthink global user UID.",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                    },
+                                    "upn": {
+                                        "description": "User principal name in the provider-supported email-like form.",
+                                        "type": "string",
+                                        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1
+                            },
+                            "device": {
+                                "description": "One target device; omit when the workflow does not require a device.",
+                                "type": "object",
+                                "properties": {
+                                    "uid": {
+                                        "description": "Nexthink global device UID, distinct from the Collector UUID.",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                    },
+                                    "name": {
+                                        "description": "Device name; multiple matches select the most recently active object.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "collectorId": {
+                                        "description": "Device Collector UUID, mapped to collectorUid.",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1
+                            },
+                            "parameters": {
+                                "description": "Workflow parameter values keyed by configured parameter ID; omitted sends an empty map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string",
+                                    "description": "Value of the configured workflow parameter."
+                                }
+                            },
+                            "workflowId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "NQL ID of the workflow configured for API execution."
+                            }
+                        },
+                        "required": [
+                            "workflowId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Workflow and optional user-device context and parameter values for one submission."
+                    },
+                    "FunctionOutput_nexthink_triggerworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "description": "Aggregate request ID searchable as workflow.executions.request_id in a saved NQL query."
+                            },
+                            "executionIds": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Opaque identifier of a created workflow execution."
+                                },
+                                "description": "Created workflow execution identifiers, searchable as workflow.executions.execution_id; not a completion report or target-correlated success list."
+                            }
+                        },
+                        "required": [
+                            "requestId",
+                            "executionIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission request and execution identifiers, without waiting for workflow completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `list-workflows` with triggerMethod API or `get-workflow` to obtain a workflow NQL ID and check its dependency. Supply only the user/device context that workflow needs; omit both for a targetless workflow. Use `batch-trigger-workflows` for several targets and `trigger-waiting-workflow-execution` for an existing execution waiting on an event. Ambiguous external identifiers select the most recently active matching object. Returned IDs establish submission, not successful completion."
+            },
+            "filePath": "./nexthink/tools/trigger-workflow.ts",
+            "version": "445ab43679e338d826a966cf3c5ec229bf09f4e8f971e27ab225541d4f6b80fe",
+            "location": {
+                "js": "templates-zero/nexthink/tools/trigger-workflow/445ab43679e338d826a966cf3c5ec229bf09f4e8f971e27ab225541d4f6b80fe.cjs",
+                "ts": "templates-zero/nexthink/tools/trigger-workflow/445ab43679e338d826a966cf3c5ec229bf09f4e8f971e27ab225541d4f6b80fe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-inventory-object",
+            "integrationId": "nexthink",
+            "description": "Enrich selected supported fields on one device, user, binary or package. This is a partial field update, not replacement of the entire inventory object.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_nexthink_updateinventoryobject",
+            "output_schema_ref": "#/definitions/FunctionOutput_nexthink_updateinventoryobject",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_nexthink_updateinventoryobject": {
+                        "type": "object",
+                        "properties": {
+                            "domain": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Caller's enrichment source/domain label used primarily for information and tracking."
+                            },
+                            "target": {
+                                "type": "object",
+                                "properties": {
+                                    "field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "device/device/name",
+                                            "device/device/uid",
+                                            "user/user/sid",
+                                            "user/user/uid",
+                                            "user/user/upn",
+                                            "binary/binary/uid",
+                                            "package/package/uid"
+                                        ],
+                                        "description": "Supported field used to identify the object's resource and identity."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "Exact identifier value for the selected identification field; kept opaque and not numerically coerced."
+                                    }
+                                },
+                                "required": [
+                                    "field",
+                                    "value"
+                                ],
+                                "additionalProperties": false,
+                                "description": "One identification field and value selecting the inventory object."
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^(device\\/device\\/(configuration_tag|virtualization\\/(desktop_broker|desktop_pool|disk_image|environment_name|hostname|hypervisor_name|instance_size|last_update|region|type)|#[^/]+)|user\\/user\\/(ad\\/(city|country_code|department|distinguished_name|email_address|full_name|job_title|last_update|office|organizational_unit|username)|#[^/]+|organization\\/#[^/]+)|binary\\/binary\\/#[^/]+|package\\/package\\/#[^/]+)$",
+                                    "description": "Supported enrichment field path."
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                        }
+                                    ],
+                                    "description": "Desired string or integer value, preserved without conversion."
+                                },
+                                "minProperties": 1,
+                                "description": "Supported enrichment field paths mapped to desired string or integer values. Omitted fields are unchanged; null is rejected; empty string is sent literally, not treated as omission. Date-valued fields use YYYY-MM-DD strings without timezone conversion."
+                            }
+                        },
+                        "required": [
+                            "domain",
+                            "target",
+                            "fields"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The enrichment domain, one inventory object identifier, and the explicit fields to update."
+                    },
+                    "FunctionOutput_nexthink_updateinventoryobject": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "success",
+                                    "error"
+                                ],
+                                "description": "Whether Nexthink processed this object's enrichment successfully; error does not imply rollback of already applied fields."
+                            },
+                            "errors": {
+                                "description": "Object-specific provider failures, when reported; omitted when none are returned.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Provider's object-specific enrichment error code, retained verbatim."
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Provider's descriptive enrichment error text."
+                                        }
+                                    },
+                                    "required": [
+                                        "code",
+                                        "message"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One object-specific enrichment failure reported by Nexthink."
+                                }
+                            }
+                        },
+                        "required": [
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The enrichment outcome for the selected object, including any reported object-specific errors."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a known object identifier, obtainable with a saved query through `execute-nql-query`, and field paths from the Nexthink enrichment configuration. Supported fields are manual custom fields, device configuration/virtualization fields and supported user directory/organization fields. Use `batch-update-inventory-objects` for several objects. Only supplied fields are changed; null clearing is not supported by this contract. Check the result for object-specific errors."
+            },
+            "filePath": "./nexthink/tools/update-inventory-object.ts",
+            "version": "19735b1c32572da0f57bc7bbb32d145736e92041fb91234826475dffa3299be6",
+            "location": {
+                "js": "templates-zero/nexthink/tools/update-inventory-object/19735b1c32572da0f57bc7bbb32d145736e92041fb91234826475dffa3299be6.cjs",
+                "ts": "templates-zero/nexthink/tools/update-inventory-object/19735b1c32572da0f57bc7bbb32d145736e92041fb91234826475dffa3299be6.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

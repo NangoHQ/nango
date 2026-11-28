@@ -1,0 +1,1795 @@
+{
+    "providerConfigKey": "document360",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-unpublish-articles",
+            "integrationId": "document360",
+            "description": "Unpublish specified article versions in one workspace and language, attributing the action to a team account. Returns the item outcomes Document360 reports.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_batchunpublisharticles",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_batchunpublisharticles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_document360_batchunpublisharticles",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_batchunpublisharticles": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Team account ID to record as the contributor of the unpublish action."
+                            },
+                            "message": {
+                                "description": "Optional unpublish message, passed as ordinary text. Omission sends no message field; null is passed explicitly and an empty string remains empty.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "articles": {
+                                "minItems": 1,
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "articleId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Identifier of the article to unpublish."
+                                        },
+                                        "versionNumber": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 32767,
+                                            "description": "Specific article version to unpublish; not an article identifier or a workspace version."
+                                        }
+                                    },
+                                    "required": [
+                                        "articleId",
+                                        "versionNumber"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An article and its specific version to unpublish."
+                                },
+                                "description": "One to twenty article/version targets, in the order used by returned item indexes."
+                            },
+                            "languageCode": {
+                                "description": "Enabled translation language shared by all targets; defaults to en.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "projectVersionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Workspace identifier containing every target article."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "articles",
+                            "projectVersionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Article versions, workspace, language, and contributor for one batch unpublish operation."
+                    },
+                    "FunctionOutput_document360_batchunpublisharticles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "description": "Only item outcomes actually returned by Document360. Null means the provider returned null; omitted means it supplied no data field. Neither establishes target success.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "index": {
+                                                    "description": "Provider-reported zero-based position in the input articles array; omitted if not supplied.",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "details": {
+                                                    "description": "Provider's explanatory text for the item, including failure details; no machine-readable item error code is documented.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "success": {
+                                                    "description": "Provider-reported success of this item; omitted if not supplied.",
+                                                    "type": "boolean"
+                                                },
+                                                "articleId": {
+                                                    "description": "Article identifier reported by the provider, including explicit null when returned.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "languageCode": {
+                                                    "description": "Translation language reported for this outcome, including explicit null when returned.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "One unpublish outcome actually reported by Document360."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider error code, preserved if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider explanation, preserved if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "description": "Structured provider error metadata, preserved if supplied; values retain their JSON types.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A request-level provider error without backend stack traces or extension envelopes."
+                                },
+                                "description": "Request-level errors reported by the provider; empty when absent or null upstream. Do not attribute an error to a target without explicit correlation."
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider's overall processing status; inspect item outcomes rather than interpreting this as every target succeeding."
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider warning code, preserved if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider warning text, preserved if supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One nonfatal provider warning."
+                                },
+                                "description": "Nonfatal provider warnings; empty when absent or null upstream."
+                            },
+                            "information": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider context text."
+                                },
+                                "description": "Additional provider context such as skipped actions; empty when absent or null upstream."
+                            }
+                        },
+                        "required": [
+                            "errors",
+                            "success",
+                            "warnings",
+                            "information"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reported unpublish outcomes and request-level processing status, errors, warnings, and context."
+                    },
+                    "FunctionMetadata_document360_batchunpublisharticles": {
+                        "type": "object",
+                        "properties": {
+                            "apiBaseUrl": {
+                                "description": "Document360 API Hub origin for this deployment. Defaults to https://apihub.document360.io; set the documented regional or private origin when applicable.",
+                                "type": "string",
+                                "pattern": "^https:\\/\\/apihub(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)?\\.document360\\.io\\/?$"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for 1–20 article versions in the same workspace and language. Obtain the article IDs, version numbers, workspace ID, and contributor's team account ID first. This withdraws publication rather than deleting article content; do not use it to delete articles. Check each returned item, plus request-level errors and warnings. Missing item results are not evidence of success. Do not blindly retry an uncertain result: check publication state first."
+            },
+            "filePath": "./document360/tools/batch-unpublish-articles.ts",
+            "version": "092f6b0c467fe3dd8cc538667a45cf8cf6e8ab4e728fcf4d89a419d5fd8a07bd",
+            "location": {
+                "js": "templates-zero/document360/tools/batch-unpublish-articles/092f6b0c467fe3dd8cc538667a45cf8cf6e8ab4e728fcf4d89a419d5fd8a07bd.cjs",
+                "ts": "templates-zero/document360/tools/batch-unpublish-articles/092f6b0c467fe3dd8cc538667a45cf8cf6e8ab4e728fcf4d89a419d5fd8a07bd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-update-article-workflows",
+            "integrationId": "document360",
+            "description": "Apply the same workflow status, assignee, deadline, or comment to up to 20 articles in one workspace and language. Returns the provider's aggregate processing result, without inventing per-article outcomes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_batchupdatearticleworkflows",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_batchupdatearticleworkflows",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_document360_batchupdatearticleworkflows",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_batchupdatearticleworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Acting team account recorded in the audit log; not automatically the assignee."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "dueAt": {
+                                        "description": "Shared deadline as an explicit-offset RFC 3339 instant with whole-second precision. Null requests clearing; omission retains existing due times.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "comment": {
+                                        "description": "Ordinary text comment to add with each target's workflow change; omission adds no comment.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "statusId": {
+                                        "description": "Project-defined workflow status to apply to every target. Omission makes no status change.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "assigneeId": {
+                                        "description": "Account to assign and notify by email. Null requests clearing assignment; omission retains it.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Shared partial workflow changes. Omitted fields remain unchanged. Explicit null clearing is provisionally supported for assignee and due time only."
+                            },
+                            "articleIds": {
+                                "minItems": 1,
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Article identifier in the selected workspace and language."
+                                },
+                                "uniqueItems": true,
+                                "description": "One to twenty distinct article identifiers in the same workspace and language."
+                            },
+                            "languageCode": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Enabled translation language shared by all target articles."
+                            },
+                            "projectVersionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Workspace containing every target article."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes",
+                            "articleIds",
+                            "languageCode",
+                            "projectVersionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Article targets, shared workspace and language, acting account, and partial workflow changes."
+                    },
+                    "FunctionOutput_document360_batchupdatearticleworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider error code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider error explanation; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "description": "Provider's structured error metadata retaining native JSON types, including any supplied correlation; omitted if absent upstream.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One provider-reported aggregate error, with correlation only when supplied by the provider."
+                                },
+                                "description": "Provider-reported errors at request level; empty when absent or null upstream. Do not assign an error to an article without explicit provider correlation."
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider's aggregate processing status, not independently verified per-article success or email delivery."
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider warning code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider warning explanation; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One nonfatal provider warning."
+                                },
+                                "description": "Nonfatal provider warnings; empty when absent or null upstream."
+                            },
+                            "information": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A supplied provider contextual message, preserved verbatim."
+                                },
+                                "description": "Provider contextual messages such as skipped actions, if supplied; empty when absent or null upstream."
+                            }
+                        },
+                        "required": [
+                            "errors",
+                            "success",
+                            "warnings",
+                            "information"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate Document360 processing status and provider diagnostics, without inferred per-article outcomes."
+                    },
+                    "FunctionMetadata_document360_batchupdatearticleworkflows": {
+                        "type": "object",
+                        "properties": {
+                            "apiBaseUrl": {
+                                "description": "Documented API hub origin for this connection: global, US, or private hosting. Omit only for the global https://apihub.document360.io host.",
+                                "type": "string",
+                                "pattern": "^https:\\/\\/apihub(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)?\\.document360\\.io$"
+                            }
+                        },
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–20 articles sharing one workspace, language, and workflow change. Obtain article IDs, workspace ID, acting team account ID, and any status or assignee IDs first. Use `update-article-workflow` for one article or separate calls when changes differ by article. Assigning someone triggers Document360's email notification; comments and audit effects may repeat on replay. The result is aggregate, not an item-by-item success list or delivery receipt. Check affected workflows after ambiguous results instead of blindly retrying. Use `batch-update-articles` for content edits."
+            },
+            "filePath": "./document360/tools/batch-update-article-workflows.ts",
+            "version": "c35d99d348f72768434ebb9c3536c555f6e2d08267c8ef4072ce53657642e28f",
+            "location": {
+                "js": "templates-zero/document360/tools/batch-update-article-workflows/c35d99d348f72768434ebb9c3536c555f6e2d08267c8ef4072ce53657642e28f.cjs",
+                "ts": "templates-zero/document360/tools/batch-update-article-workflows/c35d99d348f72768434ebb9c3536c555f6e2d08267c8ef4072ce53657642e28f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-update-articles",
+            "integrationId": "document360",
+            "description": "Apply independent edits to up to 20 articles, including content, titles, category placement, visibility, order, source notes, and translation status. Returns the actual per-item outcomes reported by Document360.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_batchupdatearticles",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_batchupdatearticles",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_document360_batchupdatearticles",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_batchupdatearticles": {
+                        "type": "object",
+                        "properties": {
+                            "articles": {
+                                "minItems": 1,
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "articleId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Identifier of the article to edit."
+                                        },
+                                        "languageCode": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Enabled language of this article translation; always supplied explicitly."
+                                        },
+                                        "versionNumber": {
+                                            "description": "Specific article version to edit. Omission uses the provider's latest-version default.",
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 2147483647
+                                        },
+                                        "changes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "order": {
+                                                    "description": "One-based position in the category tree. Omission leaves placement unchanged rather than requesting the provider's zero default.",
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 2147483647
+                                                },
+                                                "title": {
+                                                    "description": "Replacement article title; cannot be empty.",
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "hidden": {
+                                                    "description": "True hides the article on the site; false shows it. This does not unpublish or delete content.",
+                                                    "type": "boolean"
+                                                },
+                                                "source": {
+                                                    "description": "Replacement free-text source note; an empty string clears the note.",
+                                                    "type": "string"
+                                                },
+                                                "content": {
+                                                    "description": "Replacement content and its interpretation. Omission leaves content unchanged.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "text": {
+                                                            "type": "string",
+                                                            "description": "Ordinary article content in the declared format; an empty string requests empty content."
+                                                        },
+                                                        "format": {
+                                                            "type": "string",
+                                                            "enum": [
+                                                                "markdown",
+                                                                "html"
+                                                            ],
+                                                            "description": "markdown means DFM Markdown; html means HTML. For Editor 3.0 these map to Markdown and Block input formats; other editors retain their stored format, so supply content matching that editor."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "text",
+                                                        "format"
+                                                    ],
+                                                    "additionalProperties": false
+                                                },
+                                                "categoryId": {
+                                                    "description": "Destination category ID; changes the article's parent category rather than copying it.",
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "translationStatus": {
+                                                    "description": "Replacement translation state. Only the three states documented for this write endpoint are supported.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "none",
+                                                        "needsTranslation",
+                                                        "translated"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "minProperties": 1,
+                                            "description": "Partial edits only. Omitted fields must remain unchanged. Null is not accepted; empty content or source explicitly clears that text."
+                                        }
+                                    },
+                                    "required": [
+                                        "articleId",
+                                        "languageCode",
+                                        "changes"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One article translation and its independent edits."
+                                },
+                                "description": "Independent article edits in request-index order; no more than twenty per call."
+                            }
+                        },
+                        "required": [
+                            "articles"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Apply partial edits to one through twenty article translations."
+                    },
+                    "FunctionOutput_document360_batchupdatearticles": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "description": "Only item outcomes actually supplied in data. Preserve null and omit when absent; do not infer successes for missing targets.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "index": {
+                                                    "description": "Provider's zero-based position in the input articles array, if supplied.",
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                "details": {
+                                                    "description": "Provider explanatory or failure text. No structured item error codes are documented.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "success": {
+                                                    "description": "Provider's success indicator for this item, if supplied.",
+                                                    "type": "boolean"
+                                                },
+                                                "articleId": {
+                                                    "description": "Article identifier reported for this outcome; null and omission retain upstream meaning.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "languageCode": {
+                                                    "description": "Reported article translation language, if supplied; may be null.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "One actual article update outcome reported by Document360."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider error code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider explanation; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "description": "Structured provider error metadata in its original JSON types; omitted if absent upstream.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One request-level provider error."
+                                },
+                                "description": "Request-level provider errors; absent or null upstream becomes an empty array. No target correlation is invented."
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider's overall processing status; not a substitute for each target's result."
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider warning code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider warning text; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One nonfatal provider warning."
+                                },
+                                "description": "Nonfatal provider warnings; absent or null upstream becomes an empty array."
+                            },
+                            "information": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "One contextual message supplied by the provider."
+                                },
+                                "description": "Provider contextual messages, including skipped actions; empty when none are supplied."
+                            }
+                        },
+                        "required": [
+                            "errors",
+                            "success",
+                            "warnings",
+                            "information"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Actual batch processing status, reported item outcomes, and request-level messages."
+                    },
+                    "FunctionMetadata_document360_batchupdatearticles": {
+                        "type": "object",
+                        "properties": {
+                            "apiBaseUrl": {
+                                "description": "Document360 API Hub origin for this connection. Omit for https://apihub.document360.io; set the documented US or private-hosting origin when applicable.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for 1–20 independent article edits. Know each article ID and language; include versionNumber to target a specific version, otherwise the provider updates the latest. Supply only intended changes. Content is ordinary DFM Markdown or HTML, not a transport payload. For Editor 3.0 choose markdown for GET content round trips, or html for HTML content. Moving category changes placement; hidden changes site visibility, not publication state. Use `batch-unpublish-articles` to withdraw publication and `batch-update-article-workflows` for workflow metadata. Inspect item outcomes and request messages before retrying."
+            },
+            "filePath": "./document360/tools/batch-update-articles.ts",
+            "version": "d0a180c734e540707e8ddb296090b0cf336bc218f98caa04755204380850e60d",
+            "location": {
+                "js": "templates-zero/document360/tools/batch-update-articles/d0a180c734e540707e8ddb296090b0cf336bc218f98caa04755204380850e60d.cjs",
+                "ts": "templates-zero/document360/tools/batch-update-articles/d0a180c734e540707e8ddb296090b0cf336bc218f98caa04755204380850e60d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-category",
+            "integrationId": "document360",
+            "description": "Create a folder, page, or index category in a workspace's default language, optionally beneath an existing category.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_createcategory",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_createcategory",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_document360_createcategory",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_createcategory": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Category name in the workspace's default language."
+                            },
+                            "slug": {
+                                "description": "Optional URL-friendly slug unique within the workspace; omission generates one from the name.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "order": {
+                                "description": "Position within the parent; omission uses provider placement.",
+                                "type": "integer",
+                                "minimum": -2147483648,
+                                "maximum": 2147483647
+                            },
+                            "userId": {
+                                "description": "Team account ID credited for creation, when supplied.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "content": {
+                                "description": "Unencoded initial page content in the selected editor format; empty string is an empty body.",
+                                "type": "string"
+                            },
+                            "contentType": {
+                                "description": "Markdown, WYSIWYG HTML, or advanced WYSIWYG HTML; omission uses the provider's editor default.",
+                                "type": "string",
+                                "enum": [
+                                    "markdown",
+                                    "wysiwyg",
+                                    "block"
+                                ]
+                            },
+                            "categoryType": {
+                                "description": "Folder groups records, page has its own content, and index links to articles.",
+                                "type": "string",
+                                "enum": [
+                                    "folder",
+                                    "page",
+                                    "index"
+                                ]
+                            },
+                            "parentCategoryId": {
+                                "description": "Existing parent category ID; null or omission creates a top-level category.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "projectVersionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Workspace (project version) in which to create the category."
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "projectVersionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One category to create in a workspace's default language."
+                    },
+                    "FunctionOutput_document360_createcategory": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "New category ID for subsequent operations."
+                            },
+                            "icon": {
+                                "description": "Category's Unicode icon, if returned.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "description": "Category name returned by the provider; null is retained.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "order": {
+                                "description": "Assigned position inside the parent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "warnings": {
+                                "description": "Nonfatal provider warnings, including their codes when available; omitted when none.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Provider warning description, prefixed by its warning code when available."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created category identity and any returned details or warnings."
+                    },
+                    "FunctionMetadata_document360_createcategory": {
+                        "type": "object",
+                        "properties": {
+                            "apiBaseUrl": {
+                                "description": "Document360 API Hub base URL for the connected project; set for US or private hosting. Defaults to https://apihub.document360.io.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for one new category; use `batch-create-categories` for several. Obtain the workspace ID from your workspace discovery tools and a parent ID from `list-categories` if needed. Creation is not safe to replay blindly: inspect `list-categories` before retrying an uncertain result."
+            },
+            "filePath": "./document360/tools/create-category.ts",
+            "version": "2d310df15c7168e63ff38cca450518dd6870a2316a4534d6ddba8899d22b7504",
+            "location": {
+                "js": "templates-zero/document360/tools/create-category/2d310df15c7168e63ff38cca450518dd6870a2316a4534d6ddba8899d22b7504.cjs",
+                "ts": "templates-zero/document360/tools/create-category/2d310df15c7168e63ff38cca450518dd6870a2316a4534d6ddba8899d22b7504.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-article",
+            "integrationId": "document360",
+            "description": "Get one article translation by ID and language, or resolve it from a relative knowledge-base URL.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_getarticle",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_getarticle",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_getarticle": {
+                        "type": "object",
+                        "properties": {
+                            "articleId": {
+                                "description": "Article ID; provide with languageCode instead of relativeUrl.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "contentMode": {
+                                "description": "Source preserves merge codes for editing; display resolves snippets, variables, and glossary references for readers.",
+                                "default": "source",
+                                "type": "string",
+                                "enum": [
+                                    "source",
+                                    "display"
+                                ]
+                            },
+                            "relativeUrl": {
+                                "description": "Knowledge-base path without domain, for example /workspace/docs/en/article-slug; use instead of articleId and languageCode.",
+                                "pattern": "^/",
+                                "type": "string"
+                            },
+                            "languageCode": {
+                                "description": "Enabled translation code such as en or pt-BR; URL lookup derives language from its path.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "redirectionMode": {
+                                "description": "URL lookup behavior for configured redirects. Not applicable to ID lookup.",
+                                "default": "none",
+                                "type": "string",
+                                "enum": [
+                                    "none",
+                                    "redirectOnly",
+                                    "redirectWithContent"
+                                ]
+                            },
+                            "versionSelection": {
+                                "description": "Latest draft or latest published revision. ID-based published reads fall back to the latest draft if none is published.",
+                                "default": "latest",
+                                "type": "string",
+                                "enum": [
+                                    "latest",
+                                    "published"
+                                ]
+                            },
+                            "includeAssetAccessTokens": {
+                                "description": "Append provider access tokens to asset URLs; private and mixed projects need them for reader access.",
+                                "default": true,
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Identify one article translation by ID and language or by its relative knowledge-base path, with content and revision selection.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "articleId"
+                                    ],
+                                    "properties": {
+                                        "articleId": true
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "redirectionMode"
+                                        ],
+                                        "properties": {
+                                            "redirectionMode": true
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "required": [
+                                        "relativeUrl"
+                                    ],
+                                    "properties": {
+                                        "relativeUrl": true
+                                    }
+                                },
+                                "required": [
+                                    "articleId",
+                                    "languageCode"
+                                ],
+                                "properties": {
+                                    "articleId": true,
+                                    "languageCode": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "required": [
+                                                "articleId"
+                                            ],
+                                            "properties": {
+                                                "articleId": true
+                                            }
+                                        },
+                                        {
+                                            "required": [
+                                                "languageCode"
+                                            ],
+                                            "properties": {
+                                                "languageCode": true
+                                            }
+                                        }
+                                    ]
+                                },
+                                "required": [
+                                    "relativeUrl"
+                                ],
+                                "properties": {
+                                    "relativeUrl": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_document360_getarticle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "Resolved document ID, usable as articleId when the document is an article.",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "Provider-returned document URL, when available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "slug": {
+                                "description": "URL-friendly document slug.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "order": {
+                                "description": "Position within the parent category.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "title": {
+                                "description": "Document title; retain provider null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "hidden": {
+                                "description": "True when hidden from the knowledge-base site.",
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "description": "Actual returned publication state, including any draft fallback.",
+                                "type": "string",
+                                "enum": [
+                                    "draft",
+                                    "published"
+                                ]
+                            },
+                            "authors": {
+                                "description": "Contributor identities supplied for the document.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Contributor team-account ID.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "email": {
+                                                    "description": "Contributor email address.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "lastName": {
+                                                    "description": "Contributor family name.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "firstName": {
+                                                    "description": "Contributor given name.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "profileImageUrl": {
+                                                    "description": "Provider profile image URL, possibly carrying an access token.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Contributor identity and profile image supplied for the document."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "content": {
+                                "description": "Source Markdown or DFM content returned by Document360; not synthesized from HTML.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Article creation instant normalized to UTC Z without fractional precision loss.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "createdBy": {
+                                "description": "Provider creator reference; ID lookup documents this as a team-account ID.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "enableRtl": {
+                                "description": "Whether right-to-left alignment is enabled.",
+                                "type": "boolean"
+                            },
+                            "freshness": {
+                                "description": "Review and stale-policy information.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "reason": {
+                                                "description": "Reason the article was marked stale.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "status": {
+                                                "description": "Provider freshness state.",
+                                                "type": "string"
+                                            },
+                                            "expiresAt": {
+                                                "description": "Review expiration instant in UTC Z.",
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                            },
+                                            "inherited": {
+                                                "description": "True when the stale policy comes from project documentation settings.",
+                                                "type": "boolean"
+                                            },
+                                            "expireDays": {
+                                                "description": "Days after publication until review.",
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "updatedAt": {
+                                "description": "Article modification instant normalized to UTC Z without fractional precision loss.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "categoryId": {
+                                "description": "Parent category ID; preserve null for an unparented custom page.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "contentType": {
+                                "description": "Stored editor type; Advanced WYSIWYG can also return DFM in content.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "markdown",
+                                            "wysiwyg",
+                                            "block"
+                                        ]
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "description": {
+                                "description": "Article summary, distinct from settings SEO description.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "htmlContent": {
+                                "description": "HTML body, including read-only rendered HTML for Markdown documents.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "redirectUrl": {
+                                "description": "Redirect target returned without content for a redirect-only response; other article fields are absent in this case.",
+                                "type": "string"
+                            },
+                            "seoSettings": {
+                                "description": "SEO settings supplied by URL lookup; omitted when not returned.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "description": "SEO title.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "description": {
+                                                "description": "SEO description.",
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
+                                            },
+                                            "excludeFromExternalSearch": {
+                                                "description": "Whether external search indexing is excluded.",
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "versionType": {
+                                "description": "Collaborative discriminator such as draft, published, or system_backup; null outside collaborative editing.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "categoryType": {
+                                "description": "Provider category/document discriminator, relevant when URL resolution returns a category.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "customFields": {
+                                "description": "V2 custom-field label-to-native-value map; multi-select values remain the provider's comma-separated labels, not invented option IDs.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "description": "Text, date, selected label, or comma-separated multi-select labels."
+                                                },
+                                                {
+                                                    "type": "number",
+                                                    "description": "Native numeric custom-field value."
+                                                },
+                                                {
+                                                    "type": "boolean",
+                                                    "description": "Native boolean custom-field value."
+                                                },
+                                                {
+                                                    "type": "null",
+                                                    "description": "Custom field with no value."
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "languageCode": {
+                                "description": "Returned language code when supplied by the response, otherwise the requested ID-lookup code; omitted if unknown.",
+                                "type": "string"
+                            },
+                            "latestVersion": {
+                                "description": "Latest revision number.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "publicVersion": {
+                                "description": "Published revision number, retaining provider sentinel values.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "versionNumber": {
+                                "description": "Revision number of the returned body.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "isSharedArticle": {
+                                "description": "Whether the article is shared.",
+                                "type": "boolean"
+                            },
+                            "projectVersionId": {
+                                "description": "Containing workspace ID.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isFallbackContent": {
+                                "description": "True when returned content falls back to the default language.",
+                                "type": "boolean"
+                            },
+                            "translationStatus": {
+                                "description": "Provider translation workflow state.",
+                                "type": "string",
+                                "enum": [
+                                    "none",
+                                    "needTranslation",
+                                    "translated",
+                                    "inProgress"
+                                ]
+                            },
+                            "availableLanguages": {
+                                "description": "Available translations and their URLs; null is preserved.",
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "url": {
+                                                    "description": "Translation URL.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "languageCode": {
+                                                    "description": "Translation language code.",
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "translationStatus": {
+                                                    "description": "Provider translation status.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Available translation language, URL, and workflow status."
+                                        }
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "securityVisibility": {
+                                "description": "Whether reader authentication is required.",
+                                "type": "string",
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ]
+                            },
+                            "currentWorkflowStatusId": {
+                                "description": "Current workflow status reference.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Resolved article or category data with distinct source and HTML bodies, or only a redirect target.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "redirectUrl"
+                                ],
+                                "properties": {
+                                    "redirectUrl": true
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an article ID and language when editing, or a relative KB path when only a link is known. For historical content use `get-article-version`. Display content resolves merge codes and must not be written back with `update-article`. A published read by ID can fall back to a draft; inspect status. A redirect-only result contains redirectUrl instead of article content."
+            },
+            "filePath": "./document360/tools/get-article.ts",
+            "version": "e8848db7b310431d695fb868f1759cbd2efae0379b3f40a4d11f810aa3f57939",
+            "location": {
+                "js": "templates-zero/document360/tools/get-article/e8848db7b310431d695fb868f1759cbd2efae0379b3f40a4d11f810aa3f57939.cjs",
+                "ts": "templates-zero/document360/tools/get-article/e8848db7b310431d695fb868f1759cbd2efae0379b3f40a4d11f810aa3f57939.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-article-workflow",
+            "integrationId": "document360",
+            "description": "Update an article's workflow status, assignee, due time, or comment in a workspace and language. Records the acting team account in the audit log, and assigning someone triggers the provider's assignment email.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": true,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_document360_updatearticleworkflow",
+            "output_schema_ref": "#/definitions/FunctionOutput_document360_updatearticleworkflow",
+            "model_schema_refs": [],
+            "metadata_schema_ref": "#/definitions/FunctionMetadata_document360_updatearticleworkflow",
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_document360_updatearticleworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Team account performing the update, recorded in the audit log; distinct from the assignee."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "dueAt": {
+                                        "description": "Workflow deadline as an RFC 3339 instant with explicit offset and whole-second precision. Null requests clearing it; omission leaves it unchanged.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "pattern": "(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    },
+                                    "comment": {
+                                        "description": "Ordinary text comment to add with the workflow change, not replacement of comment history. Omission adds no comment.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "statusId": {
+                                        "description": "Predefined workflow status ID to apply; omission makes no status change. Null and empty values are not supported.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "assigneeId": {
+                                        "description": "Team account to assign and notify by email. Null requests removing the assignee; omission retains assignment.",
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "minLength": 1
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial workflow metadata update. Omission leaves a field unchanged. Null is available only to clear an assignee or due time, provisionally subject to provider validation."
+                            },
+                            "articleId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Identifier of the article whose workflow will change."
+                            },
+                            "languageCode": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Enabled language of the target article translation."
+                            },
+                            "projectVersionId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Workspace containing the target article."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes",
+                            "articleId",
+                            "languageCode",
+                            "projectVersionId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One article, workspace, language, acting team account, and intended partial workflow changes."
+                    },
+                    "FunctionOutput_document360_updatearticleworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "errors": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider error code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider explanation; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "metadata": {
+                                            "description": "Structured provider error metadata retaining native JSON types; omitted if absent upstream.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A provider-reported workflow error without backend stack traces or extension envelopes."
+                                },
+                                "description": "Provider-reported request errors; empty when absent or null upstream."
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider's processing status for the workflow request; does not establish notification delivery."
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "description": "Opaque provider warning code; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "description": "Provider warning explanation; omitted if absent upstream.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A nonfatal provider warning about processing the workflow request."
+                                },
+                                "description": "Nonfatal provider warnings; empty when absent or null upstream."
+                            },
+                            "information": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "An additional provider context message, retained verbatim."
+                                },
+                                "description": "Additional provider context, including skipped actions if supplied; empty when absent or null upstream."
+                            }
+                        },
+                        "required": [
+                            "errors",
+                            "success",
+                            "warnings",
+                            "information"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Document360 processing status and advisories, not an updated article or proof of assignment email delivery."
+                    },
+                    "FunctionMetadata_document360_updatearticleworkflow": {
+                        "type": "object",
+                        "properties": {
+                            "apiBaseUrl": {
+                                "description": "Document360 API Hub origin for this connection. Omit for https://apihub.document360.io; set the documented US or private hosting origin otherwise.",
+                                "type": "string",
+                                "pattern": "^https:\\/\\/apihub(?:\\.[a-z0-9]+(?:-[a-z0-9]+)*)?\\.document360\\.io\\/?$"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use for one article's editorial workflow, not article content or publication. Obtain the article, workspace, language, and acting team account IDs first, plus the project's predefined workflow status ID or assignee ID when changing those fields. Supply only intended changes. Setting an assignee causes Document360 to email that user; do not blindly replay the call. Use `batch-update-article-workflows` for multiple articles sharing the same changes and `batch-update-articles` for content edits. The result is the provider's processing status, not proof of email delivery."
+            },
+            "filePath": "./document360/tools/update-article-workflow.ts",
+            "version": "1f85ec4ceef9c7728e3f4aefd29ded4e4bce0ae500359c99113420518f969033",
+            "location": {
+                "js": "templates-zero/document360/tools/update-article-workflow/1f85ec4ceef9c7728e3f4aefd29ded4e4bce0ae500359c99113420518f969033.cjs",
+                "ts": "templates-zero/document360/tools/update-article-workflow/1f85ec4ceef9c7728e3f4aefd29ded4e4bce0ae500359c99113420518f969033.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

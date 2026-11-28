@@ -1,0 +1,2109 @@
+{
+    "providerConfigKey": "readwise-reader",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make Reader's document library available as records, including source documents, highlights, and notes with parent relationships, metadata, HTML content, and reading state.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-documents",
+            "output": [
+                "Documents"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Documents"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Documents": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this Reader document, highlight, or note."
+                            },
+                            "url": {
+                                "description": "Reader URL for opening this record.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Assigned tags normalized from the provider's map; empty means no tags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Opaque tag key usable in document filters."
+                                        },
+                                        "name": {
+                                            "description": "Display name when available in the document's tag data.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "key"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An assigned Reader tag with its opaque key and available display name."
+                                }
+                            },
+                            "notes": {
+                                "description": "Document or highlight note text, preserving empty and null values.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Document title when available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "author": {
+                                "description": "Document author when available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source": {
+                                "description": "Reader source attribution.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "savedAt": {
+                                "description": "Save instant in UTC with Z or provider null.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "summary": {
+                                "description": "Summary text when supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "category": {
+                                "description": "Provider category, including highlight and note; unfamiliar values remain intact.",
+                                "type": "string"
+                            },
+                            "imageUrl": {
+                                "description": "Cover-image URL when supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "location": {
+                                "description": "Current Reader location where applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "parentId": {
+                                "description": "Parent source-document ID for highlights, parent highlight ID for notes, or null for top-level documents.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "siteName": {
+                                "description": "Source website name when available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Creation instant in UTC with Z, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sourceUrl": {
+                                "description": "Original source URL when available.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "description": "Update instant in UTC with Z, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "wordCount": {
+                                "description": "Provider-reported word count.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "htmlContent": {
+                                "description": "Available document HTML as ordinary content, not transport-encoded text.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastMovedAt": {
+                                "description": "Last location-move instant in UTC with Z or provider null.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "publishedAt": {
+                                "description": "Publication instant in UTC with Z when Reader supplies a full datetime.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "readingTime": {
+                                "description": "Provider-formatted reading-duration label, not an instant.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastOpenedAt": {
+                                "description": "Last-opened instant in UTC with Z or null if unopened.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "firstOpenedAt": {
+                                "description": "First-opened instant in UTC with Z or null if unopened.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "listeningTime": {
+                                "description": "Provider-formatted listening-duration label or null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "publishedDate": {
+                                "description": "Publication calendar date when Reader supplies a date-only value.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "highlightOffset": {
+                                "description": "Character offset of a highlight passage in parent plain text; null on other records.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "readingProgress": {
+                                "description": "Provider fractional reading progress, preserved without scaling.",
+                                "type": "number"
+                            },
+                            "highlightLocation": {
+                                "description": "Opaque serialized DOM start,end positions in parent HTML; null on other records.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reader library record representing a source document, highlight, or note with content, metadata, parent relationships, and reading state."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "batch-update-documents",
+            "integrationId": "readwise-reader",
+            "description": "Partially update up to 50 Reader source documents with different changes per document and return each provider-reported outcome.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_batchupdatedocuments",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_batchupdatedocuments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_batchupdatedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "updates": {
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "documentId": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque source-document ID to update."
+                                        },
+                                        "changes": {
+                                            "type": "object",
+                                            "properties": {
+                                                "seen": {
+                                                    "description": "Mark seen or unseen; this can populate or clear opened timestamps.",
+                                                    "type": "boolean"
+                                                },
+                                                "tags": {
+                                                    "description": "Complete replacement tag list; [] clears all existing tags.",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "description": "A replacement tag string."
+                                                    }
+                                                },
+                                                "notes": {
+                                                    "description": "Replacement document note; an empty string requests clearing.",
+                                                    "type": "string"
+                                                },
+                                                "title": {
+                                                    "description": "Replacement title; an empty string is an explicit request.",
+                                                    "type": "string"
+                                                },
+                                                "author": {
+                                                    "description": "Replacement author; an empty string is an explicit request.",
+                                                    "type": "string"
+                                                },
+                                                "summary": {
+                                                    "description": "Replacement summary; an empty string is an explicit request.",
+                                                    "type": "string"
+                                                },
+                                                "category": {
+                                                    "description": "Replacement source-document category supported by the batch endpoint.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "article",
+                                                        "email",
+                                                        "rss",
+                                                        "pdf",
+                                                        "epub",
+                                                        "tweet",
+                                                        "video"
+                                                    ]
+                                                },
+                                                "imageUrl": {
+                                                    "description": "Replacement cover-image URL; an empty string requests clearing subject to provider acceptance.",
+                                                    "type": "string"
+                                                },
+                                                "language": {
+                                                    "description": "Replacement language code such as en or en-US.",
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "location": {
+                                                    "description": "Requested document location; account settings can affect the resulting location.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "new",
+                                                        "later",
+                                                        "archive",
+                                                        "feed"
+                                                    ]
+                                                },
+                                                "publishedAt": {
+                                                    "description": "Replacement publication instant with explicit timezone and at most six fractional digits.",
+                                                    "format": "date-time",
+                                                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "description": "Partial modifications for this document; omission preserves values and null is not supported.",
+                                            "minProperties": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "documentId",
+                                        "changes"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A source document and its independent partial modifications."
+                                },
+                                "description": "One to fifty updates, each for a different source document; duplicate document IDs are rejected."
+                            }
+                        },
+                        "required": [
+                            "updates"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A bounded batch of independent partial source-document updates."
+                    },
+                    "FunctionOutput_readwise_reader_batchupdatedocuments": {
+                        "type": "object",
+                        "properties": {
+                            "results": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "documentId": {
+                                            "type": "string",
+                                            "description": "Opaque document ID reported for this outcome."
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "description": "Whether Reader reports that this individual update succeeded."
+                                        },
+                                        "error": {
+                                            "description": "Failure details for an unsuccessful item; omitted for successful items.",
+                                            "type": "object",
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "document_not_found",
+                                                        "invalid_target",
+                                                        "update_rejected"
+                                                    ],
+                                                    "description": "Normalized item failure: missing document, unsuitable target, or another rejected update."
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Provider's per-item error text, preserved for diagnosis."
+                                                },
+                                                "recovery": {
+                                                    "type": "string",
+                                                    "description": "Action to take for this failed item before retrying it."
+                                                }
+                                            },
+                                            "required": [
+                                                "code",
+                                                "message",
+                                                "recovery"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "documentId",
+                                        "success"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-reported document update outcome."
+                                },
+                                "description": "Provider-reported per-document outcomes, correlated by ID rather than an assumed response order."
+                            }
+                        },
+                        "required": [
+                            "results"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Individual Reader outcomes for the submitted document updates."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for 1–50 source documents from `list-documents`; use `update-document` for one document and `update-highlight` for a highlight. Supply each document once. Omitted fields stay unchanged; supplied tags replace the full tag list. Review every result: a valid batch can partially fail, and successful items are not rolled back. Do not replay the whole batch just because one item failed."
+            },
+            "filePath": "./readwise-reader/tools/batch-update-documents.ts",
+            "version": "c4d0dbbca1a1956dd6538fd3954496d182bef3463e4fc6740e9bc5e70d00b55c",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/batch-update-documents/c4d0dbbca1a1956dd6538fd3954496d182bef3463e4fc6740e9bc5e70d00b55c.cjs",
+                "ts": "templates-zero/readwise-reader/tools/batch-update-documents/c4d0dbbca1a1956dd6538fd3954496d182bef3463e4fc6740e9bc5e70d00b55c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "check-access-token",
+            "integrationId": "readwise-reader",
+            "description": "Check whether the access token associated with the connection is valid without retrieving library records.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_checkaccesstoken",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_checkaccesstoken",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_checkaccesstoken": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "Check the connected access token without providing any input fields."
+                    },
+                    "FunctionOutput_readwise_reader_checkaccesstoken": {
+                        "type": "object",
+                        "properties": {
+                            "valid": {
+                                "type": "boolean",
+                                "description": "Whether the provider recognizes the connected access token as valid."
+                            }
+                        },
+                        "required": [
+                            "valid"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The validity of the connected access token, without account or library details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to check the connected token, not to retrieve account or library details. No token input is needed. A successful check establishes token validity only, not permission for every future operation."
+            },
+            "filePath": "./readwise-reader/tools/check-access-token.ts",
+            "version": "aaca04101a7f57afd60e0cbbaf1f7dd174bd878741e68ea70ae72579ce43cb2b",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/check-access-token/aaca04101a7f57afd60e0cbbaf1f7dd174bd878741e68ea70ae72579ce43cb2b.cjs",
+                "ts": "templates-zero/readwise-reader/tools/check-access-token/aaca04101a7f57afd60e0cbbaf1f7dd174bd878741e68ea70ae72579ce43cb2b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-highlight",
+            "integrationId": "readwise-reader",
+            "description": "Create a highlight matching an exact passage in an existing Reader document, optionally with a note and tags.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_createhighlight",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_createhighlight",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_createhighlight": {
+                        "type": "object",
+                        "properties": {
+                            "tags": {
+                                "description": "Tag strings to associate with the highlight; an empty array supplies no tags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "A tag string to associate with the highlight."
+                                }
+                            },
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact passage as it reads in the parent document's content; ordinary Unicode text, not HTML transport encoding."
+                            },
+                            "notes": {
+                                "description": "Ordinary text note attached to the new highlight; omitted for no supplied note.",
+                                "type": "string"
+                            },
+                            "documentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing parent source document to highlight."
+                            },
+                            "savedUsing": {
+                                "description": "Source attribution for the application or workflow creating the highlight.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "documentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An exact passage in an existing Reader document and optional highlight annotations."
+                    },
+                    "FunctionOutput_readwise_reader_createhighlight": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier returned for the highlight."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Reader URL returned for opening the highlight."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The highlight identity and Reader link returned by the save request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-document` with includeHtmlContent=true to inspect the parent document first, then supply the passage exactly as it reads there. Use `save-document` for a new source document. A note can be created alongside this highlight; it cannot be created as an independent note record. Do not automatically repeat an uncertain creation, since duplicate behavior is not documented."
+            },
+            "filePath": "./readwise-reader/tools/create-highlight.ts",
+            "version": "ea76df4d4909cc3656b4775f389789bcfe09df88772e5158205180a0c893b43d",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/create-highlight/ea76df4d4909cc3656b4775f389789bcfe09df88772e5158205180a0c893b43d.cjs",
+                "ts": "templates-zero/readwise-reader/tools/create-highlight/ea76df4d4909cc3656b4775f389789bcfe09df88772e5158205180a0c893b43d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-document",
+            "integrationId": "readwise-reader",
+            "description": "Delete a source document together with its highlights and their notes. No restore capability is documented.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_deletedocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_deletedocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_deletedocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the source document to delete along with its highlights and notes."
+                            }
+                        },
+                        "required": [
+                            "documentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The source document to delete from Reader."
+                    },
+                    "FunctionOutput_readwise_reader_deletedocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the source document whose deletion was acknowledged."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True only when Reader acknowledges the delete with its documented 204 response."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reader acknowledgment of the source-document deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a source-document ID from `list-documents` or `get-document`. This removes the document and its dependent highlights and notes, not just its library location. Use `update-document` with location=archive to keep the content instead. Use `delete-highlight` for only a highlight and its note. There is no documented API undo; no confirmation field is needed."
+            },
+            "filePath": "./readwise-reader/tools/delete-document.ts",
+            "version": "1eb8cd26e0a9efd2fb9f19a43e3242105adc737ad0f8b64941764473c7fd669d",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/delete-document/1eb8cd26e0a9efd2fb9f19a43e3242105adc737ad0f8b64941764473c7fd669d.cjs",
+                "ts": "templates-zero/readwise-reader/tools/delete-document/1eb8cd26e0a9efd2fb9f19a43e3242105adc737ad0f8b64941764473c7fd669d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-highlight",
+            "integrationId": "readwise-reader",
+            "description": "Delete a highlight and its attached note without deleting its parent source document. No restore capability is documented.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_deletehighlight",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_deletehighlight",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_deletehighlight": {
+                        "type": "object",
+                        "properties": {
+                            "highlightId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the highlight to delete, not its parent document or note."
+                            }
+                        },
+                        "required": [
+                            "highlightId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the highlight to delete while preserving its parent source document."
+                    },
+                    "FunctionOutput_readwise_reader_deletehighlight": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the highlight whose deletion was acknowledged."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True after Reader acknowledges the highlight deletion with HTTP 204."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that Reader deleted the specified highlight."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a highlight ID from `create-highlight` or `list-documents` with category=highlight. This removes the highlight and its note, not the parent source document. To keep the highlight and only remove its note, use `update-highlight` with notes=\"\". Use `delete-document` to remove an entire source document and its annotations. No API undo is documented."
+            },
+            "filePath": "./readwise-reader/tools/delete-highlight.ts",
+            "version": "a6ef2661b397380469f3058c3b07d380dccd5cb23106b479f98a45853c220ebe",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/delete-highlight/a6ef2661b397380469f3058c3b07d380dccd5cb23106b479f98a45853c220ebe.cjs",
+                "ts": "templates-zero/readwise-reader/tools/delete-highlight/a6ef2661b397380469f3058c3b07d380dccd5cb23106b479f98a45853c220ebe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-document",
+            "integrationId": "readwise-reader",
+            "description": "Retrieve one Reader document by identifier, including a highlight or note document, with optional HTML content and a temporary raw-source link.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_getdocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_getdocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_getdocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Reader identifier of a source document, highlight, or note."
+                            },
+                            "includeHtmlContent": {
+                                "description": "Include the document's HTML content when available.",
+                                "type": "boolean"
+                            },
+                            "includeRawSourceUrl": {
+                                "description": "Include a raw-source download URL valid for one hour; it can be empty for non-distributable content.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "documentId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one Reader document and optionally request its HTML and temporary raw-source link."
+                    },
+                    "FunctionOutput_readwise_reader_getdocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this Reader document."
+                            },
+                            "url": {
+                                "description": "Reader link for opening this document.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Assigned tags normalized from Reader's tag map; an empty array means no tags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Opaque tag key used by document tag filters."
+                                        },
+                                        "name": {
+                                            "description": "Display name when present in the tag data.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "key"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An assigned Reader tag identified by its opaque map key."
+                                }
+                            },
+                            "notes": {
+                                "description": "Document note or the note attached to a highlight; empty text is preserved.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "description": "Document title or null if the provider supplies no title.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "author": {
+                                "description": "Document author or null if unknown.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "source": {
+                                "description": "Reader's source attribution for this record.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "savedAt": {
+                                "description": "Save instant normalized to UTC with Z, or null when the provider supplies null.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "summary": {
+                                "description": "Document summary text, retaining empty and null values.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "category": {
+                                "description": "Reader category, including article, highlight, or note; unfamiliar provider values remain unchanged.",
+                                "type": "string"
+                            },
+                            "imageUrl": {
+                                "description": "Document cover-image URL when supplied.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "location": {
+                                "description": "Current Reader location, including new, later, shortlist, archive, or feed when applicable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "parentId": {
+                                "description": "Parent source-document ID for a highlight, parent highlight ID for a note, or null for a top-level document.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "siteName": {
+                                "description": "Name of the source website when provided.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "createdAt": {
+                                "description": "Record creation instant normalized to UTC with Z, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "sourceUrl": {
+                                "description": "Original source URL; null when provided as null, omitted when unavailable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "updatedAt": {
+                                "description": "Record update instant normalized to UTC with Z, preserving fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "wordCount": {
+                                "description": "Provider-reported document word count.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "htmlContent": {
+                                "description": "HTML content when requested and returned; not base64 encoded.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastMovedAt": {
+                                "description": "Last location-move instant in UTC with Z, or null when absent at the provider.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "publishedAt": {
+                                "description": "Publication instant normalized to UTC with Z when Reader supplies a full datetime instead of a calendar date.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "readingTime": {
+                                "description": "Provider-formatted reading-duration label, such as 4 mins; not an instant.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "lastOpenedAt": {
+                                "description": "Last-opened instant in UTC with Z, or null if not opened.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "rawSourceUrl": {
+                                "description": "Raw-source link when requested; valid for one hour, with an empty string indicating non-distributable content.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "firstOpenedAt": {
+                                "description": "First-opened instant in UTC with Z, or null if not opened.",
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "listeningTime": {
+                                "description": "Provider-formatted listening-duration label; null when unavailable.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "publishedDate": {
+                                "description": "Publication calendar date when Reader supplies a date-only value; never converted to midnight.",
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "highlightOffset": {
+                                "description": "Character offset of a highlight passage in the parent's plain text; null on other documents.",
+                                "anyOf": [
+                                    {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "readingProgress": {
+                                "description": "Reader's fractional reading progress, for example 0.5; preserved without percentage conversion.",
+                                "type": "number"
+                            },
+                            "highlightLocation": {
+                                "description": "Opaque start,end pair of serialized DOM positions in the parent's HTML; null on other documents.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One Reader document, highlight, or note with normalized metadata and any requested content."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this when you know a document ID from `list-documents`, `save-document`, or `create-highlight`. Highlights and notes are also Reader documents and can be retrieved by their own IDs. Use `list-documents` to discover records. Request HTML when you need content or an exact passage for `create-highlight`. Raw-source links expire after one hour and can be empty for non-distributable documents."
+            },
+            "filePath": "./readwise-reader/tools/get-document.ts",
+            "version": "8fb8060bea169a68469dfbbb0afeefe29f56c9896026654ffa9cc5727db665d9",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/get-document/8fb8060bea169a68469dfbbb0afeefe29f56c9896026654ffa9cc5727db665d9.cjs",
+                "ts": "templates-zero/readwise-reader/tools/get-document/8fb8060bea169a68469dfbbb0afeefe29f56c9896026654ffa9cc5727db665d9.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-documents",
+            "integrationId": "readwise-reader",
+            "description": "List one page of Reader documents, including highlights and notes, optionally filtered by category, location, update time, or tags.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_listdocuments",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_listdocuments",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_listdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum documents in this page; defaults to 100.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from a previous page for this connection and unchanged filters, flags, and limit.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "tagKeys": {
+                                "description": "One to five tag keys from list-tags; every specified tag must be present.",
+                                "uniqueItems": true,
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "A tag key from list-tags."
+                                }
+                            },
+                            "category": {
+                                "description": "Restrict results to this document category; omitted for all categories.",
+                                "type": "string",
+                                "enum": [
+                                    "article",
+                                    "email",
+                                    "rss",
+                                    "highlight",
+                                    "note",
+                                    "pdf",
+                                    "epub",
+                                    "tweet",
+                                    "video"
+                                ]
+                            },
+                            "location": {
+                                "description": "Restrict results to the specified Reader location; omitted for all locations.",
+                                "type": "string",
+                                "enum": [
+                                    "new",
+                                    "later",
+                                    "shortlist",
+                                    "archive",
+                                    "feed"
+                                ]
+                            },
+                            "untaggedOnly": {
+                                "description": "Return only documents with no tags; cannot be true together with tagKeys.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "updatedAfter": {
+                                "description": "Return documents updated after this explicit-timezone instant, with at most six fractional digits.",
+                                "format": "date-time",
+                                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                                "type": "string"
+                            },
+                            "includeHtmlContent": {
+                                "description": "Include available HTML content for each returned document.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "includeRawSourceUrl": {
+                                "description": "Include raw-source links valid for one hour; links can be empty for non-distributable documents.",
+                                "default": false,
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters, content flags, and continuation for one page of Reader documents.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "untaggedOnly"
+                                    ],
+                                    "properties": {
+                                        "untaggedOnly": {
+                                            "const": true
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "required": [
+                                            "tagKeys"
+                                        ],
+                                        "properties": {
+                                            "tagKeys": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_readwise_reader_listdocuments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque identifier of this document, highlight, or note."
+                                        },
+                                        "url": {
+                                            "description": "Reader URL for opening the record.",
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "description": "Tags normalized from the provider map; empty when no tags are assigned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "key": {
+                                                        "type": "string",
+                                                        "description": "Opaque tag key usable for filtering documents."
+                                                    },
+                                                    "name": {
+                                                        "description": "Tag display name when available in the record.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "key"
+                                                ],
+                                                "additionalProperties": false,
+                                                "description": "A document tag identified by its provider map key."
+                                            }
+                                        },
+                                        "notes": {
+                                            "description": "Document or highlight note text; empty text is preserved.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "title": {
+                                            "description": "Document title when available.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "author": {
+                                            "description": "Document author when available.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "source": {
+                                            "description": "Reader source attribution.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "savedAt": {
+                                            "description": "Save instant in UTC with Z or provider null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "summary": {
+                                            "description": "Summary text, preserving empty and null values.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "category": {
+                                            "description": "Provider category, including highlight and note; unknown values remain unchanged.",
+                                            "type": "string"
+                                        },
+                                        "imageUrl": {
+                                            "description": "Cover-image URL when available.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "location": {
+                                            "description": "Current Reader location when applicable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "parentId": {
+                                            "description": "Parent document ID for highlights or parent highlight ID for notes; null for top-level documents.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "siteName": {
+                                            "description": "Source website name.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "createdAt": {
+                                            "description": "Creation instant in UTC with Z, retaining fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "sourceUrl": {
+                                            "description": "Original source URL, retaining null when supplied.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "description": "Update instant in UTC with Z, retaining fractional precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "wordCount": {
+                                            "description": "Provider-reported word count.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "htmlContent": {
+                                            "description": "HTML content when requested and returned.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastMovedAt": {
+                                            "description": "Last-moved instant in UTC with Z or provider null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "publishedAt": {
+                                            "description": "Publication instant in UTC with Z when the source value is a full datetime.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "readingTime": {
+                                            "description": "Provider-formatted reading-duration label, not an instant.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastOpenedAt": {
+                                            "description": "Last-opened instant in UTC with Z or null if unopened.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "rawSourceUrl": {
+                                            "description": "Requested raw-source URL valid for one hour; empty for non-distributable content.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "firstOpenedAt": {
+                                            "description": "First-opened instant in UTC with Z or null if unopened.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "listeningTime": {
+                                            "description": "Provider-formatted listening-duration label or null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "publishedDate": {
+                                            "description": "Publication calendar date when the source value is date-only.",
+                                            "type": "string",
+                                            "format": "date",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                        },
+                                        "highlightOffset": {
+                                            "description": "Highlight character offset in parent plain text; null on other documents.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "readingProgress": {
+                                            "description": "Provider fractional reading progress, preserved without scaling.",
+                                            "type": "number"
+                                        },
+                                        "highlightLocation": {
+                                            "description": "Opaque serialized DOM start,end positions in parent HTML; null on other documents.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Reader document, highlight, or note with available metadata and parent relationships."
+                                },
+                                "description": "One page of documents in the provider's returned order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next page; omitted when the provider has no next page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of Reader documents and the available continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover document IDs and browse the library; use `get-document` for a known ID. Use `list-tags` to obtain tag keys. Tag keys are matched with AND semantics; untaggedOnly selects records without tags. Pass nextCursor back as cursor with the same filters, flags, and limit for the next page. One call returns at most 100 records, not the whole library. Raw-source links, when requested, expire after one hour."
+            },
+            "filePath": "./readwise-reader/tools/list-documents.ts",
+            "version": "8ea1db99431662ebf9ff1616ef3dc758e791e84373013afab67dbe618164776f",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/list-documents/8ea1db99431662ebf9ff1616ef3dc758e791e84373013afab67dbe618164776f.cjs",
+                "ts": "templates-zero/readwise-reader/tools/list-documents/8ea1db99431662ebf9ff1616ef3dc758e791e84373013afab67dbe618164776f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-tags",
+            "integrationId": "readwise-reader",
+            "description": "List one page of available Reader document tags with their filter keys and display names.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_listtags",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_listtags",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Opaque continuation from a previous list-tags page for this connection; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for retrieving one page of Reader document tags."
+                    },
+                    "FunctionOutput_readwise_reader_listtags": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "description": "Opaque tag key to use in document tag filters; not necessarily the display name."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Human-readable tag display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "key",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A Reader document tag with its distinct filter key and display name."
+                                },
+                                "description": "One provider page of available document tags, in provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another tag page; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of Reader document tags and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover tag keys for `list-documents`. Pass nextCursor back as cursor to continue for the same connection. The provider determines page size; there is no limit input. To assign tags, use `update-document` or `update-highlight`; this tool does not create or rename tags."
+            },
+            "filePath": "./readwise-reader/tools/list-tags.ts",
+            "version": "45ce3ebd52c3e20e7f8c37b18935c4bb5f19632ff83cd24e5b2070a827f36436",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/list-tags/45ce3ebd52c3e20e7f8c37b18935c4bb5f19632ff83cd24e5b2070a827f36436.cjs",
+                "ts": "templates-zero/readwise-reader/tools/list-tags/45ce3ebd52c3e20e7f8c37b18935c4bb5f19632ff83cd24e5b2070a827f36436.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "save-document",
+            "integrationId": "readwise-reader",
+            "description": "Save a document from its URL or from supplied HTML, with optional metadata, tags, notes, and an initial library location. An already-existing document may be returned instead of a newly created document.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_savedocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_savedocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_savedocument": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "Stable unique source URL, including an application-owned synthetic URL for content without a public URL."
+                            },
+                            "html": {
+                                "description": "Valid HTML content to save verbatim as supplied; omitted to let Reader scrape the URL.",
+                                "type": "string"
+                            },
+                            "tags": {
+                                "description": "Tag strings to associate with the document; an empty array supplies no tags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Tag string to associate with the document."
+                                }
+                            },
+                            "notes": {
+                                "description": "Top-level document note as ordinary text; an empty string supplies an empty note.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Title override; omission leaves title extraction to Reader.",
+                                "type": "string"
+                            },
+                            "author": {
+                                "description": "Author override; omission leaves author extraction to Reader.",
+                                "type": "string"
+                            },
+                            "summary": {
+                                "description": "Document summary; omitted when no summary is supplied.",
+                                "type": "string"
+                            },
+                            "category": {
+                                "description": "Document category; omitted so Reader guesses from the URL.",
+                                "type": "string",
+                                "enum": [
+                                    "article",
+                                    "email",
+                                    "rss",
+                                    "pdf",
+                                    "epub",
+                                    "tweet",
+                                    "video"
+                                ]
+                            },
+                            "imageUrl": {
+                                "description": "URL to use for the document cover image; omitted to leave extraction to Reader.",
+                                "type": "string",
+                                "format": "uri"
+                            },
+                            "language": {
+                                "description": "Language code such as en or en-US; omission allows Reader to detect the language.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "location": {
+                                "description": "Requested initial location; Reader substitutes the user's default if the requested location is disabled.",
+                                "default": "new",
+                                "type": "string",
+                                "enum": [
+                                    "new",
+                                    "later",
+                                    "archive",
+                                    "feed"
+                                ]
+                            },
+                            "cleanHtml": {
+                                "description": "Whether Reader should clean supplied HTML and parse title and author; only permitted when html is supplied.",
+                                "default": false,
+                                "type": "boolean"
+                            },
+                            "savedUsing": {
+                                "description": "Source attribution for the application or workflow saving this document.",
+                                "type": "string"
+                            },
+                            "publishedAt": {
+                                "description": "Publication instant with an explicit timezone and at most six fractional-second digits.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                            }
+                        },
+                        "required": [
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Source document URL or supplied HTML, with optional metadata and initial library location.",
+                        "dependencies": {
+                            "cleanHtml": [
+                                "html"
+                            ]
+                        }
+                    },
+                    "FunctionOutput_readwise_reader_savedocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the saved or existing Reader document."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Reader URL returned for opening the saved document, not its original source URL."
+                            },
+                            "created": {
+                                "type": "boolean",
+                                "description": "True for the provider's 201 creation response; false for its 200 already-existing response."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "url",
+                            "created"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Saved Reader document identity and whether this request created it."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this for articles, books, videos, and other source documents. Use `create-highlight` for a passage in an existing document. Provide a stable URL even for supplied HTML; an application-owned synthetic URL is supported. Omit HTML to let Reader scrape the URL. The result identifies the saved record, not successful completion of all content extraction. Repeated saves may return an existing record."
+            },
+            "filePath": "./readwise-reader/tools/save-document.ts",
+            "version": "4ea0022552a6ea478cacce057a1b40f0c52ac827fe621c08910eafd734d429fb",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/save-document/4ea0022552a6ea478cacce057a1b40f0c52ac827fe621c08910eafd734d429fb.cjs",
+                "ts": "templates-zero/readwise-reader/tools/save-document/4ea0022552a6ea478cacce057a1b40f0c52ac827fe621c08910eafd734d429fb.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-document",
+            "integrationId": "readwise-reader",
+            "description": "Partially update a source document's metadata, library location, seen state, tags, or document note. Omitted fields remain unchanged.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_updatedocument",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_updatedocument",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_updatedocument": {
+                        "type": "object",
+                        "properties": {
+                            "documentId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the existing source document; not an independent note ID."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "seen": {
+                                        "description": "True populates first/last opened timestamps; false clears them without deleting the document.",
+                                        "type": "boolean"
+                                    },
+                                    "tags": {
+                                        "description": "Complete replacement tag list, not an additive operation; an empty array clears tags.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Tag to include in the replacement list."
+                                        }
+                                    },
+                                    "notes": {
+                                        "description": "Replacement document note; an empty string clears the existing note.",
+                                        "type": "string"
+                                    },
+                                    "title": {
+                                        "description": "Replacement title; an empty string explicitly requests empty text.",
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "description": "Replacement author; an empty string explicitly requests empty text.",
+                                        "type": "string"
+                                    },
+                                    "summary": {
+                                        "description": "Replacement summary; an empty string explicitly requests empty text.",
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "description": "Replacement document category accepted by Reader; changing category does not promise creation of parent relationships.",
+                                        "type": "string",
+                                        "enum": [
+                                            "article",
+                                            "email",
+                                            "rss",
+                                            "highlight",
+                                            "note",
+                                            "pdf",
+                                            "epub",
+                                            "tweet",
+                                            "video"
+                                        ]
+                                    },
+                                    "imageUrl": {
+                                        "description": "Replacement cover-image URL; an empty string requests clearing, subject to provider validation.",
+                                        "type": "string"
+                                    },
+                                    "language": {
+                                        "description": "Replacement language code such as en or en-US.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "location": {
+                                        "description": "Requested current location; a disabled location can fall back to the user's default.",
+                                        "type": "string",
+                                        "enum": [
+                                            "new",
+                                            "later",
+                                            "archive",
+                                            "feed"
+                                        ]
+                                    },
+                                    "publishedAt": {
+                                        "description": "Replacement publication instant with explicit timezone and up to six fractional digits; no null clearing is exposed.",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial modifications; omitted fields remain unchanged and null values are not supported."
+                            }
+                        },
+                        "required": [
+                            "documentId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a source document and supply only the fields to change."
+                    },
+                    "FunctionOutput_readwise_reader_updatedocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the updated document."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Reader URL returned after the update."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Reader acknowledgment of the document update, not a full document record."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Obtain the source document ID from `list-documents` or `get-document`. Use `update-highlight` instead for a highlight's note or tags; note records cannot be updated directly. Only supply fields you want changed. An empty notes string clears the note, and an empty tags array clears tags. Setting seen changes opened timestamps. Use `batch-update-documents` for up to 50 different source documents."
+            },
+            "filePath": "./readwise-reader/tools/update-document.ts",
+            "version": "d2621d02a0d92c66405da4e042ba53a38eacaec3750fe62f94d845d63e0bc6c0",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/update-document/d2621d02a0d92c66405da4e042ba53a38eacaec3750fe62f94d845d63e0bc6c0.cjs",
+                "ts": "templates-zero/readwise-reader/tools/update-document/d2621d02a0d92c66405da4e042ba53a38eacaec3750fe62f94d845d63e0bc6c0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-highlight",
+            "integrationId": "readwise-reader",
+            "description": "Partially update a highlight's attached note or tags. Clear its note with an empty string rather than updating or deleting the note record directly.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_readwise_reader_updatehighlight",
+            "output_schema_ref": "#/definitions/FunctionOutput_readwise_reader_updatehighlight",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_readwise_reader_updatehighlight": {
+                        "type": "object",
+                        "properties": {
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "tags": {
+                                        "description": "Complete replacement tag list; an empty array clears all highlight tags.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "A highlight tag."
+                                        }
+                                    },
+                                    "notes": {
+                                        "description": "Replacement attached note as ordinary text; an empty string clears it.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial highlight changes; omitted fields remain unchanged and null is not accepted."
+                            },
+                            "highlightId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Reader ID of the highlight, not its note or parent source document."
+                            }
+                        },
+                        "required": [
+                            "changes",
+                            "highlightId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A highlight ID and the attached note or tags to replace."
+                    },
+                    "FunctionOutput_readwise_reader_updatehighlight": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the updated highlight."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Reader URL returned for the updated highlight."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The updated highlight ID and its Reader URL."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get a highlight ID from `create-highlight`, `list-documents` with category=highlight, or `get-document`. Only the note and tags are editable here; the highlighted passage and positions cannot be changed. Omit fields to preserve them. Use notes=\"\" to clear the attached note, or `delete-highlight` to remove the highlight and its note together."
+            },
+            "filePath": "./readwise-reader/tools/update-highlight.ts",
+            "version": "b0fe5304f9019877d2dfa6968c366c4bd1a8734e90099647b21813d3bb13fced",
+            "location": {
+                "js": "templates-zero/readwise-reader/tools/update-highlight/b0fe5304f9019877d2dfa6968c366c4bd1a8734e90099647b21813d3bb13fced.cjs",
+                "ts": "templates-zero/readwise-reader/tools/update-highlight/b0fe5304f9019877d2dfa6968c366c4bd1a8734e90099647b21813d3bb13fced.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,52 @@
+---
+title: 'Rollbar - How do I link my account?'
+sidebarTitle: 'Rollbar'
+---
+
+## Overview
+
+To authenticate with Rollbar, you need:
+
+1. **Access Token** — a Rollbar project access token, service token or personal access token with the `read` scope.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A [Rollbar account](https://app.rollbar.com/signup). The REST API is available on every plan, including the free one.
+
+### Step 1: Create an access token
+
+A project access token reaches one project. To use a token across projects, create a service or personal token instead (see below).
+
+1. Sign in to [Rollbar](https://app.rollbar.com/login) and open your project.
+2. Go to the project's **Settings** and click **Project access tokens** in the left menu.
+3. Click **Add token**.
+
+<img src="/api-integrations/rollbar/project_access_tokens_page.png" alt="Rollbar project settings with the Project access tokens page and the Add token button"/>
+
+4. Enter a name and tick the **read** scope. Tick **write** too only if you need to change data.
+5. Click **Create token**.
+
+<img src="/api-integrations/rollbar/create_project_token_dialog.png" alt="Rollbar Create new access token dialog with a name and the read scope ticked"/>
+
+6. In the **Token created** dialog, click **Copy token**. Rollbar shows the full token only once; afterwards you see just its public ID.
+
+<img src="/api-integrations/rollbar/project_token_created.png" alt="Rollbar Token created dialog with the Copy token button"/>
+
+**Account-wide tokens:**
+
+- **Service token**: an account owner opens **Settings** → **API access tokens** → **Service** tab, clicks **Add token**, ticks **read** and clicks **Create token**. It reaches every project in the account and is not tied to a user.
+- **Personal access token**: open the user menu (bottom left) → **Personal access tokens** → **Create a new personal token**, keep **read** ticked and click **Create token**. It carries only your own permissions.
+
+<img src="/api-integrations/rollbar/personal_access_token_created.png" alt="Rollbar Personal access tokens page with the Token created dialog and the Copy token button"/>
+
+### Step 2: Enter your access token in the Connect UI
+
+1. Open the form where you need to authenticate with Rollbar.
+2. Paste the token you copied in Step 1 into the **Access Token** field.
+3. Submit the form. Nango checks the token with Rollbar before saving the connection.
+
+<img src="/api-integrations/rollbar/form.png" alt="Rollbar Connect UI form with the Access Token field" style={{maxWidth: "450px" }}/>
+
+You are now connected to Rollbar.

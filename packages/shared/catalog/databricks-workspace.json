@@ -1,0 +1,145 @@
+{
+    "providerConfigKey": "databricks-workspace",
+    "actions": [
+        {
+            "type": "action",
+            "description": "List all SQL warehouses in the workspace",
+            "endpoint": null,
+            "input": "ActionInput_databricks_workspace_listwarehouses",
+            "name": "list-warehouses",
+            "output": [
+                "ActionOutput_databricks_workspace_listwarehouses"
+            ],
+            "scopes": [
+                "all-apis"
+            ],
+            "usedModels": [
+                "ActionInput_databricks_workspace_listwarehouses",
+                "ActionOutput_databricks_workspace_listwarehouses"
+            ],
+            "version": "2.0.2",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_databricks_workspace_listwarehouses": {
+                        "type": "null"
+                    },
+                    "ActionOutput_databricks_workspace_listwarehouses": {
+                        "type": "object",
+                        "properties": {
+                            "warehouses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "cluster_size": {
+                                            "type": "string"
+                                        },
+                                        "min_num_clusters": {
+                                            "type": "number"
+                                        },
+                                        "max_num_clusters": {
+                                            "type": "number"
+                                        },
+                                        "auto_stop_mins": {
+                                            "type": "number"
+                                        },
+                                        "creator_name": {
+                                            "type": "string"
+                                        },
+                                        "spot_instance_policy": {
+                                            "type": "string"
+                                        },
+                                        "enable_photon": {
+                                            "type": "boolean"
+                                        },
+                                        "enable_serverless_compute": {
+                                            "type": "boolean"
+                                        },
+                                        "channel": {
+                                            "type": "string"
+                                        },
+                                        "warehouse_type": {
+                                            "type": "string"
+                                        },
+                                        "num_active_sessions": {
+                                            "type": "number"
+                                        },
+                                        "num_clusters": {
+                                            "type": "number"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "tags": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "health": {
+                                            "type": "object",
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "status"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "cluster_size",
+                                        "min_num_clusters",
+                                        "max_num_clusters",
+                                        "auto_stop_mins",
+                                        "creator_name",
+                                        "spot_instance_policy",
+                                        "enable_photon",
+                                        "enable_serverless_compute",
+                                        "channel",
+                                        "warehouse_type",
+                                        "num_active_sessions",
+                                        "num_clusters",
+                                        "state",
+                                        "tags",
+                                        "health"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "warehouses"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -1,0 +1,811 @@
+{
+    "providerConfigKey": "greenhouse-basic",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of all organization's applications from greenhouse",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/greenhouse-basic/applications"
+                }
+            ],
+            "input": "SyncMetadata_greenhouse_basic_applications",
+            "name": "applications",
+            "output": [
+                "GreenhouseApplication"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "candidates.view"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GreenhouseApplication",
+                "SyncMetadata_greenhouse_basic_applications"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GreenhouseApplication": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "candidate_id": {
+                                "type": "string"
+                            },
+                            "prospect": {
+                                "type": "boolean"
+                            },
+                            "applied_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "rejected_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "last_activity_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "location": {
+                                "type": "object",
+                                "properties": {
+                                    "address": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "address"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "source": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "public_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "public_name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "credited_to": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "employee_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "rejection_reason": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "type"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "rejection_details": {
+                                "type": "object",
+                                "properties": {
+                                    "custom_fields": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": false
+                                    },
+                                    "keyed_custom_fields": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "custom_fields",
+                                    "keyed_custom_fields"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "jobs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "job_post_id": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "current_stage": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "answers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "prospective_office": {
+                                "type": "object",
+                                "properties": {
+                                    "primary_contact_user_id": {
+                                        "type": "string"
+                                    },
+                                    "parent_id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "external_id": {
+                                        "type": "string"
+                                    },
+                                    "child_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "primary_contact_user_id",
+                                    "parent_id",
+                                    "name",
+                                    "location",
+                                    "id",
+                                    "external_id",
+                                    "child_ids"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "prospective_department": {
+                                "type": "object",
+                                "properties": {
+                                    "parent_id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "external_id": {
+                                        "type": "string"
+                                    },
+                                    "child_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "parent_id",
+                                    "name",
+                                    "id",
+                                    "external_id",
+                                    "child_ids"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "prospect_detail": {
+                                "type": "object",
+                                "properties": {
+                                    "prospect_pool": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "prospect_stage": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "prospect_owner": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "required": [
+                                    "prospect_pool",
+                                    "prospect_stage",
+                                    "prospect_owner"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "keyed_custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "candidate_id",
+                            "prospect",
+                            "applied_at",
+                            "rejected_at",
+                            "last_activity_at",
+                            "location",
+                            "source",
+                            "credited_to",
+                            "rejection_reason",
+                            "rejection_details",
+                            "jobs",
+                            "job_post_id",
+                            "status",
+                            "current_stage",
+                            "answers",
+                            "prospective_office",
+                            "prospective_department",
+                            "prospect_detail",
+                            "custom_fields",
+                            "keyed_custom_fields",
+                            "attachments"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_greenhouse_basic_applications": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of all organization's candidates from greenhouse",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/greenhouse-basic/candidates"
+                }
+            ],
+            "input": "SyncMetadata_greenhouse_basic_candidates",
+            "name": "candidates",
+            "output": [
+                "GreenhouseCandidate"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "candidates.view"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GreenhouseCandidate",
+                "SyncMetadata_greenhouse_basic_candidates"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GreenhouseCandidate": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "first_name": {
+                                "type": "string"
+                            },
+                            "last_name": {
+                                "type": "string"
+                            },
+                            "company": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "last_activity": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "is_private": {
+                                "type": "boolean"
+                            },
+                            "photo_url": {
+                                "type": "string"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "application_ids": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "phone_numbers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "addresses": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "email_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "website_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "social_media_addresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "recruiter": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "employee_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "coordinator": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "employee_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "can_email": {
+                                "type": "boolean"
+                            },
+                            "tags": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "applications": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "educations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "employments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "linked_user_ids": {
+                                "type": "string"
+                            },
+                            "custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "keyed_custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "first_name",
+                            "last_name",
+                            "company",
+                            "title",
+                            "created_at",
+                            "updated_at",
+                            "last_activity",
+                            "is_private",
+                            "photo_url",
+                            "attachments",
+                            "application_ids",
+                            "phone_numbers",
+                            "addresses",
+                            "email_addresses",
+                            "website_addresses",
+                            "social_media_addresses",
+                            "recruiter",
+                            "coordinator",
+                            "can_email",
+                            "tags",
+                            "applications",
+                            "educations",
+                            "employments",
+                            "linked_user_ids",
+                            "custom_fields",
+                            "keyed_custom_fields"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_greenhouse_basic_candidates": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Fetches a list of all organization's jobs from greenhouse",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/greenhouse-basic/jobs"
+                }
+            ],
+            "input": "SyncMetadata_greenhouse_basic_jobs",
+            "name": "jobs",
+            "output": [
+                "GreenhouseJob"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "jobs.view"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "GreenhouseJob",
+                "SyncMetadata_greenhouse_basic_jobs"
+            ],
+            "version": "1.1.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "GreenhouseJob": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "requisition_id": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "confidential": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "opened_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "closed_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            "is_template": {
+                                "type": "boolean"
+                            },
+                            "copied_from_id": {
+                                "type": "string"
+                            },
+                            "departments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "offices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "keyed_custom_fields": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": false
+                            },
+                            "hiring_team": {
+                                "type": "object",
+                                "properties": {
+                                    "hiring_managers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "recruiters": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "coordinators": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "sourcers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "hiring_managers",
+                                    "recruiters",
+                                    "coordinators",
+                                    "sourcers"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "openings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "requisition_id",
+                            "notes",
+                            "confidential",
+                            "status",
+                            "created_at",
+                            "opened_at",
+                            "closed_at",
+                            "updated_at",
+                            "is_template",
+                            "copied_from_id",
+                            "departments",
+                            "offices",
+                            "custom_fields",
+                            "keyed_custom_fields",
+                            "hiring_team",
+                            "openings"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_greenhouse_basic_jobs": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

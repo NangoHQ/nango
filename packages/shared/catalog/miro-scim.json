@@ -1,0 +1,3585 @@
+{
+    "providerConfigKey": "miro-scim",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Miro user groups with their display names and member references. This dataset models user groups, not legacy SCIM teams.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-groups",
+            "output": [
+                "MiroGroup"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MiroGroup"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MiroGroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Miro user group ID."
+                            },
+                            "members": {
+                                "description": "User references belonging to this group; absence is distinct from an empty group.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A user reference belonging to this group."
+                                }
+                            },
+                            "displayName": {
+                                "description": "User group display name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Miro user groups with their display names and member references. This dataset models user groups, not legacy SCIM teams."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Organization member records, including activity, license, roles, profile, enterprise attributes, and user group references. Guests are excluded.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-users",
+            "output": [
+                "User"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user identifier."
+                            },
+                            "name": {
+                                "description": "Structured personal name.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Organization membership and administrative roles.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider role category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or custom admin role name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Role display label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary role.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "active": {
+                                "description": "Whether the member is active.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Returned email addresses.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Email category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email address.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the address is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "groups": {
+                                "description": "User group references.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "groupId": {
+                                            "description": "Opaque user group ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "User group display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "photos": {
+                                "description": "Profile image references.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Image URL.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Image category.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "userName": {
+                                "description": "Login identifier, normally the email address.",
+                                "type": "string"
+                            },
+                            "enterprise": {
+                                "description": "Enterprise profile extension.",
+                                "type": "object",
+                                "properties": {
+                                    "manager": {
+                                        "description": "Manager reference and label.",
+                                        "type": "object",
+                                        "properties": {
+                                            "userId": {
+                                                "description": "Opaque manager user ID.",
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "description": "Manager display name.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "division": {
+                                        "description": "Enterprise division.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Enterprise department.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Enterprise organization label.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee number.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "displayName": {
+                                "description": "User display name.",
+                                "type": "string"
+                            },
+                            "licenseType": {
+                                "description": "Provider license name.",
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "description": "Provider locale value.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization member records, including activity, license, roles, profile, enterprise attributes, and user group references. Guests are excluded."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "add-admin-role-to-user",
+            "integrationId": "miro-scim",
+            "description": "Assign a named organization administrative role, including a custom role, to a member.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_addadminroletouser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_addadminroletouser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_addadminroletouser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque member ID receiving the administrative role."
+                            },
+                            "roleName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact configured administrative role name, such as Content Admin, User Admin, Security Admin, or a custom role."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "roleName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Member and exact organization administrative role to associate."
+                    },
+                    "FunctionOutput_miro_scim_addadminroletouser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the modified user."
+                            },
+                            "roles": {
+                                "description": "Effective roles returned after assignment.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Role category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Display label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this role is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A role returned for the modified user."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Modified member and effective roles, when returned by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use the member ID from `list-users` or `get-user` and the exact admin role name configured by the organization. Use `update-user` for the primary member/admin role. This grants administrative authority; use `remove-admin-role-from-user` to remove the association."
+            },
+            "filePath": "./miro-scim/tools/add-admin-role-to-user.ts",
+            "version": "c48807fd4cd67443b2f9b75901b8e1436712a39268a58d4bbf6f33c0eab9ad4e",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/add-admin-role-to-user/c48807fd4cd67443b2f9b75901b8e1436712a39268a58d4bbf6f33c0eab9ad4e.cjs",
+                "ts": "templates-zero/miro-scim/tools/add-admin-role-to-user/c48807fd4cd67443b2f9b75901b8e1436712a39268a58d4bbf6f33c0eab9ad4e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "add-member-to-group",
+            "integrationId": "miro-scim",
+            "description": "Add one user to a Miro user group, including Miro's reactivation, licensing, and role-conversion effects.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_addmembertogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_addmembertogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque user ID to add to the group."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque target user group ID."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The user and target Miro user group for a single membership addition."
+                    },
+                    "FunctionOutput_miro_scim_addmembertogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the modified group."
+                            },
+                            "members": {
+                                "description": "Returned group memberships after the addition.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A membership returned in the modified group."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Returned group state; it does not independently confirm secondary user-profile changes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get group and member IDs from `list-groups` and `list-users`. Adding may reactivate/recreate the user, upgrade the license to FULL, confirm email on verified SAML domains, and convert external or guest roles to internal member. Existing membership is a no-op. Use `batch-add-members-to-group` for several users and `remove-member-from-group` to remove only the association."
+            },
+            "filePath": "./miro-scim/tools/add-member-to-group.ts",
+            "version": "e483de8ffefc74032e8d09cb50ff322e73cd89268370553da50ed827ed388591",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/add-member-to-group/e483de8ffefc74032e8d09cb50ff322e73cd89268370553da50ed827ed388591.cjs",
+                "ts": "templates-zero/miro-scim/tools/add-member-to-group/e483de8ffefc74032e8d09cb50ff322e73cd89268370553da50ed827ed388591.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-add-members-to-group",
+            "integrationId": "miro-scim",
+            "description": "Add up to 100 users to one Miro user group in one native request, with Miro's documented member-provisioning effects.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_batchaddmemberstogroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_batchaddmemberstogroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the single target user group."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque user ID to add."
+                                },
+                                "uniqueItems": true,
+                                "description": "Unique opaque user IDs to add; maximum 100 in one native request."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One target user group and up to 100 unique users to add."
+                    },
+                    "FunctionOutput_miro_scim_batchaddmemberstogroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the target group."
+                            },
+                            "members": {
+                                "description": "Group member references returned after the request; not per-input outcome records.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name when returned.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A member reference in the returned group state."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group display name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate group state returned by Miro after the additions, not individual user outcomes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `add-member-to-group` for one user. Obtain IDs from `list-groups` and `list-users`. Maximum 100 unique users per call. Additions can reactivate/recreate users, upgrade licenses to FULL, confirm SAML-domain email and convert external/guest roles to internal users. The result is aggregate group state, not per-user success receipts."
+            },
+            "filePath": "./miro-scim/tools/batch-add-members-to-group.ts",
+            "version": "d76e80ea27d724ceb33583decfe6531270071479a5e074bc03cc48156b2085fe",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/batch-add-members-to-group/d76e80ea27d724ceb33583decfe6531270071479a5e074bc03cc48156b2085fe.cjs",
+                "ts": "templates-zero/miro-scim/tools/batch-add-members-to-group/d76e80ea27d724ceb33583decfe6531270071479a5e074bc03cc48156b2085fe.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "batch-remove-members-from-group",
+            "integrationId": "miro-scim",
+            "description": "Remove up to 100 user group membership associations in one native request, without removing the users from teams or the organization.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_batchremovemembersfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_batchremovemembersfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the target user group."
+                            },
+                            "userIds": {
+                                "minItems": 1,
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque user ID whose group association should be removed."
+                                },
+                                "uniqueItems": true,
+                                "description": "Unique opaque user IDs whose associations should be removed; maximum 100."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "userIds"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target user group and unique user IDs whose membership associations should be removed."
+                    },
+                    "FunctionOutput_miro_scim_batchremovemembersfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque group ID."
+                            },
+                            "members": {
+                                "description": "Remaining group member references reported by the provider, not individual removal outcomes.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque remaining member ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Remaining group member reference reported by the provider."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Aggregate group state returned after the membership removal request."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `remove-member-from-group` for one user. Obtain IDs from `get-group` or `list-groups`. Maximum 100 unique users per call. This changes only user group membership, not licenses, boards or organization/team membership. Missing membership is a no-op. Results are aggregate group state, not per-user receipts."
+            },
+            "filePath": "./miro-scim/tools/batch-remove-members-from-group.ts",
+            "version": "0079da8557ab6f505e14fe1079abe0374b04f773a5be2a0969507dd4a5bbe593",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/batch-remove-members-from-group/0079da8557ab6f505e14fe1079abe0374b04f773a5be2a0969507dd4a5bbe593.cjs",
+                "ts": "templates-zero/miro-scim/tools/batch-remove-members-from-group/0079da8557ab6f505e14fe1079abe0374b04f773a5be2a0969507dd4a5bbe593.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-group",
+            "integrationId": "miro-scim",
+            "description": "Create a uniquely named Miro user group, optionally adding initial members with Miro's licensing and reactivation effects.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_creategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_creategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "memberIds": {
+                                "description": "Optional initial member user IDs; omitted or [] creates without initial members. Maximum 100.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Opaque initial member user ID."
+                                },
+                                "uniqueItems": true
+                            },
+                            "displayName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60,
+                                "description": "Unique organization user group name; limited to 60 characters to avoid provider truncation."
+                            }
+                        },
+                        "required": [
+                            "displayName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Name and optional initial members of the Miro user group to create."
+                    },
+                    "FunctionOutput_miro_scim_creategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the new user group."
+                            },
+                            "members": {
+                                "description": "Group member references returned after creation.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A member reference returned by Miro."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group display name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The created Miro user group and any returned member references."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use to create a user group, not a team. Use `list-groups` to check the name and `list-users` for member IDs. Initial members may be reactivated or recreated and upgraded to FULL; external or guest users become internal users. The initial-member maximum is 100. Omit members to create an empty group."
+            },
+            "filePath": "./miro-scim/tools/create-group.ts",
+            "version": "c4e33ffd8baaced130507c922019b9b215ac3c16f31588a6befcacbf1db51300",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/create-group/c4e33ffd8baaced130507c922019b9b215ac3c16f31588a6befcacbf1db51300.cjs",
+                "ts": "templates-zero/miro-scim/tools/create-group/c4e33ffd8baaced130507c922019b9b215ac3c16f31588a6befcacbf1db51300.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-user",
+            "integrationId": "miro-scim",
+            "description": "Provision a user in the organization and default team, with optional license, access roles, profile, and enterprise attributes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_createuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_createuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "Structured personal name used when displayName is empty or absent.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted name, preferred over givenName and familyName when nonempty.",
+                                        "type": "string",
+                                        "maxLength": 60
+                                    },
+                                    "givenName": {
+                                        "type": "string",
+                                        "maxLength": 60,
+                                        "description": "Given name; combined given and family names must not exceed 60 characters."
+                                    },
+                                    "familyName": {
+                                        "type": "string",
+                                        "maxLength": 60,
+                                        "description": "Family name; combined given and family names must not exceed 60 characters."
+                                    }
+                                },
+                                "required": [
+                                    "givenName",
+                                    "familyName"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "active": {
+                                "description": "Requested activity state; omission leaves the provider provisioning default.",
+                                "type": "boolean"
+                            },
+                            "photos": {
+                                "description": "Profile images to request; provider downloads these URLs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Image URL serving jpg, jpeg, bmp, png or gif, at most 31457280 bytes."
+                                        },
+                                        "type": {
+                                            "description": "Image category; defaults to photo.",
+                                            "type": "string",
+                                            "default": "photo"
+                                        }
+                                    },
+                                    "required": [
+                                        "url"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A profile image to request."
+                                }
+                            },
+                            "userName": {
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                "description": "Email address used as the new member's login."
+                            },
+                            "adminRoles": {
+                                "description": "Named administrative roles, including custom roles; omitted means no explicit role request.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "An administrative role name, including custom roles."
+                                },
+                                "uniqueItems": true
+                            },
+                            "enterprise": {
+                                "description": "Enterprise profile values to supply.",
+                                "type": "object",
+                                "properties": {
+                                    "manager": {
+                                        "description": "Manager reference and display name.",
+                                        "type": "object",
+                                        "properties": {
+                                            "userId": {
+                                                "description": "Manager's numeric-looking Miro ID, retained as an opaque string; nonnumeric IDs are ignored by the provider and therefore rejected here.",
+                                                "type": "string",
+                                                "pattern": "^[0-9]+$"
+                                            },
+                                            "displayName": {
+                                                "description": "Manager display name.",
+                                                "type": "string",
+                                                "maxLength": 60
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "division": {
+                                        "description": "Division label.",
+                                        "type": "string",
+                                        "maxLength": 120
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center.",
+                                        "type": "string",
+                                        "maxLength": 120
+                                    },
+                                    "department": {
+                                        "description": "Department label.",
+                                        "type": "string",
+                                        "maxLength": 120
+                                    },
+                                    "organization": {
+                                        "description": "Enterprise organization label.",
+                                        "type": "string",
+                                        "maxLength": 120
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Employee number.",
+                                        "type": "string",
+                                        "maxLength": 20
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "displayName": {
+                                "description": "Display name; nonempty value takes precedence over name.",
+                                "type": "string",
+                                "maxLength": 60
+                            },
+                            "licenseType": {
+                                "description": "Requested license; organization must support it. Omission uses Miro's plan-dependent logic.",
+                                "type": "string",
+                                "enum": [
+                                    "Full",
+                                    "Free",
+                                    "Free Restricted",
+                                    "Full (Trial)",
+                                    "Basic",
+                                    "Collaborate",
+                                    "Accelerate"
+                                ]
+                            },
+                            "primaryRole": {
+                                "description": "Organization membership role; omission leaves the provider default.",
+                                "type": "string",
+                                "enum": [
+                                    "ORGANIZATION_INTERNAL_ADMIN",
+                                    "ORGANIZATION_INTERNAL_USER"
+                                ]
+                            },
+                            "preferredLanguage": {
+                                "description": "Provider locale value, for example en_US.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "required": [
+                            "userName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "New organization member identity, access choices and optional profile."
+                    },
+                    "FunctionOutput_miro_scim_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the provisioned user."
+                            },
+                            "roles": {
+                                "description": "Effective roles returned by Miro.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider role category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or administrative role name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Role label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the role is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An effective role returned by Miro."
+                                }
+                            },
+                            "active": {
+                                "description": "Effective organization activity state when returned.",
+                                "type": "boolean"
+                            },
+                            "userName": {
+                                "description": "Login identifier returned by Miro.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Effective display name returned by Miro.",
+                                "type": "string"
+                            },
+                            "licenseType": {
+                                "description": "Effective license returned by Miro, including when provider-selected.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Effective identity, license and access summary returned by Miro after provisioning."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use to provision a new organization member. Use `list-users` first if the email may already exist. New users join the default team. Omit licenseType only when the organization's provisioning policy should choose the license. This requires a connection authorized for SCIM provisioning."
+            },
+            "filePath": "./miro-scim/tools/create-user.ts",
+            "version": "884b68bfefab80f140a997bfff16c2d2db13d6aacc4990adf9ffc4a9505ad42d",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/create-user/884b68bfefab80f140a997bfff16c2d2db13d6aacc4990adf9ffc4a9505ad42d.cjs",
+                "ts": "templates-zero/miro-scim/tools/create-user/884b68bfefab80f140a997bfff16c2d2db13d6aacc4990adf9ffc4a9505ad42d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "deactivate-user",
+            "integrationId": "miro-scim",
+            "description": "Deactivate an organization member without requesting deletion or board-ownership transfer.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_deactivateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_deactivateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_deactivateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the member to deactivate."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The organization member whose activity state will be changed to deactivated."
+                    },
+                    "FunctionOutput_miro_scim_deactivateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user ID."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "const": false,
+                                "description": "Verified deactivated state returned by the provider."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "active"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The member ID and deactivated activity state confirmed by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a member ID from `list-users` or `get-user`. This changes activity rather than deleting the member. Use `reactivate-user` to reverse the activity change or `delete-user` to remove the user from the organization."
+            },
+            "filePath": "./miro-scim/tools/deactivate-user.ts",
+            "version": "8bb16e69cb6d48e5e6c5a928060a209b11063c961e0a9a0846c7c1dc8c0705ba",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/deactivate-user/8bb16e69cb6d48e5e6c5a928060a209b11063c961e0a9a0846c7c1dc8c0705ba.cjs",
+                "ts": "templates-zero/miro-scim/tools/deactivate-user/8bb16e69cb6d48e5e6c5a928060a209b11063c961e0a9a0846c7c1dc8c0705ba.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-group",
+            "integrationId": "miro-scim",
+            "description": "Delete a Miro user group and its membership associations without deleting its member users.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_deletegroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_deletegroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the user group to delete."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The user group to delete."
+                    },
+                    "FunctionOutput_miro_scim_deletegroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the group targeted by the acknowledged deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider acknowledged deletion of the group and its associations."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the user group deletion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a group ID from `list-groups` or `get-group`. This deletes the group and its associations only; members remain in the organization. Use `remove-member-from-group` to remove just one association. No restore operation or restoration of the same group identity is promised."
+            },
+            "filePath": "./miro-scim/tools/delete-group.ts",
+            "version": "3fe4c0405e40c2e984a3231342716657c374689415ecc27df22ab4489b80d4df",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/delete-group/3fe4c0405e40c2e984a3231342716657c374689415ecc27df22ab4489b80d4df.cjs",
+                "ts": "templates-zero/miro-scim/tools/delete-group/3fe4c0405e40c2e984a3231342716657c374689415ecc27df22ab4489b80d4df.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "delete-user",
+            "integrationId": "miro-scim",
+            "description": "Delete a member from the organization and trigger Miro's documented board-ownership transfer. This is not global account deletion.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_deleteuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_deleteuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the organization member to delete."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization member targeted for deletion."
+                    },
+                    "FunctionOutput_miro_scim_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "User ID targeted by the successful organization deletion."
+                            },
+                            "deleted": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "The provider acknowledged deleting this user from the organization; not proof of global account deletion."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment that Miro deleted the targeted organization membership."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use an ID from `list-users` or `get-user`. This removes the member from the organization and transfers their boards to the oldest team member currently holding an admin role. Guests and the last team or organization administrator cannot be deleted. Use `deactivate-user` to change activity instead. No undo or automatic board-ownership restoration is promised."
+            },
+            "filePath": "./miro-scim/tools/delete-user.ts",
+            "version": "b6dea92f96072575b323617629a145976e01827d3dadf1e0fd670a9689d7e6d3",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/delete-user/b6dea92f96072575b323617629a145976e01827d3dadf1e0fd670a9689d7e6d3.cjs",
+                "ts": "templates-zero/miro-scim/tools/delete-user/b6dea92f96072575b323617629a145976e01827d3dadf1e0fd670a9689d7e6d3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-group",
+            "integrationId": "miro-scim",
+            "description": "Get a Miro user group and its member references.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_getgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_getgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Miro user group identifier."
+                            }
+                        },
+                        "required": [
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the Miro user group to retrieve."
+                    },
+                    "FunctionOutput_miro_scim_getgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this user group."
+                            },
+                            "members": {
+                                "description": "User references belonging to the group; omitted if the service does not return the attribute.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A member reference belonging to this user group."
+                                }
+                            },
+                            "displayName": {
+                                "description": "User group display name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Miro user group and its member references, without SCIM representation metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a group ID from `list-groups` or `create-group`. Use `list-groups` to find a group by name. These functions target user groups, not legacy team-based SCIM organizations."
+            },
+            "filePath": "./miro-scim/tools/get-group.ts",
+            "version": "301086308b75417d9371408d3ab23f2ee48bc8115f293ef97cd5fa231ee44b94",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/get-group/301086308b75417d9371408d3ab23f2ee48bc8115f293ef97cd5fa231ee44b94.cjs",
+                "ts": "templates-zero/miro-scim/tools/get-group/301086308b75417d9371408d3ab23f2ee48bc8115f293ef97cd5fa231ee44b94.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-resource-type",
+            "integrationId": "miro-scim",
+            "description": "Get the schema and extension metadata for a supported SCIM resource type.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_getresourcetype",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_getresourcetype",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_getresourcetype": {
+                        "type": "object",
+                        "properties": {
+                            "resourceType": {
+                                "type": "string",
+                                "enum": [
+                                    "User",
+                                    "Group"
+                                ],
+                                "description": "Supported SCIM resource type to inspect."
+                            }
+                        },
+                        "required": [
+                            "resourceType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The supported SCIM resource type whose metadata to retrieve."
+                    },
+                    "FunctionOutput_miro_scim_getresourcetype": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Identifier of this resource type."
+                            },
+                            "name": {
+                                "description": "Resource type name.",
+                                "type": "string"
+                            },
+                            "endpoint": {
+                                "description": "Relative SCIM resource endpoint.",
+                                "type": "string"
+                            },
+                            "schemaUri": {
+                                "description": "URI of the primary schema.",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Provider description of the resource type.",
+                                "type": "string"
+                            },
+                            "schemaExtensions": {
+                                "description": "Extension schemas supported for this resource type.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "required": {
+                                            "description": "Whether this extension is mandatory.",
+                                            "type": "boolean"
+                                        },
+                                        "schemaUri": {
+                                            "description": "URI of the extension schema.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Metadata for a supported extension schema."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "SCIM resource type metadata without the representation schema-marker array."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for a known User or Group type. Use `list-resource-types` to discover types and `get-schema` to inspect the returned schema URI."
+            },
+            "filePath": "./miro-scim/tools/get-resource-type.ts",
+            "version": "c0fb08b51c0eb82cda5ac3ad3b9c4fbc00b7fcf250ce15a67ef9a8372c6c73a0",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/get-resource-type/c0fb08b51c0eb82cda5ac3ad3b9c4fbc00b7fcf250ce15a67ef9a8372c6c73a0.cjs",
+                "ts": "templates-zero/miro-scim/tools/get-resource-type/c0fb08b51c0eb82cda5ac3ad3b9c4fbc00b7fcf250ce15a67ef9a8372c6c73a0.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-schema",
+            "integrationId": "miro-scim",
+            "description": "Get a supported SCIM schema and its recursive attribute definitions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_getschema",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_getschema",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "schemaId": {
+                                "type": "string",
+                                "enum": [
+                                    "urn:ietf:params:scim:schemas:core:2.0:User",
+                                    "urn:ietf:params:scim:schemas:core:2.0:Group",
+                                    "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                                ],
+                                "description": "URI identifying the supported schema to retrieve."
+                            }
+                        },
+                        "required": [
+                            "schemaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Supported SCIM schema to retrieve."
+                    },
+                    "FunctionOutput_miro_scim_getschema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "URI identifying this schema."
+                            },
+                            "name": {
+                                "description": "Schema name.",
+                                "type": "string"
+                            },
+                            "attributes": {
+                                "description": "Supported attributes and their nested definitions.",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/__schema0"
+                                }
+                            },
+                            "description": {
+                                "description": "Explanation of the schema's purpose.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "SCIM schema and its recursive attribute definitions, without transport markers or resource metadata.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Attribute name within its containing definition.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM data type as reported by the provider.",
+                                        "type": "string"
+                                    },
+                                    "required": {
+                                        "description": "Whether this attribute is mandatory.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "Policy for including this attribute in responses.",
+                                        "type": "string"
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether values are case exact.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "Attribute read/write policy.",
+                                        "type": "string"
+                                    },
+                                    "uniqueness": {
+                                        "description": "Uniqueness scope for this attribute.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Provider explanation of the attribute.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether multiple values are allowed.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested complex-attribute definitions, when supplied.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Recursive SCIM attribute definition."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a schema URI returned by `list-schemas` or `get-resource-type`. Use `list-schemas` when you do not yet know which schema to inspect."
+            },
+            "filePath": "./miro-scim/tools/get-schema.ts",
+            "version": "86958547f720fd0738b6872ba62b17c1869c4d62a274d4caa6f19aeddb9d3a8c",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/get-schema/86958547f720fd0738b6872ba62b17c1869c4d62a274d4caa6f19aeddb9d3a8c.cjs",
+                "ts": "templates-zero/miro-scim/tools/get-schema/86958547f720fd0738b6872ba62b17c1869c4d62a274d4caa6f19aeddb9d3a8c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-service-provider-config",
+            "integrationId": "miro-scim",
+            "description": "Inspect supported SCIM operations, advertised limits, and authentication schemes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_getserviceproviderconfig",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_getserviceproviderconfig",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No caller parameters; configuration is selected by the connection."
+                    },
+                    "FunctionOutput_miro_scim_getserviceproviderconfig": {
+                        "type": "object",
+                        "properties": {
+                            "bulk": {
+                                "description": "Advertised bulk-operation support and limits; does not imply a bulk tool exists.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether bulk operations are supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxOperations": {
+                                        "description": "Advertised maximum operations in one bulk request.",
+                                        "type": "number"
+                                    },
+                                    "maxPayloadSize": {
+                                        "description": "Advertised maximum payload size, preserved in the provider's reported units.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "filter": {
+                                "description": "Advertised filtering capability and result limit.",
+                                "type": "object",
+                                "properties": {
+                                    "supported": {
+                                        "description": "Whether filtering is supported.",
+                                        "type": "boolean"
+                                    },
+                                    "maxResults": {
+                                        "description": "Advertised maximum results in a list response; may differ from operation-specific count limits.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "etagSupported": {
+                                "description": "Whether ETags are advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "sortSupported": {
+                                "description": "Whether sorting is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "patchSupported": {
+                                "description": "Whether SCIM PATCH is advertised as supported.",
+                                "type": "boolean"
+                            },
+                            "documentationUri": {
+                                "description": "Provider SCIM documentation link.",
+                                "type": "string"
+                            },
+                            "authenticationSchemes": {
+                                "description": "Advertised authentication schemes, not credentials.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Authentication scheme name.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "SCIM authentication scheme type.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary scheme.",
+                                            "type": "boolean"
+                                        },
+                                        "specUri": {
+                                            "description": "Authentication specification URI.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Explanation of the authentication scheme.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One advertised authentication scheme, without credentials."
+                                }
+                            },
+                            "changePasswordSupported": {
+                                "description": "Whether password changes are advertised as supported.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "One SCIM service capability document with advertised limits and authentication schemes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect service capabilities before building provisioning logic. Use `list-resource-types` and `list-schemas` for resource and attribute metadata. Advertised capabilities do not create additional callable operations."
+            },
+            "filePath": "./miro-scim/tools/get-service-provider-config.ts",
+            "version": "9965ea9edd50d87905b16cbc388a374b0da53b3d196f3a72686f2ff8e9f58877",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/get-service-provider-config/9965ea9edd50d87905b16cbc388a374b0da53b3d196f3a72686f2ff8e9f58877.cjs",
+                "ts": "templates-zero/miro-scim/tools/get-service-provider-config/9965ea9edd50d87905b16cbc388a374b0da53b3d196f3a72686f2ff8e9f58877.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-user",
+            "integrationId": "miro-scim",
+            "description": "Get an organization member's profile, license, roles, group references, and enterprise attributes. Guests are not returned.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_getuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_getuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque Miro ID of an organization member."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the organization member to retrieve."
+                    },
+                    "FunctionOutput_miro_scim_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user identifier."
+                            },
+                            "name": {
+                                "description": "Structured personal name when returned.",
+                                "type": "object",
+                                "properties": {
+                                    "formatted": {
+                                        "description": "Formatted full name.",
+                                        "type": "string"
+                                    },
+                                    "givenName": {
+                                        "description": "Given name.",
+                                        "type": "string"
+                                    },
+                                    "familyName": {
+                                        "description": "Family name.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "roles": {
+                                "description": "Organization membership and administrative roles.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Provider role category, such as organization_admin_role.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or custom admin role name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Human-readable role label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary role.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "active": {
+                                "description": "Whether the user is active in this organization.",
+                                "type": "boolean"
+                            },
+                            "emails": {
+                                "description": "Returned email addresses; absence is not an empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Address category, such as work.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Email address as returned.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary address.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "groups": {
+                                "description": "User groups to which this user belongs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "groupId": {
+                                            "description": "Opaque user group ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "User group display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "photos": {
+                                "description": "Profile image references.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Profile image URL.",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Image category, usually photo.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "userName": {
+                                "description": "Organization login identifier, normally the user's email address.",
+                                "type": "string"
+                            },
+                            "enterprise": {
+                                "description": "Enterprise profile extension when returned.",
+                                "type": "object",
+                                "properties": {
+                                    "manager": {
+                                        "description": "Manager reference and display label.",
+                                        "type": "object",
+                                        "properties": {
+                                            "userId": {
+                                                "description": "Opaque manager user ID, kept as a string even if numeric.",
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "description": "Manager display name.",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    "division": {
+                                        "description": "Enterprise division.",
+                                        "type": "string"
+                                    },
+                                    "costCenter": {
+                                        "description": "Cost center.",
+                                        "type": "string"
+                                    },
+                                    "department": {
+                                        "description": "Enterprise department.",
+                                        "type": "string"
+                                    },
+                                    "organization": {
+                                        "description": "Enterprise organization label.",
+                                        "type": "string"
+                                    },
+                                    "employeeNumber": {
+                                        "description": "Organization employee number.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "displayName": {
+                                "description": "User's display name.",
+                                "type": "string"
+                            },
+                            "licenseType": {
+                                "description": "Provider license name, including organization-specific values.",
+                                "type": "string"
+                            },
+                            "preferredLanguage": {
+                                "description": "Provider locale value, for example en_US.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization member profile, license, roles, user groups, and enterprise attributes."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a user ID from `list-users` or `create-user`. Use `list-users` for lookups by email or other criteria. Guests and users outside the organization cannot be retrieved."
+            },
+            "filePath": "./miro-scim/tools/get-user.ts",
+            "version": "90c9d58b94ad6bdaebafd9f4ac8907507d8b0966b1058cb9cf13712d573ca2c5",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/get-user/90c9d58b94ad6bdaebafd9f4ac8907507d8b0966b1058cb9cf13712d573ca2c5.cjs",
+                "ts": "templates-zero/miro-scim/tools/get-user/90c9d58b94ad6bdaebafd9f4ac8907507d8b0966b1058cb9cf13712d573ca2c5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-groups",
+            "integrationId": "miro-scim",
+            "description": "List one page of Miro user groups, including member references, with optional filtering and sorting.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_listgroups",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_listgroups",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum groups in this page; defaults to 100.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token for this connection and unchanged request criteria.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Advanced SCIM filter on simple group attributes; complex-attribute filtering is unsupported.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "description": "SCIM attribute used for ordering, for example displayName; omission preserves provider order.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortOrder": {
+                                "description": "Sort direction; requires sortBy and defaults to ascending when sorting is requested.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "displayName": {
+                                "description": "Exact group name criterion, AND-combined with filter if supplied.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Criteria, ordering, and continuation for one page of user groups.",
+                        "dependencies": {
+                            "sortOrder": [
+                                "sortBy"
+                            ]
+                        }
+                    },
+                    "FunctionOutput_miro_scim_listgroups": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user group ID."
+                                        },
+                                        "members": {
+                                            "description": "Group member references when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Member resource type, normally User.",
+                                                        "type": "string"
+                                                    },
+                                                    "userId": {
+                                                        "description": "Opaque member user ID.",
+                                                        "type": "string"
+                                                    },
+                                                    "displayName": {
+                                                        "description": "Member display name.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A user group member reference."
+                                            }
+                                        },
+                                        "displayName": {
+                                            "description": "Group display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A user group and its returned member references."
+                                },
+                                "description": "User groups in this page, including member references."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque token for the next page; omitted on exhaustion.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total matching groups at request time.",
+                                "type": "integer",
+                                "minimum": 0
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of user groups with provider totals and continuation when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to browse groups or find a group by name. Use `get-group` for a known ID. Pass nextCursor back as cursor with the same criteria, sorting and limit. Limit defaults to 100 and ranges from 1 to 1000. Filtering on complex member attributes is not supported."
+            },
+            "filePath": "./miro-scim/tools/list-groups.ts",
+            "version": "2b633a8ec4516ad0f9935f858558cae40c2f88b7058339b985d272d91d541f10",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/list-groups/2b633a8ec4516ad0f9935f858558cae40c2f88b7058339b985d272d91d541f10.cjs",
+                "ts": "templates-zero/miro-scim/tools/list-groups/2b633a8ec4516ad0f9935f858558cae40c2f88b7058339b985d272d91d541f10.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-resource-types",
+            "integrationId": "miro-scim",
+            "description": "List the SCIM resource types and their schemas supported by the connected service.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_listresourcetypes",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_listresourcetypes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No caller parameters are needed for resource type discovery."
+                    },
+                    "FunctionOutput_miro_scim_listresourcetypes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Resource type identifier, such as User or Group."
+                                        },
+                                        "name": {
+                                            "description": "Resource type name.",
+                                            "type": "string"
+                                        },
+                                        "endpoint": {
+                                            "description": "Relative SCIM endpoint for this resource type.",
+                                            "type": "string"
+                                        },
+                                        "schemaUri": {
+                                            "description": "URI identifying the primary resource schema.",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "description": "Provider description of the resource type.",
+                                            "type": "string"
+                                        },
+                                        "schemaExtensions": {
+                                            "description": "Supported extension schemas; omitted if not returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "required": {
+                                                        "description": "Whether resources must include this extension.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "schemaUri": {
+                                                        "description": "URI identifying the extension schema.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A supported resource schema extension."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A supported SCIM resource type and its schema relationships."
+                                },
+                                "description": "Supported resource type definitions."
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported number of resource types.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The complete SCIM resource type discovery collection without transport schema URNs."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover supported resource types. Use `get-resource-type` for a known type and `get-schema` for its attribute definitions. This returns the complete discovery collection in one call."
+            },
+            "filePath": "./miro-scim/tools/list-resource-types.ts",
+            "version": "82b9759d9d7c8d3b2d14d6a3ac602db5223b255ce450b35203d6754cc00e8cf5",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/list-resource-types/82b9759d9d7c8d3b2d14d6a3ac602db5223b255ce450b35203d6754cc00e8cf5.cjs",
+                "ts": "templates-zero/miro-scim/tools/list-resource-types/82b9759d9d7c8d3b2d14d6a3ac602db5223b255ce450b35203d6754cc00e8cf5.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-schemas",
+            "integrationId": "miro-scim",
+            "description": "List supported user, group, and enterprise-user schema definitions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_listschemas",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_listschemas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_listschemas": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input parameters are needed to list supported schemas."
+                    },
+                    "FunctionOutput_miro_scim_listschemas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Schema URI, usable as schemaId in get-schema."
+                                        },
+                                        "name": {
+                                            "description": "Human-readable schema name.",
+                                            "type": "string"
+                                        },
+                                        "attributes": {
+                                            "description": "Supported attribute definitions.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/__schema0"
+                                            }
+                                        },
+                                        "description": {
+                                            "description": "Explanation of the schema.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Supported SCIM schema definition."
+                                },
+                                "description": "Supported schema definitions."
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported number of schemas.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Supported schema definitions without SCIM representation metadata.",
+                        "definitions": {
+                            "__schema0": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Attribute name within its containing schema or complex attribute.",
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "description": "SCIM data type, preserved as reported.",
+                                        "type": "string"
+                                    },
+                                    "required": {
+                                        "description": "Whether the attribute is required.",
+                                        "type": "boolean"
+                                    },
+                                    "returned": {
+                                        "description": "SCIM policy controlling when the attribute is returned.",
+                                        "type": "string"
+                                    },
+                                    "caseExact": {
+                                        "description": "Whether value comparison is case exact.",
+                                        "type": "boolean"
+                                    },
+                                    "mutability": {
+                                        "description": "SCIM attribute mutability policy.",
+                                        "type": "string"
+                                    },
+                                    "uniqueness": {
+                                        "description": "Scope of the attribute's uniqueness requirement.",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Provider explanation of the attribute.",
+                                        "type": "string"
+                                    },
+                                    "multiValued": {
+                                        "description": "Whether the attribute has multiple values.",
+                                        "type": "boolean"
+                                    },
+                                    "subAttributes": {
+                                        "description": "Nested definitions if supplied; absence does not imply the attribute has no children.",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/__schema0"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "description": "Supported SCIM attribute definition."
+                            }
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to inspect the supported attributes and obtain schema IDs. Use `get-schema` for a specific schema and its nested attribute definitions. This collection is unpaginated."
+            },
+            "filePath": "./miro-scim/tools/list-schemas.ts",
+            "version": "ba067bcde8fff1f4788ed4a87dd28fe6449bb4c180f4c8da722818a23db82ebd",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/list-schemas/ba067bcde8fff1f4788ed4a87dd28fe6449bb4c180f4c8da722818a23db82ebd.cjs",
+                "ts": "templates-zero/miro-scim/tools/list-schemas/ba067bcde8fff1f4788ed4a87dd28fe6449bb4c180f4c8da722818a23db82ebd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-users",
+            "integrationId": "miro-scim",
+            "description": "List one page of organization members, optionally filtered and sorted. Guests are excluded.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_listusers",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_listusers",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum members in this page; defaults to 100.",
+                                "default": 100,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "active": {
+                                "description": "Match active or deactivated members; omission includes both.",
+                                "type": "boolean"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation token from this tool for the same connection and criteria.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "filter": {
+                                "description": "Optional SCIM filter expression for advanced criteria; AND-combined with simple fields. Supports provider SCIM comparison and logical operators.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sortBy": {
+                                "description": "SCIM attribute used for sorting, such as userName or emails.value; omission preserves provider ordering.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "groupId": {
+                                "description": "Only members of this user group.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "userName": {
+                                "description": "Exact login email to match; combined with other criteria using AND.",
+                                "type": "string",
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                            },
+                            "sortOrder": {
+                                "description": "Sort direction; requires sortBy. Defaults to ascending when sortBy is supplied.",
+                                "type": "string",
+                                "enum": [
+                                    "ascending",
+                                    "descending"
+                                ]
+                            },
+                            "licenseType": {
+                                "description": "Exact provider license name to match.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "displayNameContains": {
+                                "description": "Find display names containing this text using provider comparison semantics.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Criteria, sorting, and continuation for one page of organization members.",
+                        "dependencies": {
+                            "sortOrder": [
+                                "sortBy"
+                            ]
+                        }
+                    },
+                    "FunctionOutput_miro_scim_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque user ID."
+                                        },
+                                        "name": {
+                                            "description": "Structured personal name.",
+                                            "type": "object",
+                                            "properties": {
+                                                "formatted": {
+                                                    "description": "Formatted full name.",
+                                                    "type": "string"
+                                                },
+                                                "givenName": {
+                                                    "description": "Given name.",
+                                                    "type": "string"
+                                                },
+                                                "familyName": {
+                                                    "description": "Family name.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "roles": {
+                                            "description": "Membership and administrative roles.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Provider role category.",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Role value or custom name.",
+                                                        "type": "string"
+                                                    },
+                                                    "display": {
+                                                        "description": "Human-readable role label.",
+                                                        "type": "string"
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this is the primary role.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "An organization membership or administrative role."
+                                            }
+                                        },
+                                        "active": {
+                                            "description": "Whether the member is active.",
+                                            "type": "boolean"
+                                        },
+                                        "emails": {
+                                            "description": "Email addresses when returned.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "description": "Email category.",
+                                                        "type": "string"
+                                                    },
+                                                    "value": {
+                                                        "description": "Email address.",
+                                                        "type": "string"
+                                                    },
+                                                    "primary": {
+                                                        "description": "Whether this is the primary address.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A member email address."
+                                            }
+                                        },
+                                        "groups": {
+                                            "description": "User group references.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "groupId": {
+                                                        "description": "Opaque user group ID.",
+                                                        "type": "string"
+                                                    },
+                                                    "displayName": {
+                                                        "description": "User group name.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A user group reference."
+                                            }
+                                        },
+                                        "photos": {
+                                            "description": "Profile image references.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "description": "Image URL.",
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "description": "Image category.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A profile image reference."
+                                            }
+                                        },
+                                        "userName": {
+                                            "description": "Login identifier, normally email.",
+                                            "type": "string"
+                                        },
+                                        "enterprise": {
+                                            "description": "Enterprise profile extension.",
+                                            "type": "object",
+                                            "properties": {
+                                                "manager": {
+                                                    "description": "Manager reference.",
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "userId": {
+                                                            "description": "Opaque manager user ID.",
+                                                            "type": "string"
+                                                        },
+                                                        "displayName": {
+                                                            "description": "Manager display name.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "division": {
+                                                    "description": "Division label.",
+                                                    "type": "string"
+                                                },
+                                                "costCenter": {
+                                                    "description": "Cost center.",
+                                                    "type": "string"
+                                                },
+                                                "department": {
+                                                    "description": "Department label.",
+                                                    "type": "string"
+                                                },
+                                                "organization": {
+                                                    "description": "Organization label.",
+                                                    "type": "string"
+                                                },
+                                                "employeeNumber": {
+                                                    "description": "Employee number.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "displayName": {
+                                            "description": "User display name.",
+                                            "type": "string"
+                                        },
+                                        "licenseType": {
+                                            "description": "Provider license name.",
+                                            "type": "string"
+                                        },
+                                        "preferredLanguage": {
+                                            "description": "Provider locale, for example en_US.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An organization member, excluding guests."
+                                },
+                                "description": "Members in this page, excluding guests."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token; omitted when exhausted.",
+                                "type": "string"
+                            },
+                            "totalResults": {
+                                "description": "Provider-reported total matching members at request time.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of organization members and its continuation token."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use for browsing or finding members, including by email, activity, license, or group. Use `get-user` when you already know the ID. Pass nextCursor back as cursor with the same filters, sorting, and limit. The default limit is 100; allowed range is 1–1000. Each call returns one page, not every member."
+            },
+            "filePath": "./miro-scim/tools/list-users.ts",
+            "version": "e4df2e1ac4b99107f3165a8e6d57a8bb36e2c4940a1002007317e283852f9459",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/list-users/e4df2e1ac4b99107f3165a8e6d57a8bb36e2c4940a1002007317e283852f9459.cjs",
+                "ts": "templates-zero/miro-scim/tools/list-users/e4df2e1ac4b99107f3165a8e6d57a8bb36e2c4940a1002007317e283852f9459.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "reactivate-user",
+            "integrationId": "miro-scim",
+            "description": "Reactivate a deactivated organization member, subject to organization domain restrictions.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_reactivateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_reactivateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_reactivateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the member to reactivate."
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the retained organization member to reactivate."
+                    },
+                    "FunctionOutput_miro_scim_reactivateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user identifier."
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "Verified active state returned by the provider."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "active"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The provider-returned user identifier and verified active state."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use a member ID from `list-users` or `get-user`. This restores activity for a retained member, not a deleted user. Use `create-user` for provisioning and `deactivate-user` to deactivate. Reactivation may be blocked by restricted domains."
+            },
+            "filePath": "./miro-scim/tools/reactivate-user.ts",
+            "version": "3c0dd2d2375a821c11ffb1b0a0c8e4fe80f46ed6d4510a934215ca21fea4ae79",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/reactivate-user/3c0dd2d2375a821c11ffb1b0a0c8e4fe80f46ed6d4510a934215ca21fea4ae79.cjs",
+                "ts": "templates-zero/miro-scim/tools/reactivate-user/3c0dd2d2375a821c11ffb1b0a0c8e4fe80f46ed6d4510a934215ca21fea4ae79.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-admin-role-from-user",
+            "integrationId": "miro-scim",
+            "description": "Remove a named administrative-role association from an organization member.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_removeadminrolefromuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_removeadminrolefromuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_removeadminrolefromuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the member whose role association is removed."
+                            },
+                            "roleName": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Exact administrative role name currently assigned to the member."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "roleName"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization member and exact administrative role association to remove."
+                    },
+                    "FunctionOutput_miro_scim_removeadminrolefromuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque user identifier."
+                            },
+                            "roles": {
+                                "description": "Effective roles returned after removal.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Role category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Role label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether this is the primary role.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "An effective role association returned for the member."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "User identifier and effective roles returned after administrative-role removal."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-user` to inspect current roles and obtain the exact role name. This revokes the named administrative authority, not organization membership. Use `update-user` for the primary organization role."
+            },
+            "filePath": "./miro-scim/tools/remove-admin-role-from-user.ts",
+            "version": "812d750bb0819b4ecabca00b6e2a65e05ae29971f543567a0a91ebba3f101998",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/remove-admin-role-from-user/812d750bb0819b4ecabca00b6e2a65e05ae29971f543567a0a91ebba3f101998.cjs",
+                "ts": "templates-zero/miro-scim/tools/remove-admin-role-from-user/812d750bb0819b4ecabca00b6e2a65e05ae29971f543567a0a91ebba3f101998.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "remove-member-from-group",
+            "integrationId": "miro-scim",
+            "description": "Remove one user's association with a Miro user group without removing team or organization membership.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_removememberfromgroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_removememberfromgroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque user ID whose group membership is removed."
+                            },
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque user group ID from which to remove the association."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The user and user group whose association is removed."
+                    },
+                    "FunctionOutput_miro_scim_removememberfromgroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque group ID."
+                            },
+                            "members": {
+                                "description": "Returned remaining member references.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A remaining group member reference."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The effective user group returned after removing the association."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get IDs from `get-group`, `list-groups`, or `list-users`. This removes only the user group association: it does not transfer boards, alter the license, or remove team/organization membership. Missing membership is a no-op and user groups have no last-admin restriction. Use `batch-remove-members-from-group` for several users."
+            },
+            "filePath": "./miro-scim/tools/remove-member-from-group.ts",
+            "version": "83521bcacb49c4d950e238ccc455b3af07a225f89197719733d8042829b0e97b",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/remove-member-from-group/83521bcacb49c4d950e238ccc455b3af07a225f89197719733d8042829b0e97b.cjs",
+                "ts": "templates-zero/miro-scim/tools/remove-member-from-group/83521bcacb49c4d950e238ccc455b3af07a225f89197719733d8042829b0e97b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-group",
+            "integrationId": "miro-scim",
+            "description": "Partially update a user group's name or replace its complete membership set.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_updategroup",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_updategroup",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "groupId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque user group ID to modify."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "memberIds": {
+                                        "description": "Complete replacement membership set, not additions. [] removes every user group membership. Maximum 100 members.",
+                                        "maxItems": 100,
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Opaque user ID in the replacement membership set."
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    "displayName": {
+                                        "description": "Replacement unique group name; maximum 60 characters prevents provider truncation.",
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial group changes. Omission preserves fields; null is rejected."
+                            }
+                        },
+                        "required": [
+                            "groupId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "User group to update and the attributes to replace."
+                    },
+                    "FunctionOutput_miro_scim_updategroup": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque group ID, unchanged by the update."
+                            },
+                            "members": {
+                                "description": "Effective user group member references returned by the service.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Member resource type, normally User.",
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "description": "Opaque member user ID.",
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "description": "Member display name.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "User group member reference returned by the service."
+                                }
+                            },
+                            "displayName": {
+                                "description": "Effective group display name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Effective user group attributes returned after the update."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get a group ID from `list-groups` or `get-group`. Omitted fields are preserved; memberIds replaces the whole membership set and [] clears it. Use `add-member-to-group`, `remove-member-from-group`, or their Batch tools for incremental changes. Adding through replacement can reactivate/recreate users, upgrade licenses to FULL, and convert external users to internal users. Maximum replacement set: 100."
+            },
+            "filePath": "./miro-scim/tools/update-group.ts",
+            "version": "d5fe8aa77f89fe52538d310becc5d79c8268b2c4824b41dbc48064362226f6ff",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/update-group/d5fe8aa77f89fe52538d310becc5d79c8268b2c4824b41dbc48064362226f6ff.cjs",
+                "ts": "templates-zero/miro-scim/tools/update-group/d5fe8aa77f89fe52538d310becc5d79c8268b2c4824b41dbc48064362226f6ff.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-user",
+            "integrationId": "miro-scim",
+            "description": "Partially modify an organization member's profile, login, license, primary role, or enterprise attributes. License downgrades and guest updates are not supported.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_miro_scim_updateuser",
+            "output_schema_ref": "#/definitions/FunctionOutput_miro_scim_updateuser",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_miro_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque ID of the organization member to modify."
+                            },
+                            "changes": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Partial structured name changes; omitted components remain unchanged.",
+                                        "type": "object",
+                                        "properties": {
+                                            "formatted": {
+                                                "description": "Formatted name; empty string requests clearing this component.",
+                                                "type": "string",
+                                                "maxLength": 60
+                                            },
+                                            "givenName": {
+                                                "description": "Given name; empty string requests clearing this component.",
+                                                "type": "string",
+                                                "maxLength": 60
+                                            },
+                                            "familyName": {
+                                                "description": "Family name; empty string requests clearing this component.",
+                                                "type": "string",
+                                                "maxLength": 60
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "emails": {
+                                        "description": "Replacement email-address list; [] requests clearing, subject to provider support. Does not substitute for changing userName.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "description": "Email category.",
+                                                    "type": "string"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email address."
+                                                },
+                                                "primary": {
+                                                    "description": "Whether this is the primary address; at most one may be true.",
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "value"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One replacement email address."
+                                        }
+                                    },
+                                    "photos": {
+                                        "description": "Replacement profile image references; [] requests clearing.",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "url": {
+                                                    "type": "string",
+                                                    "format": "uri",
+                                                    "description": "Image URL; supported image formats and 31457280-byte download maximum apply."
+                                                },
+                                                "type": {
+                                                    "description": "Image category; defaults to photo.",
+                                                    "type": "string",
+                                                    "default": "photo"
+                                                }
+                                            },
+                                            "required": [
+                                                "url"
+                                            ],
+                                            "additionalProperties": false,
+                                            "description": "One replacement profile image reference."
+                                        }
+                                    },
+                                    "userName": {
+                                        "description": "New login email; active user and organization ownership of old and new domains are required.",
+                                        "type": "string",
+                                        "format": "email",
+                                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                                    },
+                                    "enterprise": {
+                                        "description": "Partial enterprise changes; empty strings request clearing those text attributes.",
+                                        "type": "object",
+                                        "properties": {
+                                            "manager": {
+                                                "description": "Partial manager reference changes; omit to preserve.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "userId": {
+                                                        "description": "Manager's numeric-looking Miro ID, retained as a string; this field does not offer clearing.",
+                                                        "type": "string",
+                                                        "pattern": "^[0-9]+$"
+                                                    },
+                                                    "displayName": {
+                                                        "description": "Manager display name, or empty string to clear the label.",
+                                                        "type": "string",
+                                                        "maxLength": 60
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "minProperties": 1
+                                            },
+                                            "division": {
+                                                "description": "Division label, or empty string to clear.",
+                                                "type": "string",
+                                                "maxLength": 120
+                                            },
+                                            "costCenter": {
+                                                "description": "Cost center, or empty string to clear.",
+                                                "type": "string",
+                                                "maxLength": 120
+                                            },
+                                            "department": {
+                                                "description": "Department label, or empty string to clear.",
+                                                "type": "string",
+                                                "maxLength": 120
+                                            },
+                                            "organization": {
+                                                "description": "Enterprise organization label, or empty string to clear.",
+                                                "type": "string",
+                                                "maxLength": 120
+                                            },
+                                            "employeeNumber": {
+                                                "description": "Employee number, or empty string to clear.",
+                                                "type": "string",
+                                                "maxLength": 20
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "minProperties": 1
+                                    },
+                                    "displayName": {
+                                        "description": "New nonempty display name.",
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                    },
+                                    "licenseType": {
+                                        "description": "Requested upgraded license; downgrades are unsupported.",
+                                        "type": "string",
+                                        "enum": [
+                                            "Full",
+                                            "Collaborate",
+                                            "Accelerate"
+                                        ]
+                                    },
+                                    "primaryRole": {
+                                        "description": "Replacement primary organization membership role.",
+                                        "type": "string",
+                                        "enum": [
+                                            "ORGANIZATION_INTERNAL_ADMIN",
+                                            "ORGANIZATION_INTERNAL_USER"
+                                        ]
+                                    },
+                                    "preferredLanguage": {
+                                        "description": "New provider locale, for example en_US.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "description": "Partial changes; omitted properties are preserved, null is rejected, and arrays replace only their corresponding field."
+                            }
+                        },
+                        "required": [
+                            "userId",
+                            "changes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Organization member ID and partial changes to apply."
+                    },
+                    "FunctionOutput_miro_scim_updateuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque ID of the modified user."
+                            },
+                            "roles": {
+                                "description": "Effective organization roles.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "Role category.",
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "description": "Role value or custom name.",
+                                            "type": "string"
+                                        },
+                                        "display": {
+                                            "description": "Human-readable role label.",
+                                            "type": "string"
+                                        },
+                                        "primary": {
+                                            "description": "Whether the role is primary.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "One effective organization role."
+                                }
+                            },
+                            "active": {
+                                "description": "Current activity state when returned.",
+                                "type": "boolean"
+                            },
+                            "userName": {
+                                "description": "Effective login identifier.",
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "description": "Effective display name.",
+                                "type": "string"
+                            },
+                            "licenseType": {
+                                "description": "Effective provider license name.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Effective organization member values after verification."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Get the member ID from `list-users` or `get-user`. Omitted fields stay unchanged. Use `deactivate-user` or `reactivate-user` for activity changes and `add-admin-role-to-user` or `remove-admin-role-from-user` for named admin-role associations. License updates are upgrades only. Email changes require ownership of both domains and an active member."
+            },
+            "filePath": "./miro-scim/tools/update-user.ts",
+            "version": "86a99f86293fe2ac399c58998c259a3852e89cb094026bb80811708d50a85c15",
+            "location": {
+                "js": "templates-zero/miro-scim/tools/update-user/86a99f86293fe2ac399c58998c259a3852e89cb094026bb80811708d50a85c15.cjs",
+                "ts": "templates-zero/miro-scim/tools/update-user/86a99f86293fe2ac399c58998c259a3852e89cb094026bb80811708d50a85c15.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

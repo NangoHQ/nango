@@ -1,0 +1,1228 @@
+{
+    "providerConfigKey": "read-ai",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make accessible Read.ai meeting reports available as records containing meeting metadata and available enriched report content. Active reports may lack enrichment; workspace Downloads and report-access permissions apply.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meetings",
+            "output": [
+                "Meetings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meetings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meetings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Read.ai meeting ULID identifying this record."
+                            },
+                            "endAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Actual meeting end in UTC; null when upstream end_time_ms is missing or null, indicating an active meeting."
+                            },
+                            "owner": {
+                                "description": "Meeting report owner, when supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Person's display name, when supplied.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Person's email address, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Meeting title, when supplied.",
+                                "type": "string"
+                            },
+                            "topics": {
+                                "description": "Available topics in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "folders": {
+                                "description": "Provider folder names or labels as supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "metrics": {
+                                "description": "Available numeric report metrics without rescaling; omitted if absent, retaining explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "readScore": {
+                                                "description": "Read score unchanged; no scale is inferred.",
+                                                "type": "number"
+                                            },
+                                            "sentiment": {
+                                                "description": "Sentiment metric unchanged; no scale is inferred.",
+                                                "type": "number"
+                                            },
+                                            "engagement": {
+                                                "description": "Engagement metric unchanged; no scale is inferred.",
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "Available numeric meeting report metrics."
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "startAt": {
+                                "description": "Actual meeting start instant in UTC with millisecond precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "summary": {
+                                "description": "Available summary text; omitted if absent, retaining explicit null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "platform": {
+                                "description": "Originating platform label; unknown values are preserved.",
+                                "type": "string"
+                            },
+                            "reportUrl": {
+                                "description": "Web URL of the meeting report.",
+                                "type": "string"
+                            },
+                            "platformId": {
+                                "description": "Opaque identifier on the originating meeting platform.",
+                                "type": "string"
+                            },
+                            "transcript": {
+                                "description": "Available report transcript with ordinary text and UTC turn times; omitted if absent, retaining explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "description": "Provider-supplied complete transcript text, including any speaker labels.",
+                                                "type": "string"
+                                            },
+                                            "turns": {
+                                                "description": "Transcript turns in provider order.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "text": {
+                                                            "description": "Ordinary turn text preserving Unicode.",
+                                                            "type": "string"
+                                                        },
+                                                        "endAt": {
+                                                            "description": "Turn end instant in UTC with millisecond precision.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        },
+                                                        "speaker": {
+                                                            "description": "Speaker attributed to the transcript turn.",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "description": "Speaker's display name, not a stable identity key.",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "startAt": {
+                                                            "description": "Turn start instant in UTC with millisecond precision.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "One transcript turn in provider order."
+                                                }
+                                            },
+                                            "speakers": {
+                                                "description": "Transcript speakers in provider order; names are not deduplicated.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "description": "Speaker's display name, not a stable identity key.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "A transcript speaker identified by a display name."
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "description": "Available report transcript with text, speakers, and timestamped turns."
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "actionItems": {
+                                "description": "Available action items in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "liveEnabled": {
+                                "description": "Whether real-time data capture is enabled, not a live-content availability guarantee.",
+                                "type": "boolean"
+                            },
+                            "keyQuestions": {
+                                "description": "Available key questions in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "participants": {
+                                "description": "Meeting participants with reported invitation and attendance flags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Participant's display name, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Participant's email address, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "invited": {
+                                            "description": "Whether this participant was invited.",
+                                            "type": "boolean"
+                                        },
+                                        "attended": {
+                                            "description": "Whether this participant attended.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A meeting participant and their reported invitation and attendance flags."
+                                }
+                            },
+                            "scheduledEndAt": {
+                                "description": "Scheduled meeting end in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "chapterSummaries": {
+                                "description": "Available chapter summaries in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "scheduledStartAt": {
+                                "description": "Scheduled meeting start in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "recordingDownload": {
+                                "description": "Available recording download information as provider-defined JSON, not downloaded recording bytes; omitted if absent."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible Read.ai meeting report with meeting metadata and available enriched report content."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "get-live-meeting",
+            "integrationId": "read-ai",
+            "description": "Get currently available live data for an ongoing, live-enabled meeting, optionally filtering live content by its start time. This does not enable live capture.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_read_ai_getlivemeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_read_ai_getlivemeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_read_ai_getlivemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "include": {
+                                "description": "Live content to request; defaults to both available live expansions. An empty array requests metadata only.",
+                                "uniqueItems": true,
+                                "default": [
+                                    "transcript",
+                                    "chapterSummaries"
+                                ],
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "transcript",
+                                        "chapterSummaries"
+                                    ]
+                                }
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "pattern": "^[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+                                "description": "Opaque Read.ai meeting ULID from list-meetings."
+                            },
+                            "startedAfter": {
+                                "description": "Exclusive start-time bound for live content, not the meeting itself; requires explicit UTC or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "startedAtOrAfter": {
+                                "description": "Inclusive start-time bound for live content, not the meeting itself; requires explicit UTC or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select a live meeting snapshot, its live content expansions, and optional content start-time bounds."
+                    },
+                    "FunctionOutput_read_ai_getlivemeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Read.ai meeting ULID."
+                            },
+                            "endAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Actual meeting end in UTC if supplied; null for absent or null end_time_ms."
+                            },
+                            "owner": {
+                                "description": "Meeting report owner, when supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Person's display name, when supplied.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Person's email address, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Meeting title, when supplied.",
+                                "type": "string"
+                            },
+                            "folders": {
+                                "description": "Folder names or labels exactly as supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "startAt": {
+                                "description": "Actual meeting start in UTC with millisecond precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "platform": {
+                                "description": "Originating platform label, without restricting unknown labels.",
+                                "type": "string"
+                            },
+                            "reportUrl": {
+                                "description": "Web URL of the meeting report.",
+                                "type": "string"
+                            },
+                            "platformId": {
+                                "description": "Opaque meeting identifier on the originating platform.",
+                                "type": "string"
+                            },
+                            "transcript": {
+                                "description": "Currently available expanded live transcript; omitted if absent, preserving explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "description": "Provider-supplied transcript text, including any speaker labels.",
+                                                "type": "string"
+                                            },
+                                            "turns": {
+                                                "description": "Available live transcript turns in provider order; no completeness or finality guarantee.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "text": {
+                                                            "description": "Ordinary transcript text preserving Unicode.",
+                                                            "type": "string"
+                                                        },
+                                                        "endAt": {
+                                                            "description": "Turn end instant normalized to UTC, preserving milliseconds.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        },
+                                                        "speaker": {
+                                                            "description": "Speaker attributed to this live transcript turn.",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "description": "Speaker display name; not a stable speaker identity.",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "startAt": {
+                                                            "description": "Turn start instant normalized to UTC, preserving milliseconds.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "speakers": {
+                                                "description": "Speaker list in provider order; repeated names are preserved.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "description": "Speaker display name; not a stable speaker identity.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "liveEnabled": {
+                                "description": "Provider real-time capture flag; does not by itself ensure live data exists.",
+                                "type": "boolean"
+                            },
+                            "participants": {
+                                "description": "Reported participants and invitation/attendance flags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Participant's display name, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Participant's email address, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "invited": {
+                                            "description": "Whether the participant was invited.",
+                                            "type": "boolean"
+                                        },
+                                        "attended": {
+                                            "description": "Whether the participant attended.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "scheduledEndAt": {
+                                "description": "Scheduled end instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "chapterSummaries": {
+                                "description": "Currently available expanded chapter summaries in the provider-defined JSON structure; omitted if absent."
+                            },
+                            "scheduledStartAt": {
+                                "description": "Scheduled start instant in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Currently available live meeting metadata and expanded content, without a completeness or finality guarantee."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Find the meeting ID and liveEnabled status using `list-meetings`. Use this for ongoing meetings; use `get-meeting` for completed reports. By default, someone must have the live meeting dashboard open for data to be available; automatic capture requires Read.ai support. This returns the currently available snapshot without waiting for more content. The optional time bound filters live data rather than selecting meetings."
+            },
+            "filePath": "./read-ai/tools/get-live-meeting.ts",
+            "version": "cd602b23cf5281b5e40d01e03a5defa62eec2b92e32440b89fad5ad4c6525497",
+            "location": {
+                "js": "templates-zero/read-ai/tools/get-live-meeting/cd602b23cf5281b5e40d01e03a5defa62eec2b92e32440b89fad5ad4c6525497.cjs",
+                "ts": "templates-zero/read-ai/tools/get-live-meeting/cd602b23cf5281b5e40d01e03a5defa62eec2b92e32440b89fad5ad4c6525497.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting",
+            "integrationId": "read-ai",
+            "description": "Get an accessible meeting report by its meeting ID, with optional summary, transcript, metrics, and other enriched content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_read_ai_getmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_read_ai_getmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_read_ai_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "pattern": "^[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+                                "description": "Read.ai meeting ULID obtained from list-meetings; treated as an opaque identifier."
+                            },
+                            "include": {
+                                "description": "Additional report content to request. Omitted or empty means metadata only; more expansions may increase latency.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "summary",
+                                        "chapterSummaries",
+                                        "actionItems",
+                                        "keyQuestions",
+                                        "topics",
+                                        "transcript",
+                                        "metrics",
+                                        "recordingDownload"
+                                    ]
+                                },
+                                "uniqueItems": true,
+                                "default": []
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting identifier and optional report content expansions."
+                    },
+                    "FunctionOutput_read_ai_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque Read.ai meeting ULID."
+                            },
+                            "endAt": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ],
+                                "description": "Actual meeting end in UTC; null when upstream end_time_ms is absent or null, indicating an active meeting."
+                            },
+                            "owner": {
+                                "description": "Meeting report owner, when supplied.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Person's display name, when provided.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Person's email address, when provided.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "title": {
+                                "description": "Meeting title, when provided.",
+                                "type": "string"
+                            },
+                            "topics": {
+                                "description": "Expanded topics in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "folders": {
+                                "description": "Provider folder names or labels exactly as supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "metrics": {
+                                "description": "Expanded numeric report metrics without rescaling; omitted if absent, preserving explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "readScore": {
+                                                "description": "Read score exactly as reported; no scale is inferred.",
+                                                "type": "number"
+                                            },
+                                            "sentiment": {
+                                                "description": "Sentiment value exactly as reported; no scale is inferred.",
+                                                "type": "number"
+                                            },
+                                            "engagement": {
+                                                "description": "Engagement value exactly as reported; no scale is inferred.",
+                                                "type": "number"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "startAt": {
+                                "description": "Actual meeting start in UTC with millisecond precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "summary": {
+                                "description": "Expanded summary as ordinary text; omitted if absent, preserving explicit null.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "platform": {
+                                "description": "Provider platform label, such as zoom; unknown labels are preserved.",
+                                "type": "string"
+                            },
+                            "reportUrl": {
+                                "description": "Web URL of this meeting report.",
+                                "type": "string"
+                            },
+                            "platformId": {
+                                "description": "Opaque meeting identifier on the originating platform, never converted to a number.",
+                                "type": "string"
+                            },
+                            "transcript": {
+                                "description": "Expanded transcript with ordinary text and UTC turn times; omitted if absent, preserving explicit null.",
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "description": "Complete transcript text including provider-supplied speaker labels.",
+                                                "type": "string"
+                                            },
+                                            "speakers": {
+                                                "description": "Transcript speaker list in provider order, without deduplicating names.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "name": {
+                                                            "description": "Speaker display name; not a stable identity key.",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "turns": {
+                                                "description": "Transcript turns in provider order.",
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "text": {
+                                                            "description": "Ordinary transcript text for this turn, preserving Unicode.",
+                                                            "type": "string"
+                                                        },
+                                                        "speaker": {
+                                                            "description": "Speaker attributed to this turn.",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "name": {
+                                                                    "description": "Speaker display name; not a stable identity key.",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "additionalProperties": false
+                                                        },
+                                                        "startAt": {
+                                                            "description": "Turn start instant in UTC, preserving milliseconds.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        },
+                                                        "endAt": {
+                                                            "description": "Turn end instant in UTC, preserving milliseconds.",
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "actionItems": {
+                                "description": "Expanded action items in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "liveEnabled": {
+                                "description": "Whether real-time data capture is enabled; not a guarantee that live content is currently available.",
+                                "type": "boolean"
+                            },
+                            "keyQuestions": {
+                                "description": "Expanded key questions in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "participants": {
+                                "description": "Participants with reported invitation and attendance flags.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Participant's display name, when provided.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Participant's email address, when provided.",
+                                            "type": "string"
+                                        },
+                                        "invited": {
+                                            "description": "Whether this participant was invited.",
+                                            "type": "boolean"
+                                        },
+                                        "attended": {
+                                            "description": "Whether this participant attended.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "scheduledEndAt": {
+                                "description": "Scheduled meeting end in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "chapterSummaries": {
+                                "description": "Expanded chapter summaries in their provider-defined JSON structure; omitted if absent."
+                            },
+                            "scheduledStartAt": {
+                                "description": "Scheduled meeting start in UTC, when supplied.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "recordingDownload": {
+                                "description": "Expanded recording download information in the provider-defined structure, not recording bytes; omitted if absent."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "endAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accessible meeting report with normalized metadata and available requested enrichments."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a known meeting ID from `list-meetings`. Select include fields when you need report content beyond metadata. Use `get-live-meeting` instead for ongoing live-enabled meeting data. Active meetings can lack enrichment because it is generated after the meeting ends. Recording download expansion returns download information, not recording bytes."
+            },
+            "filePath": "./read-ai/tools/get-meeting.ts",
+            "version": "432f392959ebdd7189806b4ec15a5c36379caf2e5a6203c2428fa093a977b105",
+            "location": {
+                "js": "templates-zero/read-ai/tools/get-meeting/432f392959ebdd7189806b4ec15a5c36379caf2e5a6203c2428fa093a977b105.cjs",
+                "ts": "templates-zero/read-ai/tools/get-meeting/432f392959ebdd7189806b4ec15a5c36379caf2e5a6203c2428fa093a977b105.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meetings",
+            "integrationId": "read-ai",
+            "description": "List one page of accessible active and ended meetings, newest first, optionally filtering their start times and including enriched report content.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_read_ai_listmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_read_ai_listmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_read_ai_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum meetings in this page; defaults to 10.",
+                                "default": 10,
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from the previous page; reuse with the same connection, filters, and include choices.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "include": {
+                                "description": "Additional report fields to request; omitted or empty requests base meeting metadata only. More fields can increase response time.",
+                                "default": [],
+                                "uniqueItems": true,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "enum": [
+                                        "summary",
+                                        "chapterSummaries",
+                                        "actionItems",
+                                        "keyQuestions",
+                                        "topics",
+                                        "transcript",
+                                        "metrics",
+                                        "recordingDownload"
+                                    ]
+                                }
+                            },
+                            "startedAfter": {
+                                "description": "Exclusive lower bound on meeting start time, with an explicit UTC marker or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "startedBefore": {
+                                "description": "Exclusive upper bound on meeting start time, with an explicit UTC marker or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "startedAtOrAfter": {
+                                "description": "Inclusive lower bound on meeting start time, with an explicit UTC marker or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "startedAtOrBefore": {
+                                "description": "Inclusive upper bound on meeting start time, with an explicit UTC marker or offset and millisecond precision or coarser.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "One page of meetings with optional start-time bounds and report expansions."
+                    },
+                    "FunctionOutput_read_ai_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque Read.ai meeting ULID."
+                                        },
+                                        "endAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Actual meeting end in UTC; null means active because upstream end_time_ms is absent or null."
+                                        },
+                                        "owner": {
+                                            "description": "Meeting report owner, when supplied.",
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Person's display name, when provided.",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "description": "Person's email address, when provided.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "title": {
+                                            "description": "Meeting title, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "topics": {
+                                            "description": "Expanded topics, preserving the provider-defined JSON structure; omitted if absent."
+                                        },
+                                        "folders": {
+                                            "description": "Provider folder names or labels exactly as supplied.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "metrics": {
+                                            "description": "Expanded report metrics without invented scales; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "readScore": {
+                                                            "description": "Provider Read score, unchanged; no inferred scale or percentage conversion.",
+                                                            "type": "number"
+                                                        },
+                                                        "sentiment": {
+                                                            "description": "Provider sentiment metric, unchanged; its scale is not specified.",
+                                                            "type": "number"
+                                                        },
+                                                        "engagement": {
+                                                            "description": "Provider engagement metric, unchanged; its scale is not specified.",
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Report metrics in their provider-defined scales."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "startAt": {
+                                            "description": "Actual meeting start instant normalized to UTC with millisecond precision.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "summary": {
+                                            "description": "Expanded report summary as ordinary text; omitted if absent and null if explicitly null.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "platform": {
+                                            "description": "Meeting platform label, such as zoom; preserve unknown labels.",
+                                            "type": "string"
+                                        },
+                                        "reportUrl": {
+                                            "description": "Web URL of the meeting report.",
+                                            "type": "string"
+                                        },
+                                        "platformId": {
+                                            "description": "Opaque identifier on the meeting platform; never converted to a number.",
+                                            "type": "string"
+                                        },
+                                        "transcript": {
+                                            "description": "Expanded transcript with ordinary text and timestamped turns; omitted if absent and null if explicitly null.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "text": {
+                                                            "description": "Complete transcript text as supplied, including speaker labels if present.",
+                                                            "type": "string"
+                                                        },
+                                                        "turns": {
+                                                            "description": "Transcript turns in provider order.",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "text": {
+                                                                        "description": "Ordinary transcript text for this turn, preserving Unicode.",
+                                                                        "type": "string"
+                                                                    },
+                                                                    "endAt": {
+                                                                        "description": "Turn end instant in UTC, preserving milliseconds.",
+                                                                        "type": "string",
+                                                                        "format": "date-time",
+                                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                                    },
+                                                                    "speaker": {
+                                                                        "description": "Speaker attributed to this transcript turn.",
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "name": {
+                                                                                "description": "Speaker's display name; not a stable speaker identifier.",
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "additionalProperties": false
+                                                                    },
+                                                                    "startAt": {
+                                                                        "description": "Turn start instant in UTC, preserving milliseconds.",
+                                                                        "type": "string",
+                                                                        "format": "date-time",
+                                                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false,
+                                                                "description": "A timestamped transcript turn."
+                                                            }
+                                                        },
+                                                        "speakers": {
+                                                            "description": "Speakers listed in the transcript; order and duplicate names are preserved.",
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "name": {
+                                                                        "description": "Speaker's display name; not a stable speaker identifier.",
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "additionalProperties": false,
+                                                                "description": "A speaker attributed by display name."
+                                                            }
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "description": "Report transcript text, speakers, and timestamped turns."
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        },
+                                        "actionItems": {
+                                            "description": "Expanded action items, preserving the provider-defined JSON structure; omitted if absent."
+                                        },
+                                        "liveEnabled": {
+                                            "description": "Whether real-time data capture is enabled; does not guarantee live data availability.",
+                                            "type": "boolean"
+                                        },
+                                        "keyQuestions": {
+                                            "description": "Expanded key questions, preserving the provider-defined JSON structure; omitted if absent."
+                                        },
+                                        "participants": {
+                                            "description": "Participants and their reported invitation and attendance flags.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Participant's display name, when provided.",
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "description": "Participant's email address, when provided.",
+                                                        "type": "string"
+                                                    },
+                                                    "invited": {
+                                                        "description": "Whether the participant was invited, as reported by Read.ai.",
+                                                        "type": "boolean"
+                                                    },
+                                                    "attended": {
+                                                        "description": "Whether the participant attended, as reported by Read.ai.",
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A meeting participant with reported invitation and attendance flags."
+                                            }
+                                        },
+                                        "scheduledEndAt": {
+                                            "description": "Scheduled end instant in UTC, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "chapterSummaries": {
+                                            "description": "Expanded chapter summaries, preserving the provider-defined JSON structure; omitted if absent."
+                                        },
+                                        "scheduledStartAt": {
+                                            "description": "Scheduled start instant in UTC, when supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "recordingDownload": {
+                                            "description": "Expanded recording download information in its provider-defined JSON structure; this is not a transfer of recording bytes."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "endAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Accessible active or ended meeting and any supplied enriched report content."
+                                },
+                                "description": "This page of accessible meetings, newest first, preserving provider order."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for another page; omitted when has_more is false.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of accessible meetings and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover meeting IDs and browse reports. Use `get-meeting` for a known meeting and `get-live-meeting` for ongoing live content. Each call returns at most 10 meetings. Pass nextCursor back as cursor with the same filters and expansions to continue. Active meetings may not yet have enriched report content. Access is limited to reports available to the connected user; workspace Downloads must be enabled."
+            },
+            "filePath": "./read-ai/tools/list-meetings.ts",
+            "version": "8293e7bda111c9435870f5d9fc1f0bb8f1b9c93f1dcc494b2cd7ba6bf522bb9f",
+            "location": {
+                "js": "templates-zero/read-ai/tools/list-meetings/8293e7bda111c9435870f5d9fc1f0bb8f1b9c93f1dcc494b2cd7ba6bf522bb9f.cjs",
+                "ts": "templates-zero/read-ai/tools/list-meetings/8293e7bda111c9435870f5d9fc1f0bb8f1b9c93f1dcc494b2cd7ba6bf522bb9f.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

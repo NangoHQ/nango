@@ -1,0 +1,2734 @@
+{
+    "providerConfigKey": "gamma",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make accessible workspace membership-folder records available with their IDs and display names.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-folders",
+            "output": [
+                "Folders"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Folders"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Folders": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Folder ID within the connected workspace, usable for generation placement."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Folder display name as ordinary text."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "An accessible workspace membership-folder record with its ID and display name."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make available a replicated catalog of standard and custom themes visible to the connected workspace, including names, category, and color and tone keywords for theme selection.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-themes",
+            "output": [
+                "Themes"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Themes"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Themes": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque theme identifier usable as themeId in a generation request."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Display name of the theme, preserved as ordinary text."
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "standard",
+                                    "custom"
+                                ],
+                                "description": "Theme category: standard is built in and available across workspaces, custom is workspace-created."
+                            },
+                            "toneKeywords": {
+                                "description": "Provider keywords describing the theme's tone or style. Omitted if not supplied; an empty array is a supplied empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "colorKeywords": {
+                                "description": "Provider keywords describing the theme's color palette. Omitted if not supplied; an empty array is a supplied empty list.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A standard or workspace-custom Gamma theme available for theme selection."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "create-agent-generation",
+            "integrationId": "gamma",
+            "description": "Start generating a new presentation, document or social post with Gamma 5, optionally using a template or existing gamma without changing the source.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_createagentgeneration",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_createagentgeneration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_createagentgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "format": {
+                                "description": "Output kind; defaults to presentation.",
+                                "default": "presentation",
+                                "type": "string",
+                                "enum": [
+                                    "presentation",
+                                    "document",
+                                    "social"
+                                ]
+                            },
+                            "prompt": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 400000,
+                                "description": "Natural-language brief for the new gamma."
+                            },
+                            "quality": {
+                                "description": "Model effort tier; omission uses the plan-capped API default.",
+                                "type": "string",
+                                "enum": [
+                                    "lite",
+                                    "standard",
+                                    "max"
+                                ]
+                            },
+                            "themeId": {
+                                "description": "Saved theme ID; mutually exclusive with templateId.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                            },
+                            "exportAs": {
+                                "description": "Optional export after generation; png produces a ZIP of card images.",
+                                "type": "string",
+                                "enum": [
+                                    "pdf",
+                                    "pptx",
+                                    "png"
+                                ]
+                            },
+                            "folderId": {
+                                "description": "Destination folder in the connected workspace; omission uses provider placement.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "numCards": {
+                                "description": "Soft target for card count; Free permits at most 10 and paid plans at most 100.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "sourceUrls": {
+                                "description": "Source URLs the agent should read; inaccessible sources may be skipped.",
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^https?:\\/\\/",
+                                    "description": "HTTP or HTTPS source URL.",
+                                    "format": "uri"
+                                }
+                            },
+                            "templateId": {
+                                "description": "Accessible workspace template, existing gamma or official Explore template ID; source remains unchanged.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 128
+                            },
+                            "sharingOptions": {
+                                "description": "Requested permissions and email sharing; administrator restrictions may cause warnings instead of application.",
+                                "type": "object",
+                                "properties": {
+                                    "emailOptions": {
+                                        "description": "Email sharing configuration; may cause invitations to be sent.",
+                                        "type": "object",
+                                        "properties": {
+                                            "access": {
+                                                "description": "Recipient permission; omitted uses provider default.",
+                                                "type": "string",
+                                                "enum": [
+                                                    "view",
+                                                    "comment",
+                                                    "edit",
+                                                    "fullAccess"
+                                                ]
+                                            },
+                                            "recipients": {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Recipient email address."
+                                                },
+                                                "description": "Email addresses to share the new gamma with."
+                                            }
+                                        },
+                                        "required": [
+                                            "recipients"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "externalAccess": {
+                                        "description": "Permission via external shared links; omitted leaves provider defaults.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit"
+                                        ]
+                                    },
+                                    "workspaceAccess": {
+                                        "description": "Default permission for workspace members; omitted leaves provider defaults.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit",
+                                            "fullAccess"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "disableConnectors": {
+                                "description": "True opts this run out of workspace connector access; omission uses provider behavior.",
+                                "type": "boolean"
+                            },
+                            "additionalInstructions": {
+                                "description": "Additional tone, audience, language or style guidance; empty string adds no guidance.",
+                                "type": "string",
+                                "maxLength": 5000
+                            }
+                        },
+                        "required": [
+                            "prompt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Brief and optional generation, source, placement and sharing settings for a new Gamma 5 job.",
+                        "not": {
+                            "required": [
+                                "templateId",
+                                "themeId"
+                            ],
+                            "properties": {
+                                "themeId": true,
+                                "templateId": true
+                            }
+                        }
+                    },
+                    "FunctionOutput_gamma_createagentgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "engine": {
+                                "type": "string",
+                                "const": "agent",
+                                "description": "Engine to pass to get-generation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "const": "pending",
+                                "description": "Job accepted, not completed."
+                            },
+                            "warnings": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Provider warning code."
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Human-readable explanation of ignored settings or other qualifications."
+                                        }
+                                    },
+                                    "required": [
+                                        "code",
+                                        "message"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Nonfatal provider warning for the accepted request."
+                                },
+                                "description": "Nonfatal request warnings; retain these even if a later failed status omits them."
+                            },
+                            "generationId": {
+                                "type": "string",
+                                "description": "Opaque generation job ID for get-generation."
+                            }
+                        },
+                        "required": [
+                            "engine",
+                            "status",
+                            "warnings",
+                            "generationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted agent generation job handle and request-level warnings, not a generated artifact."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for new presentations, documents and social posts. Use `create-classic-generation` for webpages or multiple pages, or `create-template-generation` to preserve an eligible workspace template's structure by default. Obtain optional folder IDs from `list-folders`. Save the returned warnings and check progress with `get-generation` using engine `agent`; creation does not mean the gamma is ready. Generation spends credits and repeated calls create new jobs."
+            },
+            "filePath": "./gamma/tools/create-agent-generation.ts",
+            "version": "4552c4a1de92aec902251e5804ff6441b68e1986a71d939fedc5b93d9bfec7b2",
+            "location": {
+                "js": "templates-zero/gamma/tools/create-agent-generation/4552c4a1de92aec902251e5804ff6441b68e1986a71d939fedc5b93d9bfec7b2.cjs",
+                "ts": "templates-zero/gamma/tools/create-agent-generation/4552c4a1de92aec902251e5804ff6441b68e1986a71d939fedc5b93d9bfec7b2.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-classic-generation",
+            "integrationId": "gamma",
+            "description": "Start a Classic generation from text or up to 50 pages in one gamma, optionally publishing a multi-page site.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_createclassicgeneration",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_createclassicgeneration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_createclassicgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "pages": {
+                                "description": "Ordered pages to generate in one file; page-specific controls belong inside each page.",
+                                "minItems": 1,
+                                "maxItems": 50,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "path": {
+                                            "description": "Published site slug for pages 2 onward; first page path is implicit; omitted derives from title.",
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 500
+                                        },
+                                        "title": {
+                                            "description": "Page title; omitted lets Gamma choose.",
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 500
+                                        },
+                                        "format": {
+                                            "description": "Output kind for this page.",
+                                            "type": "string",
+                                            "enum": [
+                                                "presentation",
+                                                "document",
+                                                "social",
+                                                "webpage"
+                                            ]
+                                        },
+                                        "numCards": {
+                                            "description": "Target cards for this page, subject to plan limits.",
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "textMode": {
+                                            "description": "How this page's text is interpreted.",
+                                            "type": "string",
+                                            "enum": [
+                                                "generate",
+                                                "condense",
+                                                "preserve"
+                                            ]
+                                        },
+                                        "cardSplit": {
+                                            "description": "How this page's content splits across cards.",
+                                            "type": "string",
+                                            "enum": [
+                                                "auto",
+                                                "inputTextBreaks"
+                                            ]
+                                        },
+                                        "inputText": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 400000,
+                                            "description": "Topic, outline or full content for this page."
+                                        },
+                                        "textOptions": {
+                                            "description": "This page's writing preferences.",
+                                            "type": "object",
+                                            "properties": {
+                                                "tone": {
+                                                    "description": "Writing tone; empty adds no tone guidance.",
+                                                    "type": "string",
+                                                    "maxLength": 500
+                                                },
+                                                "amount": {
+                                                    "description": "Desired text amount per card.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "brief",
+                                                        "medium",
+                                                        "detailed",
+                                                        "extensive"
+                                                    ]
+                                                },
+                                                "audience": {
+                                                    "description": "Intended readership; empty adds no audience guidance.",
+                                                    "type": "string",
+                                                    "maxLength": 500
+                                                },
+                                                "language": {
+                                                    "description": "Provider-supported language code, such as en or fr.",
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "imageOptions": {
+                                            "description": "This page's image preferences.",
+                                            "type": "object",
+                                            "properties": {
+                                                "model": {
+                                                    "description": "Provider-supported image model identifier; omission uses its default.",
+                                                    "type": "string",
+                                                    "minLength": 1
+                                                },
+                                                "style": {
+                                                    "description": "Visual style guidance for AI imagery.",
+                                                    "type": "string",
+                                                    "maxLength": 5000
+                                                },
+                                                "source": {
+                                                    "description": "Where images are selected or generated from.",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "aiGenerated",
+                                                        "giphy",
+                                                        "noImages",
+                                                        "pexels",
+                                                        "pictographic",
+                                                        "placeholder",
+                                                        "themeAccent",
+                                                        "webAllImages",
+                                                        "webFreeToUse",
+                                                        "webFreeToUseCommercially"
+                                                    ]
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "additionalInstructions": {
+                                            "description": "Extra guidance for this page only.",
+                                            "type": "string",
+                                            "maxLength": 5000
+                                        }
+                                    },
+                                    "required": [
+                                        "inputText"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One ordered page in the generated file."
+                                }
+                            },
+                            "title": {
+                                "description": "Custom file title; omitted lets Gamma generate one.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                            },
+                            "format": {
+                                "description": "Single-page output kind; omit when pages is supplied.",
+                                "type": "string",
+                                "enum": [
+                                    "presentation",
+                                    "document",
+                                    "social",
+                                    "webpage"
+                                ]
+                            },
+                            "publish": {
+                                "description": "For pages requests, true publishes the file as a Gamma site after all pages succeed.",
+                                "type": "boolean"
+                            },
+                            "themeId": {
+                                "description": "Theme ID for the whole file.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "exportAs": {
+                                "description": "Automatic export format; PNG is a ZIP of card images.",
+                                "type": "string",
+                                "enum": [
+                                    "pdf",
+                                    "pptx",
+                                    "png"
+                                ]
+                            },
+                            "folderId": {
+                                "description": "Destination folder; omission uses workspace root/provider placement.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "numCards": {
+                                "description": "Single-page target card count, subject to plan limits.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "textMode": {
+                                "description": "Generate from, condense or preserve the single-page input text.",
+                                "type": "string",
+                                "enum": [
+                                    "generate",
+                                    "condense",
+                                    "preserve"
+                                ]
+                            },
+                            "cardSplit": {
+                                "description": "Automatic card splitting or explicit input text breaks for single-page input.",
+                                "type": "string",
+                                "enum": [
+                                    "auto",
+                                    "inputTextBreaks"
+                                ]
+                            },
+                            "inputText": {
+                                "description": "Topic, outline or full content for one page; mutually exclusive with pages.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 400000
+                            },
+                            "cardOptions": {
+                                "description": "File-wide card dimensions.",
+                                "type": "object",
+                                "properties": {
+                                    "dimensions": {
+                                        "description": "Card aspect ratio or named page dimensions.",
+                                        "type": "string",
+                                        "enum": [
+                                            "16x9",
+                                            "1x1",
+                                            "4x3",
+                                            "4x5",
+                                            "9x16",
+                                            "a4",
+                                            "fluid",
+                                            "letter",
+                                            "pageless"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "textOptions": {
+                                "description": "Single-page text preferences.",
+                                "type": "object",
+                                "properties": {
+                                    "tone": {
+                                        "description": "Writing tone; empty adds no tone guidance.",
+                                        "type": "string",
+                                        "maxLength": 500
+                                    },
+                                    "amount": {
+                                        "description": "Desired text amount per card.",
+                                        "type": "string",
+                                        "enum": [
+                                            "brief",
+                                            "medium",
+                                            "detailed",
+                                            "extensive"
+                                        ]
+                                    },
+                                    "audience": {
+                                        "description": "Intended readership; empty adds no audience guidance.",
+                                        "type": "string",
+                                        "maxLength": 500
+                                    },
+                                    "language": {
+                                        "description": "Provider-supported language code, such as en or fr.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "imageOptions": {
+                                "description": "Single-page image selection and generation preferences.",
+                                "type": "object",
+                                "properties": {
+                                    "model": {
+                                        "description": "Provider-supported image model identifier; omission uses its default.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "style": {
+                                        "description": "Visual style guidance for AI imagery.",
+                                        "type": "string",
+                                        "maxLength": 5000
+                                    },
+                                    "source": {
+                                        "description": "Where images are selected or generated from.",
+                                        "type": "string",
+                                        "enum": [
+                                            "aiGenerated",
+                                            "giphy",
+                                            "noImages",
+                                            "pexels",
+                                            "pictographic",
+                                            "placeholder",
+                                            "themeAccent",
+                                            "webAllImages",
+                                            "webFreeToUse",
+                                            "webFreeToUseCommercially"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sharingOptions": {
+                                "description": "File-wide permissions and optional email invitations.",
+                                "type": "object",
+                                "properties": {
+                                    "emailOptions": {
+                                        "description": "Email sharing that may send invitations.",
+                                        "type": "object",
+                                        "properties": {
+                                            "access": {
+                                                "description": "Recipient permission; omission uses provider default.",
+                                                "type": "string",
+                                                "enum": [
+                                                    "view",
+                                                    "comment",
+                                                    "edit",
+                                                    "fullAccess"
+                                                ]
+                                            },
+                                            "recipients": {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Email address to share with."
+                                                },
+                                                "description": "Addresses to share with."
+                                            }
+                                        },
+                                        "required": [
+                                            "recipients"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "externalAccess": {
+                                        "description": "External shared-link permission.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit"
+                                        ]
+                                    },
+                                    "workspaceAccess": {
+                                        "description": "Default workspace-member permission.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit",
+                                            "fullAccess"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "additionalInstructions": {
+                                "description": "Single-page extra guidance; empty adds none.",
+                                "type": "string",
+                                "maxLength": 5000
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Classic generation content and optional page, layout, publication, and sharing controls.",
+                        "oneOf": [
+                            {
+                                "not": {
+                                    "required": [
+                                        "pages"
+                                    ],
+                                    "properties": {
+                                        "pages": true
+                                    }
+                                },
+                                "required": [
+                                    "inputText"
+                                ],
+                                "properties": {
+                                    "inputText": true
+                                }
+                            },
+                            {
+                                "not": {
+                                    "required": [
+                                        "inputText"
+                                    ],
+                                    "properties": {
+                                        "inputText": true
+                                    }
+                                },
+                                "required": [
+                                    "pages"
+                                ],
+                                "properties": {
+                                    "pages": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_gamma_createclassicgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "engine": {
+                                "type": "string",
+                                "const": "classic",
+                                "description": "Engine value to use for status checks."
+                            },
+                            "warnings": {
+                                "description": "Provider file-level warnings, when returned; ordinary text, not encoded JSON.",
+                                "type": "string"
+                            },
+                            "generationId": {
+                                "type": "string",
+                                "description": "Job identifier for get-generation."
+                            },
+                            "pageWarnings": {
+                                "description": "Page warnings index-aligned to input pages; null means that page has no warnings. Omitted if not supplied.",
+                                "type": "array",
+                                "items": {
+                                    "description": "Warnings for the corresponding input page; null when that page has none.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "engine",
+                            "generationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Classic generation handle and any provider warnings; generation continues asynchronously."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for webpages, multi-page gammas/sites, or Classic text-preservation and layout controls. Prefer `create-agent-generation` for agent-led presentations. Provide either inputText or pages, not both. Multiple pages create one gamma, not a batch of independent gammas. Obtain folder IDs with `list-folders`. Check the result with `get-generation` using engine classic. Generation spends credits; publish can make a site available, and sharing may send invitations."
+            },
+            "filePath": "./gamma/tools/create-classic-generation.ts",
+            "version": "10af53aae7fd0dbba3dff612b2efc344c1fdb164ee01f5fa8b8142fd88cf6823",
+            "location": {
+                "js": "templates-zero/gamma/tools/create-classic-generation/10af53aae7fd0dbba3dff612b2efc344c1fdb164ee01f5fa8b8142fd88cf6823.cjs",
+                "ts": "templates-zero/gamma/tools/create-classic-generation/10af53aae7fd0dbba3dff612b2efc344c1fdb164ee01f5fa8b8142fd88cf6823.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-gamma-export",
+            "integrationId": "gamma",
+            "description": "Start an asynchronous PDF, PPTX or PNG-ZIP export of a viewable, non-archived gamma in the connected workspace.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_creategammaexport",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_creategammaexport",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_creategammaexport": {
+                        "type": "object",
+                        "properties": {
+                            "gammaId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Gamma file ID or page/doc ID; page ID resolves to its parent gamma for this export."
+                            },
+                            "exportAs": {
+                                "type": "string",
+                                "enum": [
+                                    "pdf",
+                                    "pptx",
+                                    "png"
+                                ],
+                                "description": "Export artifact: PDF, PowerPoint or ZIP containing one PNG per card."
+                            }
+                        },
+                        "required": [
+                            "gammaId",
+                            "exportAs"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target gamma and requested export artifact format."
+                    },
+                    "FunctionOutput_gamma_creategammaexport": {
+                        "type": "object",
+                        "properties": {
+                            "exportId": {
+                                "type": "string",
+                                "description": "Opaque export job ID for get-gamma-export."
+                            }
+                        },
+                        "required": [
+                            "exportId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Export job handle to poll separately for completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-gamma` or `search-gammas` to obtain a target ID. This starts an export and returns a job ID, not a finished download. Use `get-gamma-export` to check completion. PNG exports contain one image per card in a ZIP. Use a creation tool's exportAs option if you want export as part of new generation instead."
+            },
+            "filePath": "./gamma/tools/create-gamma-export.ts",
+            "version": "fa35b4ee56165d0ffaa886162ba90a3191e2283c87f65a69a485e553ff75e381",
+            "location": {
+                "js": "templates-zero/gamma/tools/create-gamma-export/fa35b4ee56165d0ffaa886162ba90a3191e2283c87f65a69a485e553ff75e381.cjs",
+                "ts": "templates-zero/gamma/tools/create-gamma-export/fa35b4ee56165d0ffaa886162ba90a3191e2283c87f65a69a485e553ff75e381.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-image-generation",
+            "integrationId": "gamma",
+            "description": "Start generating one on-brand image from a prompt, optionally with up to four HTTPS subject-reference images.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_createimagegeneration",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_createimagegeneration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_createimagegeneration": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "default": "illustration",
+                                "description": "Visual style; default illustration, ignored when referenceImages are present.",
+                                "type": "string",
+                                "enum": [
+                                    "abstract",
+                                    "illustration",
+                                    "photo",
+                                    "scene"
+                                ]
+                            },
+                            "prompt": {
+                                "type": "string",
+                                "maxLength": 5000,
+                                "pattern": "\\S",
+                                "description": "Image description including background treatments; non-whitespace text required."
+                            },
+                            "themeId": {
+                                "description": "Brand theme ID; omitted uses workspace default. Ignored for scene and when references are present.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "sizePreset": {
+                                "default": "social-square",
+                                "description": "Aspect-ratio preset; default square, exact pixels are model-determined.",
+                                "type": "string",
+                                "enum": [
+                                    "banner",
+                                    "slide",
+                                    "social-portrait",
+                                    "social-square",
+                                    "story"
+                                ]
+                            },
+                            "referenceImages": {
+                                "description": "HTTPS subject references; references drive appearance instead of type/theme.",
+                                "maxItems": 4,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "pattern": "^https:\\/\\/",
+                                            "format": "uri",
+                                            "description": "Fetchable HTTPS image URL; provider validates and rehosts it before generation."
+                                        },
+                                        "role": {
+                                            "description": "Subject places the pictured character/product into the scene; omission uses provider behavior.",
+                                            "type": "string",
+                                            "enum": [
+                                                "subject"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "url"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A subject-reference image for the generated scene."
+                                }
+                            }
+                        },
+                        "required": [
+                            "prompt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Prompt, branding, aspect ratio, and optional subject references for one image job."
+                    },
+                    "FunctionOutput_gamma_createimagegeneration": {
+                        "type": "object",
+                        "properties": {
+                            "warnings": {
+                                "description": "Nonfatal warnings, when supplied.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Provider code for skipped style/theme or missing branding."
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Human-readable warning explanation."
+                                        }
+                                    },
+                                    "required": [
+                                        "code",
+                                        "message"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A nonfatal provider warning about the requested image settings."
+                                }
+                            },
+                            "imageGenerationId": {
+                                "type": "string",
+                                "description": "Job ID for get-image-generation."
+                            }
+                        },
+                        "required": [
+                            "imageGenerationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The asynchronous image job ID and any provider warnings, not a finished image."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use for one standalone image, not a gamma. Check the returned ID with `get-image-generation`. Reference images take precedence over type and themeId; describe the style in the prompt when using references. Scene style ignores theme colors. Generation spends credits; repeated calls create new jobs. Save warnings about skipped branding or style."
+            },
+            "filePath": "./gamma/tools/create-image-generation.ts",
+            "version": "cc9d30e6e2c65589248d8a62d1781c9ffafa4ec2689cdf0bc9b6e2fdc3437137",
+            "location": {
+                "js": "templates-zero/gamma/tools/create-image-generation/cc9d30e6e2c65589248d8a62d1781c9ffafa4ec2689cdf0bc9b6e2fdc3437137.cjs",
+                "ts": "templates-zero/gamma/tools/create-image-generation/cc9d30e6e2c65589248d8a62d1781c9ffafa4ec2689cdf0bc9b6e2fdc3437137.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-template-generation",
+            "integrationId": "gamma",
+            "description": "Start a Classic generation from an eligible single-page workspace template, preserving its structure unless the prompt asks to restructure it.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_createtemplategeneration",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_createtemplategeneration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_createtemplategeneration": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "New file title; omitted is generated.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                            },
+                            "prompt": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 400000,
+                                "description": "Adaptation instructions; template structure stays unless these ask for restructuring."
+                            },
+                            "themeId": {
+                                "description": "Override theme; omit to retain the template theme.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "exportAs": {
+                                "description": "Optional export; PNG produces a ZIP of card images.",
+                                "type": "string",
+                                "enum": [
+                                    "pdf",
+                                    "pptx",
+                                    "png"
+                                ]
+                            },
+                            "folderId": {
+                                "description": "Destination folder in the connected workspace.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "templateId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "File ID of an eligible single-page workspace gamma marked as a template."
+                            },
+                            "imageOptions": {
+                                "description": "Image generation preferences for the adaptation.",
+                                "type": "object",
+                                "properties": {
+                                    "model": {
+                                        "description": "Provider-supported image model ID.",
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "style": {
+                                        "description": "Visual style guidance; omit instead of an empty style.",
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 5000
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sharingOptions": {
+                                "description": "Permissions and optional email sharing for the newly generated file.",
+                                "type": "object",
+                                "properties": {
+                                    "emailOptions": {
+                                        "description": "Email invitations/sharing request.",
+                                        "type": "object",
+                                        "properties": {
+                                            "access": {
+                                                "description": "Recipient permission; omission uses provider default.",
+                                                "type": "string",
+                                                "enum": [
+                                                    "view",
+                                                    "comment",
+                                                    "edit",
+                                                    "fullAccess"
+                                                ]
+                                            },
+                                            "recipients": {
+                                                "minItems": 1,
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                                    "description": "Recipient email address."
+                                                },
+                                                "description": "Recipient email addresses."
+                                            }
+                                        },
+                                        "required": [
+                                            "recipients"
+                                        ],
+                                        "additionalProperties": false
+                                    },
+                                    "externalAccess": {
+                                        "description": "External shared-link permission.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit"
+                                        ]
+                                    },
+                                    "workspaceAccess": {
+                                        "description": "Workspace-member permission.",
+                                        "type": "string",
+                                        "enum": [
+                                            "noAccess",
+                                            "view",
+                                            "comment",
+                                            "edit",
+                                            "fullAccess"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "prompt",
+                            "templateId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Start a Classic generation by adapting an eligible workspace template."
+                    },
+                    "FunctionOutput_gamma_createtemplategeneration": {
+                        "type": "object",
+                        "properties": {
+                            "engine": {
+                                "type": "string",
+                                "const": "classic",
+                                "description": "Engine for subsequent status checks."
+                            },
+                            "warnings": {
+                                "description": "Provider request warnings when supplied.",
+                                "type": "string"
+                            },
+                            "generationId": {
+                                "type": "string",
+                                "description": "New Classic job ID for get-generation."
+                            }
+                        },
+                        "required": [
+                            "engine",
+                            "generationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "New Classic generation job and any provider request warnings."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use when template structure should be preserved by default. The template must be marked as a template in this workspace, single-page, non-archived and not site-bound. Use `create-agent-generation` for official Explore templates or regular existing gammas as starting points. Use `get-gamma` to verify metadata and `list-folders` for destination IDs. Check the returned generationId through `get-generation` with engine classic. Creation spends credits and can send sharing invitations."
+            },
+            "filePath": "./gamma/tools/create-template-generation.ts",
+            "version": "6812f67d09a0dae3cc005d1316f663c92fffa5fcf231634b7d6d1a23c036cd0d",
+            "location": {
+                "js": "templates-zero/gamma/tools/create-template-generation/6812f67d09a0dae3cc005d1316f663c92fffa5fcf231634b7d6d1a23c036cd0d.cjs",
+                "ts": "templates-zero/gamma/tools/create-template-generation/6812f67d09a0dae3cc005d1316f663c92fffa5fcf231634b7d6d1a23c036cd0d.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-gamma-edit",
+            "integrationId": "gamma",
+            "description": "Read one edit job's current state, target page, applied-change summary, failure details and available credit accounting.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_getgammaedit",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_getgammaedit",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_getgammaedit": {
+                        "type": "object",
+                        "properties": {
+                            "editId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque job ID returned by edit-gamma."
+                            }
+                        },
+                        "required": [
+                            "editId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The edit job whose current state should be read."
+                    },
+                    "FunctionOutput_gamma_getgammaedit": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Edit job ID."
+                            },
+                            "error": {
+                                "description": "Terminal edit failure; inspect for partial changes before retrying.",
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "enum": [
+                                            "access_revoked",
+                                            "edit_failed",
+                                            "insufficient_credits",
+                                            "target_not_found",
+                                            "timeout",
+                                            "unavailable",
+                                            "unsupported_target"
+                                        ],
+                                        "description": "Machine-readable job failure reason."
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "description": "Provider explanation of the failure."
+                                    },
+                                    "statusCode": {
+                                        "type": "number",
+                                        "description": "Indicative HTTP-style failure status, not polling response status."
+                                    }
+                                },
+                                "required": [
+                                    "reason",
+                                    "message",
+                                    "statusCode"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "pageId": {
+                                "type": "string",
+                                "description": "Specific page targeted by this edit."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "completed",
+                                    "failed"
+                                ],
+                                "description": "Current edit state; failed can include partially applied changes."
+                            },
+                            "credits": {
+                                "description": "Terminal accounting; absent members mean unknown, not zero.",
+                                "type": "object",
+                                "properties": {
+                                    "deducted": {
+                                        "description": "Best-effort credits recorded as debited so far; may grow after completion, and zero means no recorded charge.",
+                                        "type": "number"
+                                    },
+                                    "remaining": {
+                                        "description": "Current user balance in this workspace at this check, not job cost.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "gammaId": {
+                                "type": "string",
+                                "description": "Canonical file ID of the edited gamma."
+                            },
+                            "summary": {
+                                "description": "Agent-written applied-change summary on completion.",
+                                "type": "string"
+                            },
+                            "gammaUrl": {
+                                "type": "string",
+                                "description": "URL at which to inspect the gamma."
+                            },
+                            "updatedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                                "description": "Last job state change as a UTC instant."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "pageId",
+                            "status",
+                            "gammaId",
+                            "gammaUrl",
+                            "updatedAt"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current edit state, target, available result or failure, and credit accounting."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the editId from `update-gamma`. Each call checks once. If pending, check again after about five seconds. Stop on completed or failed. A failed edit can have partially changed the gamma: inspect its URL before issuing another edit. Use `get-gamma` for metadata, not edit state."
+            },
+            "filePath": "./gamma/tools/get-gamma-edit.ts",
+            "version": "d30f5dff352bf651962e1d239e4b472075df101d7be75be7269700bc715cda3a",
+            "location": {
+                "js": "templates-zero/gamma/tools/get-gamma-edit/d30f5dff352bf651962e1d239e4b472075df101d7be75be7269700bc715cda3a.cjs",
+                "ts": "templates-zero/gamma/tools/get-gamma-edit/d30f5dff352bf651962e1d239e4b472075df101d7be75be7269700bc715cda3a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-gamma-export",
+            "integrationId": "gamma",
+            "description": "Get one export job's state, canonical gamma ID, format, download URL or rendering failure.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_getgammaexport",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_getgammaexport",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_getgammaexport": {
+                        "type": "object",
+                        "properties": {
+                            "exportId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Export job identifier from create-gamma-export."
+                            }
+                        },
+                        "required": [
+                            "exportId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the export job to check once."
+                    },
+                    "FunctionOutput_gamma_getgammaexport": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Export job ID."
+                            },
+                            "error": {
+                                "description": "Rendering failure details when failed.",
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "description": "Optional machine-readable failure: transient render_timeout/export_failed or input-changing deck_too_large/no_content.",
+                                        "type": "string",
+                                        "enum": [
+                                            "deck_too_large",
+                                            "export_failed",
+                                            "no_content",
+                                            "render_timeout"
+                                        ]
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "description": "Provider explanation."
+                                    },
+                                    "statusCode": {
+                                        "type": "number",
+                                        "description": "Indicative error status, not the successful status lookup response."
+                                    }
+                                },
+                                "required": [
+                                    "message",
+                                    "statusCode"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "completed",
+                                    "failed"
+                                ],
+                                "description": "Current rendering state."
+                            },
+                            "gammaId": {
+                                "type": "string",
+                                "description": "Canonical parent file ID, even when export was requested with a page/doc ID."
+                            },
+                            "exportAs": {
+                                "type": "string",
+                                "enum": [
+                                    "pdf",
+                                    "pptx",
+                                    "png"
+                                ],
+                                "description": "Original requested format, available in all job states; PNG is a ZIP artifact."
+                            },
+                            "exportUrl": {
+                                "description": "Secret bearer download link when completed; approximately one-week lifetime, no key needed.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "gammaId",
+                            "exportAs"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current export state, canonical gamma, requested format, and available download or failure details."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use exportId from `create-gamma-export`. This checks once; while pending, wait about five seconds before checking again. Completed PNG exports are ZIP archives, not single PNGs. Treat exportUrl as a secret: anyone holding it can download until it expires, about one week. For render_timeout/export_failed, start a new export later; deck_too_large/no_content requires changing the gamma."
+            },
+            "filePath": "./gamma/tools/get-gamma-export.ts",
+            "version": "f3ecf3038659623aa2c91a3d8add8f0797e1873d83e6fda55517a4d123ece616",
+            "location": {
+                "js": "templates-zero/gamma/tools/get-gamma-export/f3ecf3038659623aa2c91a3d8add8f0797e1873d83e6fda55517a4d123ece616.cjs",
+                "ts": "templates-zero/gamma/tools/get-gamma-export/f3ecf3038659623aa2c91a3d8add8f0797e1873d83e6fda55517a4d123ece616.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-generation",
+            "integrationId": "gamma",
+            "description": "Get the current state, available artifacts, warnings and credit accounting for one agent or Classic generation job.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_getgeneration",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_getgeneration",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_getgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "engine": {
+                                "type": "string",
+                                "enum": [
+                                    "agent",
+                                    "classic"
+                                ],
+                                "description": "Engine that created this job; selects its status service."
+                            },
+                            "generationId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque job identifier returned by the matching creation tool."
+                            }
+                        },
+                        "required": [
+                            "engine",
+                            "generationId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one generation job and the engine that created it.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "properties": {
+                                        "engine": {
+                                            "const": "agent"
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "properties": {
+                                        "generationId": {
+                                            "type": "string",
+                                            "pattern": "^gen_[A-Za-z0-9]+$",
+                                            "maxLength": 128
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_gamma_getgeneration": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Generation job identifier."
+                            },
+                            "error": {
+                                "description": "Failure details returned as job data, not a failed status-check invocation.",
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "description": "Provider machine-readable reason when present; agent reasons include access_revoked, generation_failed, insufficient_credits, timeout and unavailable.",
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "description": "Human-readable failure details; inspect any partially created gamma before restarting."
+                                    },
+                                    "statusCode": {
+                                        "type": "number",
+                                        "description": "Provider indicative HTTP-style status, not the successful polling request's status."
+                                    }
+                                },
+                                "required": [
+                                    "message",
+                                    "statusCode"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "pages": {
+                                "description": "Classic multi-page results only; preserves provider order and individual page states.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "description": "This page's failure details, when supplied.",
+                                            "type": "object",
+                                            "properties": {
+                                                "reason": {
+                                                    "description": "Provider machine-readable reason when present; agent reasons include access_revoked, generation_failed, insufficient_credits, timeout and unavailable.",
+                                                    "type": "string"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "description": "Human-readable failure details; inspect any partially created gamma before restarting."
+                                                },
+                                                "statusCode": {
+                                                    "type": "number",
+                                                    "description": "Provider indicative HTTP-style status, not the successful polling request's status."
+                                                }
+                                            },
+                                            "required": [
+                                                "message",
+                                                "statusCode"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "pageId": {
+                                            "type": "string",
+                                            "description": "Doc/page ID, not the containing file ID."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "pending",
+                                                "completed",
+                                                "failed"
+                                            ],
+                                            "description": "This page's state, which may differ from other pages."
+                                        },
+                                        "gammaUrl": {
+                                            "type": "string",
+                                            "description": "Direct URL of this generated page."
+                                        },
+                                        "exportUrl": {
+                                            "description": "Secret per-page export URL, when available.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "pageId",
+                                        "status",
+                                        "gammaUrl"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One Classic generated page and its individual state."
+                                }
+                            },
+                            "engine": {
+                                "type": "string",
+                                "enum": [
+                                    "agent",
+                                    "classic"
+                                ],
+                                "description": "Engine whose job was read."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "completed",
+                                    "failed"
+                                ],
+                                "description": "Current job state; only completed establishes generation completion."
+                            },
+                            "credits": {
+                                "description": "Reported accounting; absent or absent members mean unknown, never zero by default.",
+                                "type": "object",
+                                "properties": {
+                                    "deducted": {
+                                        "description": "Classic credits consumed; for agent jobs, best-effort credits recorded as debited so far, which can increase after completion. Zero means no charge recorded, not necessarily no cost.",
+                                        "type": "number"
+                                    },
+                                    "remaining": {
+                                        "description": "Reported remaining balance; agent value is the user's current workspace balance at this check, not job cost.",
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "gammaId": {
+                                "description": "Generated file ID; optional before completion or when failure prevented file creation.",
+                                "type": "string"
+                            },
+                            "summary": {
+                                "description": "Agent-written generation summary; present on completed agent jobs.",
+                                "type": "string"
+                            },
+                            "gammaUrl": {
+                                "description": "Generated gamma URL; its presence alone does not establish completion.",
+                                "type": "string"
+                            },
+                            "progress": {
+                                "description": "Optional pending agent estimate; may restart lower if the agent retries.",
+                                "type": "object",
+                                "properties": {
+                                    "done": {
+                                        "type": "number",
+                                        "description": "Cards finished."
+                                    },
+                                    "total": {
+                                        "type": "number",
+                                        "description": "Cards currently in the gamma."
+                                    },
+                                    "stages": {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {
+                                            "type": "number",
+                                            "description": "Card count for this provider stage."
+                                        },
+                                        "description": "Provider stage name to card-count map, such as writing, imaging or done."
+                                    },
+                                    "percent": {
+                                        "type": "number",
+                                        "description": "Estimated completion, 0–99, not a completion guarantee."
+                                    }
+                                },
+                                "required": [
+                                    "done",
+                                    "total",
+                                    "stages",
+                                    "percent"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "warnings": {
+                                "description": "Agent warnings when supplied; create-time warnings may not repeat on failure.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "Machine-readable warning code."
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Human-readable warning explanation."
+                                        }
+                                    },
+                                    "required": [
+                                        "code",
+                                        "message"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A provider warning about this generation."
+                                }
+                            },
+                            "exportUrl": {
+                                "description": "Secret download URL when export succeeded; PNG means a ZIP, and links expire in about one week.",
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "description": "Agent job's last state change in UTC; absent for Classic jobs.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "engine",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One generation status snapshot with available artifacts, warnings and reported credit accounting."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the generationId and engine returned by a generation-creation tool. This performs one status check, not a wait for completion. While pending, check again after about five seconds. Only completed means generation is done, even if a gamma URL or progress is already present. Keep create-time warnings. Treat export URLs as secrets; PNG exports are ZIP archives. Use `get-gamma` for metadata rather than job state."
+            },
+            "filePath": "./gamma/tools/get-generation.ts",
+            "version": "401df7ca572b8e509695ba801c01616131d5c75996d452e458b56585d8ee3ee7",
+            "location": {
+                "js": "templates-zero/gamma/tools/get-generation/401df7ca572b8e509695ba801c01616131d5c75996d452e458b56585d8ee3ee7.cjs",
+                "ts": "templates-zero/gamma/tools/get-generation/401df7ca572b8e509695ba801c01616131d5c75996d452e458b56585d8ee3ee7.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-folders",
+            "integrationId": "gamma",
+            "description": "List one page of folders the connected user belongs to in the workspace, optionally filtering by name.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_listfolders",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_listfolders",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum folders in one page, default 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "query": {
+                                "description": "Optional name filter; omission lists membership folders without filtering.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this connection's prior page with the same query.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Options for listing one page of accessible workspace folders."
+                    },
+                    "FunctionOutput_gamma_listfolders": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Folder ID usable as folderId on generation tools."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Folder display name."
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible workspace folder."
+                                },
+                                "description": "Folders in this provider page; may be empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation; omitted when exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of folders and its optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to select a folderId for generation tools. Pass nextCursor back as cursor with the same name filter to continue. limit is 1–50, default 20. This returns accessible membership folders, not every folder in the organization."
+            },
+            "filePath": "./gamma/tools/list-folders.ts",
+            "version": "2e01e0701000cd7f45f9ea13064c1f75863bba5a350f1ee5cd331a43605e13a4",
+            "location": {
+                "js": "templates-zero/gamma/tools/list-folders/2e01e0701000cd7f45f9ea13064c1f75863bba5a350f1ee5cd331a43605e13a4.cjs",
+                "ts": "templates-zero/gamma/tools/list-folders/2e01e0701000cd7f45f9ea13064c1f75863bba5a350f1ee5cd331a43605e13a4.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-gamma-viewer-analytics",
+            "integrationId": "gamma",
+            "description": "List one page of authenticated and anonymous viewer engagement rows for a gamma. Requires Pro or higher and at least edit permission; results are capped at 500 viewers total.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_listgammavieweranalytics",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_listgammavieweranalytics",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_listgammavieweranalytics": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum viewer rows in one page, default 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation for the same gamma and sort direction.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "gammaId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Gamma file ID or page/doc ID."
+                            },
+                            "sortDirection": {
+                                "description": "Order by most recent open time; default descending.",
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "gammaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Select a gamma and one page of viewer engagement analytics."
+                    },
+                    "FunctionOutput_gamma_listgammavieweranalytics": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "description": "Email address, null for anonymous viewers.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "viewerId": {
+                                            "type": "string",
+                                            "description": "Stable authenticated user ID or anonymous viewer ID; only authenticated user IDs address the detail tool."
+                                        },
+                                        "cardsViewed": {
+                                            "type": "number",
+                                            "description": "Number of cards this viewer has viewed."
+                                        },
+                                        "displayName": {
+                                            "description": "Display name, null for anonymous viewers.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastOpenedAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Most recent view instant in UTC or null if unknown."
+                                        }
+                                    },
+                                    "required": [
+                                        "email",
+                                        "viewerId",
+                                        "cardsViewed",
+                                        "displayName",
+                                        "lastOpenedAt"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Engagement for one authenticated or anonymous viewer."
+                                },
+                                "description": "Viewer engagement rows in this page, bounded by the provider's 500-viewer total cap."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "self"
+                                ],
+                                "description": "All-viewer rows with manage permission, or at most the connected user's row otherwise."
+                            },
+                            "gammaId": {
+                                "type": "string",
+                                "description": "Canonical gamma file ID."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation within the capped result set, omitted at exhaustion.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "scope",
+                            "gammaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One page of viewer analytics with permission scope and an optional continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use a gamma ID from `get-gamma`. Inspect scope: manage permission exposes all viewers, edit-only at most your own row. Pass nextCursor as cursor with the same gamma and sortDirection; limit is 1–50, default 20. The provider caps the entire result at 500 viewers. Only authenticated viewer IDs can be used with `get-gamma-viewer-analytics`. Metrics update about hourly."
+            },
+            "filePath": "./gamma/tools/list-gamma-viewer-analytics.ts",
+            "version": "14d229322f07552638db002f36a053f04346d365ed8b259f3347937f27cbf6b3",
+            "location": {
+                "js": "templates-zero/gamma/tools/list-gamma-viewer-analytics/14d229322f07552638db002f36a053f04346d365ed8b259f3347937f27cbf6b3.cjs",
+                "ts": "templates-zero/gamma/tools/list-gamma-viewer-analytics/14d229322f07552638db002f36a053f04346d365ed8b259f3347937f27cbf6b3.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-themes",
+            "integrationId": "gamma",
+            "description": "List one page of themes available to the connected workspace, optionally filtered by name and by standard or custom theme type. Returned theme IDs can be used in generation requests.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_listthemes",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_listthemes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "description": "Optional theme category: standard means built-in themes, custom means workspace-created themes. Omit to include both; keep unchanged across pages.",
+                                "type": "string",
+                                "enum": [
+                                    "standard",
+                                    "custom"
+                                ]
+                            },
+                            "limit": {
+                                "description": "Maximum themes to return in this page, from 1 through 50; defaults to 20.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "query": {
+                                "description": "Optional provider name filter for themes. Omit to include all names; matching rules are provider-defined. Keep unchanged when continuing with a cursor.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque nextCursor from a preceding result for this workspace and the same query and type. Omit to start browsing.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Select one page of workspace themes with optional name and category filters."
+                    },
+                    "FunctionOutput_gamma_listthemes": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque theme identifier usable as themeId in a generation request."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Display name of the theme, preserved as ordinary text."
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "standard",
+                                                "custom"
+                                            ],
+                                            "description": "Theme category: standard is built in and custom is workspace-created."
+                                        },
+                                        "toneKeywords": {
+                                            "description": "Provider keywords describing the theme's tone or style. Omitted if not supplied; an empty array means a supplied empty list.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A provider tone or style keyword, preserved unchanged."
+                                            }
+                                        },
+                                        "colorKeywords": {
+                                            "description": "Provider keywords describing the color palette. Omitted if not supplied; an empty array means a supplied empty list.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "description": "A provider color palette keyword, preserved unchanged."
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A theme available to the connected workspace."
+                                },
+                                "description": "Themes in this provider page, in provider order; may be empty."
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation token for another page with the same query and type in this workspace. Omitted when the collection is exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of themes and an optional continuation cursor."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this tool to discover themes or find a theme by name before creating a Gamma. No theme ID is needed first. Standard themes are built in; custom themes belong to the workspace. Each call returns one page, with a default of 20 and a maximum of 50 themes. Pass nextCursor back as cursor to continue, keeping query and type unchanged. An omitted nextCursor means there are no further results. Returned id values are theme IDs for generation requests; this tool does not apply or modify a theme."
+            },
+            "filePath": "./gamma/tools/list-themes.ts",
+            "version": "6fb53a6ab99422f2e49152c62ade6fbd6947a99cfac111cec27cdb7deb372489",
+            "location": {
+                "js": "templates-zero/gamma/tools/list-themes/6fb53a6ab99422f2e49152c62ade6fbd6947a99cfac111cec27cdb7deb372489.cjs",
+                "ts": "templates-zero/gamma/tools/list-themes/6fb53a6ab99422f2e49152c62ade6fbd6947a99cfac111cec27cdb7deb372489.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-gammas",
+            "integrationId": "gamma",
+            "description": "Find accessible gammas by full-text query and/or creator and last-updated filters, returning at most 25 hits.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_searchgammas",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_searchgammas",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_searchgammas": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum hits in this single result set; default 25.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "query": {
+                                "description": "Full-text query over titles and body text; omitted for filter-only browsing.",
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "\\S"
+                            },
+                            "createdBy": {
+                                "description": "Creator selector: me, email address or opaque user ID.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "updatedAfter": {
+                                "description": "Inclusive lower modification-time bound with explicit timezone offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "updatedBefore": {
+                                "description": "Inclusive upper modification-time bound with explicit timezone offset.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "includeArchived": {
+                                "description": "Include archived gammas when true; default false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Search by full-text query or at least one creator or modification-time filter.",
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "query"
+                                ],
+                                "properties": {
+                                    "query": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "createdBy"
+                                ],
+                                "properties": {
+                                    "createdBy": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "updatedAfter"
+                                ],
+                                "properties": {
+                                    "updatedAfter": true
+                                }
+                            },
+                            {
+                                "required": [
+                                    "updatedBefore"
+                                ],
+                                "properties": {
+                                    "updatedBefore": true
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_gamma_searchgammas": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Gamma identifier for metadata or lifecycle operations."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Viewing URL."
+                                        },
+                                        "title": {
+                                            "description": "Title or null when untitled.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "archived": {
+                                            "type": "boolean",
+                                            "description": "Whether this hit is archived."
+                                        },
+                                        "highlight": {
+                                            "description": "Query-centered snippet or null when unavailable, including filter-only browsing.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "updatedAt": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ],
+                                            "description": "Last modification instant in UTC or null if unknown."
+                                        },
+                                        "creatorName": {
+                                            "description": "Creator display name, not a user identifier; null if unavailable.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "title",
+                                        "archived",
+                                        "highlight",
+                                        "updatedAt",
+                                        "creatorName"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible gamma matching the query or filters."
+                                },
+                                "description": "Up to limit hits; relevance-ranked with query, otherwise last-updated descending. Not an exhaustive count."
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One bounded search result set without continuation or total count."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use to find gamma IDs by title/body text or filters. Use `get-gamma` for full metadata. Supply a query or at least one creator/time filter. This returns one bounded result set, not an exhaustive paginated collection: no continuation is available. Query results are relevance-ranked; filter-only results are newest-updated first."
+            },
+            "filePath": "./gamma/tools/search-gammas.ts",
+            "version": "fac6fb24c9490b1e0bebe14e09e9e44390b0801b8f8bf1c387f8f891a6ef3a1e",
+            "location": {
+                "js": "templates-zero/gamma/tools/search-gammas/fac6fb24c9490b1e0bebe14e09e9e44390b0801b8f8bf1c387f8f891a6ef3a1e.cjs",
+                "ts": "templates-zero/gamma/tools/search-gammas/fac6fb24c9490b1e0bebe14e09e9e44390b0801b8f8bf1c387f8f891a6ef3a1e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "search-templates",
+            "integrationId": "gamma",
+            "description": "Find workspace and official Explore templates, or browse a bounded selection without a query.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_searchtemplates",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_searchtemplates",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_searchtemplates": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum hits per source; combined items can contain up to twice this number.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 25
+                            },
+                            "query": {
+                                "description": "Template query; omitted or empty browses both sources.",
+                                "type": "string",
+                                "maxLength": 2000
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Search workspace and official Explore templates, or browse with an optional per-source limit."
+                    },
+                    "FunctionOutput_gamma_searchtemplates": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Template ID, interpreted together with source."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Template view URL."
+                                        },
+                                        "title": {
+                                            "description": "Template title, or null if untitled.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "enum": [
+                                                "workspace",
+                                                "explore"
+                                            ],
+                                            "description": "Template origin and eligibility category; explore cannot be used by Classic template generation."
+                                        },
+                                        "previewUrl": {
+                                            "description": "Preview URL or null; signed workspace previews generally expire after about seven days.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "thumbnailUrl": {
+                                            "description": "Explore thumbnail URL or null; omitted for workspace templates because that source has no such field.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "title",
+                                        "source",
+                                        "previewUrl"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A discovered template with its source-specific eligibility and preview links."
+                                },
+                                "description": "Workspace hits followed by Explore hits; relative order within each source is preserved."
+                            },
+                            "workspaceDegraded": {
+                                "description": "True if workspace relevance ranking fell back to last-edited browse order; omitted otherwise.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A bounded template discovery result with independent source ordering and no continuation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to choose a starting template. Workspace IDs can be used with `create-generation-from-template` subject to eligibility; official Explore IDs cannot. Both kinds can be used as agent templateId with `create-generation`. Omit query to browse. This returns at most 25 hits per source and no continuation, not an exhaustive inventory. Refresh signed previews and rediscover retired official IDs."
+            },
+            "filePath": "./gamma/tools/search-templates.ts",
+            "version": "fc9e83b2511a085ce37bfc03e7a6f002a250f78ba522e1f6c002c480b6e79178",
+            "location": {
+                "js": "templates-zero/gamma/tools/search-templates/fc9e83b2511a085ce37bfc03e7a6f002a250f78ba522e1f6c002c480b6e79178.cjs",
+                "ts": "templates-zero/gamma/tools/search-templates/fc9e83b2511a085ce37bfc03e7a6f002a250f78ba522e1f6c002c480b6e79178.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "update-gamma",
+            "integrationId": "gamma",
+            "description": "Start an asynchronous AI edit of one page of an existing gamma. Requires edit permission and can change existing content; it cannot add pages.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_gamma_updategamma",
+            "output_schema_ref": "#/definitions/FunctionOutput_gamma_updategamma",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_gamma_updategamma": {
+                        "type": "object",
+                        "properties": {
+                            "prompt": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 10000,
+                                "description": "Natural-language instruction describing the intended changes to existing content."
+                            },
+                            "gammaId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Gamma file ID for its main page, or doc/page ID for that specific page."
+                            },
+                            "quality": {
+                                "description": "Model effort tier; omitted uses the plan-capped API default.",
+                                "type": "string",
+                                "enum": [
+                                    "lite",
+                                    "standard",
+                                    "max"
+                                ]
+                            },
+                            "disableConnectors": {
+                                "description": "True prevents this edit from using workspace connectors; omitted uses provider behavior.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "prompt",
+                            "gammaId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target gamma and natural-language edit instruction, with optional quality and connector controls."
+                    },
+                    "FunctionOutput_gamma_updategamma": {
+                        "type": "object",
+                        "properties": {
+                            "editId": {
+                                "type": "string",
+                                "description": "Edit job ID to pass to get-gamma-edit."
+                            },
+                            "gammaUrl": {
+                                "type": "string",
+                                "description": "URL of the gamma being edited; not proof of completion."
+                            }
+                        },
+                        "required": [
+                            "editId",
+                            "gammaUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Asynchronous edit job handle and the URL of the gamma being edited."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use `get-gamma` or `search-gammas` to obtain the target. A file ID edits its main page; a page ID edits that page. Describe the desired changes, not a replacement metadata object. Check completion with `get-gamma-edit`. Only one edit runs per page. Failed edits may be partially applied: inspect the gamma before retrying. This changes content and spends credits; replay is not safe."
+            },
+            "filePath": "./gamma/tools/update-gamma.ts",
+            "version": "1c31b3cac8e6b19633919514fa32fd54c9f59be3daf4b50f9202306795a2e0b3",
+            "location": {
+                "js": "templates-zero/gamma/tools/update-gamma/1c31b3cac8e6b19633919514fa32fd54c9f59be3daf4b50f9202306795a2e0b3.cjs",
+                "ts": "templates-zero/gamma/tools/update-gamma/1c31b3cac8e6b19633919514fa32fd54c9f59be3daf4b50f9202306795a2e0b3.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

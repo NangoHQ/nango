@@ -1,0 +1,3554 @@
+{
+    "providerConfigKey": "ninety-io",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Create an issue for a team.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_createissue",
+            "name": "create-issue",
+            "output": [
+                "ActionOutput_ninety_io_createissue"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_createissue",
+                "ActionOutput_ninety_io_createissue"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_createissue": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Issue title. Example: \"Fix login bug\""
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID. Example: \"6a616ba8908190d6d9458153\""
+                            }
+                        },
+                        "required": [
+                            "title",
+                            "teamId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_createissue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "teamId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a milestone linked to a rock",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_createmilestone",
+            "name": "create-milestone",
+            "output": [
+                "ActionOutput_ninety_io_createmilestone"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_createmilestone",
+                "ActionOutput_ninety_io_createmilestone"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_createmilestone": {
+                        "type": "object",
+                        "properties": {
+                            "rockId": {
+                                "type": "string",
+                                "description": "The ID of the Rock to link the milestone to. Example: \"6a6175355346be5d56149d93\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The title of the milestone. Example: \"Complete phase 1\""
+                            },
+                            "dueDate": {
+                                "type": "string",
+                                "description": "The due date of the milestone in ISO 8601 format. Example: \"2026-12-31T00:00:00Z\""
+                            },
+                            "teamId": {
+                                "type": "string",
+                                "description": "The ID of the team the milestone belongs to. Example: \"6a616ba8908190d6d9458153\""
+                            },
+                            "description": {
+                                "description": "Optional description of the milestone.",
+                                "type": "string"
+                            },
+                            "isDone": {
+                                "description": "Whether the milestone is completed.",
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "description": "The completion date in ISO 8601 format. Required when isDone is true.",
+                                "type": "string"
+                            },
+                            "userOrdinal": {
+                                "description": "Optional user-defined order.",
+                                "type": "number"
+                            },
+                            "toDoId": {
+                                "description": "Optional linked To-Do ID.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "rockId",
+                            "title",
+                            "dueDate",
+                            "teamId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_createmilestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "rockId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "ownedByUserId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "isDone": {
+                                "type": "boolean"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "toDoId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a rock assigned to the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_createrock",
+            "name": "create-rock",
+            "output": [
+                "ActionOutput_ninety_io_createrock"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_createrock",
+                "ActionOutput_ninety_io_createrock"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_createrock": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "type": "string",
+                                "description": "Team ID to assign the rock to. Example: \"6a616ba8908190d6d9458153\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the rock."
+                            },
+                            "dueDate": {
+                                "type": "string",
+                                "description": "Due date in ISO 8601 format. Example: \"2026-12-31T00:00:00Z\""
+                            },
+                            "statusCode": {
+                                "type": "string",
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ],
+                                "description": "Status of the rock."
+                            },
+                            "levelCode": {
+                                "type": "string",
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ],
+                                "description": "Level of the rock."
+                            },
+                            "quarter": {
+                                "type": "string",
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ],
+                                "description": "Quarter of the rock."
+                            },
+                            "description": {
+                                "description": "Description of the rock.",
+                                "type": "string"
+                            },
+                            "notes": {
+                                "description": "Notes for the rock.",
+                                "type": "string"
+                            },
+                            "assigneeIds": {
+                                "description": "User IDs to assign the rock to.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "teamId",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_createrock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "type": "string"
+                            },
+                            "levelCode": {
+                                "type": "string"
+                            },
+                            "quarter": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "assigneeIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "milestones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "isDone": {
+                                            "type": "boolean"
+                                        },
+                                        "isDeleted": {
+                                            "type": "boolean"
+                                        },
+                                        "completedDate": {
+                                            "type": "string"
+                                        },
+                                        "createdDate": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "rockId": {
+                                            "type": "string"
+                                        },
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "ownedByUserId": {
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "planningBoardOrdinal": {
+                                "type": "number"
+                            },
+                            "dueDateQuarter": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "teamId",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a to-do (personal or team-based).",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_createtodo",
+            "name": "create-todo",
+            "output": [
+                "ActionOutput_ninety_io_createtodo"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_createtodo",
+                "ActionOutput_ninety_io_createtodo"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_createtodo": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "The title of the to-do. Example: \"Follow up with client\""
+                            },
+                            "teamId": {
+                                "description": "Team ID to assign the to-do to. If omitted, creates a personal to-do. Example: \"6a616ba8908190d6d9458153\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "title"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_createtodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "isPersonal": {
+                                "type": "boolean"
+                            },
+                            "teamId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "deletedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "deletedByUserId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete an issue.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_deleteissue",
+            "name": "delete-issue",
+            "output": [
+                "ActionOutput_ninety_io_deleteissue"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_deleteissue",
+                "ActionOutput_ninety_io_deleteissue"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_deleteissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueId": {
+                                "type": "string",
+                                "description": "The unique identifier of the issue to delete. Example: \"6a6174eeec1cad4577a10b9a\""
+                            }
+                        },
+                        "required": [
+                            "issueId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_deleteissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "issueId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Soft-delete a rock.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_deleterock",
+            "name": "delete-rock",
+            "output": [
+                "ActionOutput_ninety_io_deleterock"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_deleterock",
+                "ActionOutput_ninety_io_deleterock"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_deleterock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Rock ID. Example: \"6a6175355346be5d56149d93\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_deleterock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a measurable's note for a period.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_deletescorecardnote",
+            "name": "delete-scorecard-note",
+            "output": [
+                "ActionOutput_ninety_io_deletescorecardnote"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_deletescorecardnote",
+                "ActionOutput_ninety_io_deletescorecardnote"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_deletescorecardnote": {
+                        "type": "object",
+                        "properties": {
+                            "kpiId": {
+                                "type": "string",
+                                "description": "The ID of the KPI. Example: \"6a616ba843cee8f7e09d7e31\""
+                            },
+                            "periodStartDate": {
+                                "type": "string",
+                                "description": "The period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
+                            }
+                        },
+                        "required": [
+                            "kpiId",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_deletescorecardnote": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "kpiId": {
+                                "type": "string"
+                            },
+                            "periodStartDate": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "kpiId",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a measurable's score for a period.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_deletescorecardscore",
+            "name": "delete-scorecard-score",
+            "output": [
+                "ActionOutput_ninety_io_deletescorecardscore"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_deletescorecardscore",
+                "ActionOutput_ninety_io_deletescorecardscore"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_deletescorecardscore": {
+                        "type": "object",
+                        "properties": {
+                            "kpiId": {
+                                "type": "string",
+                                "description": "The ID of the KPI whose score should be deleted. Example: \"6a616ba843cee8f7e09d7e31\""
+                            },
+                            "periodStartDate": {
+                                "type": "string",
+                                "description": "The ISO 8601 start date of the period whose score should be deleted. Must exactly match the date used when the score was created. Example: \"2025-01-01T00:00:00Z\""
+                            }
+                        },
+                        "required": [
+                            "kpiId",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_deletescorecardscore": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a to-do.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_deletetodo",
+            "name": "delete-todo",
+            "output": [
+                "ActionOutput_ninety_io_deletetodo"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_deletetodo",
+                "ActionOutput_ninety_io_deletetodo"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_deletetodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "To-Do ID to delete. Example: \"6a6174ad545a6c26e85e387e\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_deletetodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single issue by id.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_getissue",
+            "name": "get-issue",
+            "output": [
+                "ActionOutput_ninety_io_getissue"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_getissue",
+                "ActionOutput_ninety_io_getissue"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_getissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueId": {
+                                "type": "string",
+                                "description": "The unique identifier of the issue. Example: \"6a68fb4f2f9e9442985c809d\""
+                            }
+                        },
+                        "required": [
+                            "issueId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_getissue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "intervalCode": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "planningBoardOrdinal": {
+                                "type": "number"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "who": {
+                                "type": "string"
+                            },
+                            "imported": {
+                                "type": "boolean"
+                            },
+                            "numOfLikes": {
+                                "type": "number"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "likes": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "rating": {},
+                            "archivedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "completedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "originalDueDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "user": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single milestone by id.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_getmilestone",
+            "name": "get-milestone",
+            "output": [
+                "ActionOutput_ninety_io_getmilestone"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_getmilestone",
+                "ActionOutput_ninety_io_getmilestone"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_getmilestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Milestone ID. Example: \"6a61758b5346be5d56149d9f\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_getmilestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "rockId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "ownedByUserId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "isDone": {
+                                "type": "boolean"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "toDoId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single rock by id.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_getrock",
+            "name": "get-rock",
+            "output": [
+                "ActionOutput_ninety_io_getrock"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_getrock",
+                "ActionOutput_ninety_io_getrock"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_getrock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the rock. Example: \"6a61d2d0441c43ad0eaabd3c\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_getrock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "type": "string",
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
+                            },
+                            "levelCode": {
+                                "type": "string",
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
+                            },
+                            "quarter": {
+                                "type": "string",
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "planningBoardOrdinal": {
+                                "type": "number"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "milestones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "isDone": {
+                                            "type": "boolean"
+                                        },
+                                        "isDeleted": {
+                                            "type": "boolean"
+                                        },
+                                        "completedDate": {
+                                            "type": "string"
+                                        },
+                                        "createdDate": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        },
+                                        "rockId": {
+                                            "type": "string"
+                                        },
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "ownedByUserId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "dueDateQuarter": {
+                                "type": "string"
+                            },
+                            "originalDueDate": {
+                                "type": "string"
+                            },
+                            "attachments": {
+                                "type": "array",
+                                "items": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "teamId",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single to-do by id.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_gettodo",
+            "name": "get-todo",
+            "output": [
+                "ActionOutput_ninety_io_gettodo"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_gettodo",
+                "ActionOutput_ninety_io_gettodo"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_gettodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "To-Do ID. Example: \"6a6174ad545a6c26e85e387e\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_gettodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "originalDueDate": {
+                                "type": "string"
+                            },
+                            "isPersonal": {
+                                "type": "boolean"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "repeat": {
+                                "type": "string"
+                            },
+                            "seriesId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "milestoneId": {
+                                "type": "string"
+                            },
+                            "autoGenerated": {
+                                "type": "boolean"
+                            },
+                            "dueDateChanged": {
+                                "type": "boolean"
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "archivedByUserId": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "completedByUserId": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "deletedDate": {
+                                "type": "string"
+                            },
+                            "deletedByUserId": {
+                                "type": "string"
+                            },
+                            "imported": {
+                                "type": "boolean"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "version": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single user by id.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_ninety_io_getuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_getuser",
+                "ActionOutput_ninety_io_getuser"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID. Example: \"6a616ba8908190d6d945815c\""
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "primaryEmail": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "isActive": {
+                                "type": "boolean"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query issues with filtering by team, interval, and search text.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_listissues",
+            "name": "list-issues",
+            "output": [
+                "ActionOutput_ninety_io_listissues"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_listissues",
+                "ActionOutput_ninety_io_listissues"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_listissues": {
+                        "type": "object",
+                        "properties": {
+                            "team": {
+                                "description": "Team ID to filter by. Example: \"6a616ba8908190d6d9458153\"",
+                                "type": "string"
+                            },
+                            "interval": {
+                                "description": "Interval ID to filter by.",
+                                "type": "string"
+                            },
+                            "search": {
+                                "description": "Search text to filter issues.",
+                                "type": "string"
+                            },
+                            "sortField": {
+                                "description": "Field to sort by. Example: \"title\"",
+                                "type": "string"
+                            },
+                            "sortDirection": {
+                                "description": "Sort direction. Example: \"asc\" or \"desc\"",
+                                "type": "string"
+                            },
+                            "pageSize": {
+                                "description": "Number of items per page. Example: 10",
+                                "type": "number"
+                            },
+                            "pageIndex": {
+                                "description": "Page index (0-based). Example: 0",
+                                "type": "number"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_listissues": {
+                        "type": "object",
+                        "properties": {
+                            "currentPage": {
+                                "type": "number"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "type": "string"
+                                        },
+                                        "title": {},
+                                        "notes": {},
+                                        "team": {},
+                                        "teamId": {},
+                                        "interval": {},
+                                        "intervalId": {},
+                                        "user": {},
+                                        "userId": {},
+                                        "createdByUserId": {},
+                                        "updatedBy": {},
+                                        "createdDate": {},
+                                        "updatedDate": {},
+                                        "deleted": {},
+                                        "deletedDate": {},
+                                        "deletedByUserId": {},
+                                        "statusCode": {},
+                                        "priorityCode": {}
+                                    },
+                                    "required": [
+                                        "_id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "itemsCount": {
+                                "type": "number"
+                            },
+                            "totalCount": {
+                                "type": "number"
+                            },
+                            "totalPages": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query rocks grouped by team with filtering and pagination.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_listrocks",
+            "name": "list-rocks",
+            "output": [
+                "ActionOutput_ninety_io_listrocks"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_listrocks",
+                "ActionOutput_ninety_io_listrocks"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_listrocks": {
+                        "type": "object",
+                        "properties": {
+                            "sortField": {
+                                "type": "string",
+                                "enum": [
+                                    "title",
+                                    "statusCode",
+                                    "dueDate",
+                                    "completedDate",
+                                    "owner",
+                                    "team",
+                                    "dueDateQuarter"
+                                ],
+                                "description": "Field to sort by. Example: \"dueDate\""
+                            },
+                            "sortDirection": {
+                                "type": "string",
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ],
+                                "description": "Sort direction. Example: \"ASC\""
+                            },
+                            "pageSize": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 200,
+                                "description": "Number of results per page (0-200). Example: 50"
+                            },
+                            "pageIndex": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "Page index (0-based). Example: 0"
+                            },
+                            "title": {
+                                "description": "Optional title filter. Example: \"Q1 Rock\"",
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "description": "Optional team ID filter. Example: \"6a616ba8908190d6d9458153\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "sortField",
+                            "sortDirection",
+                            "pageSize",
+                            "pageIndex"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_listrocks": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "statusCode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "OFF_TRACK",
+                                                "ON_TRACK",
+                                                "DONE",
+                                                "CANCELED"
+                                            ]
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "completedDate": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "levelCode": {
+                                            "type": "string",
+                                            "enum": [
+                                                "USER",
+                                                "COMPANY_AND_DEPARTMENT",
+                                                "COMPANY",
+                                                "DEPARTMENT"
+                                            ]
+                                        },
+                                        "quarter": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Q1",
+                                                "Q2",
+                                                "Q3",
+                                                "Q4",
+                                                "None"
+                                            ]
+                                        },
+                                        "milestones": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "dueDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "statusCode": {
+                                                        "type": "string"
+                                                    },
+                                                    "rockId": {
+                                                        "type": "string"
+                                                    },
+                                                    "createdDate": {
+                                                        "type": "string"
+                                                    },
+                                                    "updatedAt": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "_id",
+                                                    "title",
+                                                    "dueDate"
+                                                ],
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "createdDate": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "_id",
+                                        "title",
+                                        "statusCode",
+                                        "dueDate",
+                                        "teamId",
+                                        "levelCode",
+                                        "quarter"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query measurables (KPIs) with filtering.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_listscorecardkpis",
+            "name": "list-scorecard-kpis",
+            "output": [
+                "ActionOutput_ninety_io_listscorecardkpis"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_listscorecardkpis",
+                "ActionOutput_ninety_io_listscorecardkpis"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_listscorecardkpis": {
+                        "type": "object",
+                        "properties": {
+                            "cursor": {
+                                "description": "Pagination cursor (page index). Omit for the first page.",
+                                "type": "string"
+                            },
+                            "pageSize": {
+                                "description": "Number of items per page.",
+                                "type": "number"
+                            },
+                            "searchText": {
+                                "description": "Free-text search over title and description.",
+                                "type": "string"
+                            },
+                            "searchTitle": {
+                                "description": "Search by title only.",
+                                "type": "string"
+                            },
+                            "searchOwner": {
+                                "description": "Search by owner name fragment.",
+                                "type": "string"
+                            },
+                            "unassignedOnly": {
+                                "description": "Return only unassigned KPIs.",
+                                "type": "boolean"
+                            },
+                            "userIds": {
+                                "description": "Filter by owner user IDs.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "excludeKpiIds": {
+                                "description": "Exclude specific KPI IDs from results.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "periodInterval": {
+                                "description": "Filter by period interval (e.g., Annual, Quarterly).",
+                                "type": "string"
+                            },
+                            "sortField": {
+                                "description": "Field to sort by (e.g., id, owner, title).",
+                                "type": "string"
+                            },
+                            "sortDirection": {
+                                "description": "Sort direction (e.g., asc, desc).",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_listscorecardkpis": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "_id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "periodInterval": {
+                                            "type": "string"
+                                        },
+                                        "unit": {
+                                            "type": "string"
+                                        },
+                                        "currency": {
+                                            "type": "string"
+                                        },
+                                        "defaultGoal": {},
+                                        "userId": {
+                                            "type": "string"
+                                        },
+                                        "userFullName": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "attachmentCount": {
+                                            "type": "number"
+                                        },
+                                        "isSmart": {
+                                            "type": "boolean"
+                                        },
+                                        "isUsedInFormula": {
+                                            "type": "boolean"
+                                        },
+                                        "lastScoreUpdatedAt": {
+                                            "type": "string"
+                                        },
+                                        "teams": {},
+                                        "scorecards": {}
+                                    },
+                                    "required": [
+                                        "_id",
+                                        "title"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "currentPage": {
+                                "type": "number"
+                            },
+                            "itemsCount": {
+                                "type": "number"
+                            },
+                            "totalCount": {
+                                "type": "number"
+                            },
+                            "totalPages": {
+                                "type": "number"
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "currentPage",
+                            "itemsCount",
+                            "totalCount",
+                            "totalPages"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List teams visible to the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_listteams",
+            "name": "list-teams",
+            "output": [
+                "ActionOutput_ninety_io_listteams"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_listteams",
+                "ActionOutput_ninety_io_listteams"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_listteams": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_listteams": {
+                        "type": "object",
+                        "properties": {
+                            "teams": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "companyId": {
+                                            "type": "string"
+                                        },
+                                        "project": {
+                                            "type": "boolean"
+                                        },
+                                        "deleted": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "teamId"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "teams"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Query to-dos (personal or team-based) with filtering options.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_listtodos",
+            "name": "list-todos",
+            "output": [
+                "ActionOutput_ninety_io_listtodos"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_listtodos",
+                "ActionOutput_ninety_io_listtodos"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_listtodos": {
+                        "type": "object",
+                        "properties": {
+                            "teamId": {
+                                "description": "Filter results to a specific team Id. Example: \"6a616ba8908190d6d9458153\"",
+                                "type": "string"
+                            },
+                            "sort": {
+                                "description": "The field to sort results by. Example: \"dueDate\"",
+                                "type": "string"
+                            },
+                            "order": {
+                                "description": "Sort direction",
+                                "type": "string",
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
+                            },
+                            "pageSize": {
+                                "description": "Number of results per page (max 100). Example: 25",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
+                                "type": "string"
+                            },
+                            "isPersonal": {
+                                "description": "Filter to personal To-Dos only (not associated with a team)",
+                                "type": "boolean"
+                            },
+                            "completed": {
+                                "description": "Filter by completed status",
+                                "type": "boolean"
+                            },
+                            "archived": {
+                                "description": "Filter by archived status",
+                                "type": "boolean"
+                            },
+                            "searchText": {
+                                "description": "Search text to match against To-Do title and description",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Filter by exact title match",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_listtodos": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "isPersonal": {
+                                            "type": "boolean"
+                                        },
+                                        "completed": {
+                                            "type": "boolean"
+                                        },
+                                        "archived": {
+                                            "type": "boolean"
+                                        },
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "teamName": {
+                                            "type": "string"
+                                        },
+                                        "userId": {
+                                            "type": "string"
+                                        },
+                                        "companyId": {
+                                            "type": "string"
+                                        },
+                                        "createdDate": {
+                                            "type": "string"
+                                        },
+                                        "createdByUserId": {
+                                            "type": "string"
+                                        },
+                                        "completedDate": {
+                                            "type": "string"
+                                        },
+                                        "completedByUserId": {
+                                            "type": "string"
+                                        },
+                                        "archivedDate": {
+                                            "type": "string"
+                                        },
+                                        "archivedByUserId": {
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "type": "boolean"
+                                        },
+                                        "deletedDate": {
+                                            "type": "string"
+                                        },
+                                        "deletedByUserId": {
+                                            "type": "string"
+                                        },
+                                        "milestoneId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "isPersonal",
+                                        "completed",
+                                        "archived",
+                                        "userId",
+                                        "companyId",
+                                        "createdDate"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextPage": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update an issue.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_updateissue",
+            "name": "update-issue",
+            "output": [
+                "ActionOutput_ninety_io_updateissue"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_updateissue",
+                "ActionOutput_ninety_io_updateissue"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_updateissue": {
+                        "type": "object",
+                        "properties": {
+                            "issueId": {
+                                "type": "string",
+                                "description": "The Issue Id. Example: \"507f1f77bcf86cd799439011\""
+                            },
+                            "title": {
+                                "description": "Title of the Issue",
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "description": "Id of the team that owns the Issue",
+                                "type": "string"
+                            },
+                            "interval": {
+                                "description": "Interval classification for the Issue",
+                                "type": "string",
+                                "enum": [
+                                    "SHORT_TERM",
+                                    "LONG_TERM"
+                                ]
+                            },
+                            "description": {
+                                "description": "HTML description of the Issue",
+                                "type": "string"
+                            },
+                            "priority": {
+                                "description": "Priority of the Issue: 0-5",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 5
+                            },
+                            "completed": {
+                                "description": "Whether the Issue is completed",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "issueId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_updateissue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "intervalCode": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            },
+                            "updatedByUserId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "teamId",
+                            "companyId",
+                            "archived",
+                            "completed",
+                            "createdBy",
+                            "deleted",
+                            "title",
+                            "createdDate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a milestone.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_updatemilestone",
+            "name": "update-milestone",
+            "output": [
+                "ActionOutput_ninety_io_updatemilestone"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_updatemilestone",
+                "ActionOutput_ninety_io_updatemilestone"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_updatemilestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Milestone ID. Example: \"507f1f77bcf86cd799439014\""
+                            },
+                            "title": {
+                                "description": "Milestone title",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Milestone description",
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "description": "Due date in ISO 8601 format. Example: \"2026-05-15T23:59:59.000Z\"",
+                                "type": "string"
+                            },
+                            "isDone": {
+                                "description": "Whether the milestone is complete",
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "description": "Completion date in ISO 8601 format. Required when isDone is true.",
+                                "type": "string"
+                            },
+                            "ownedByUserId": {
+                                "description": "User ID to assign ownership to",
+                                "type": "string"
+                            },
+                            "followers": {
+                                "description": "Array of user IDs to set as followers",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_updatemilestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "rockId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "ownedByUserId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "isDone": {
+                                "type": "boolean"
+                            },
+                            "isDeleted": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "toDoId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a rock.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_updaterock",
+            "name": "update-rock",
+            "output": [
+                "ActionOutput_ninety_io_updaterock"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_updaterock",
+                "ActionOutput_ninety_io_updaterock"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_updaterock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Rock ID. Example: \"6a6175355346be5d56149d93\""
+                            },
+                            "title": {
+                                "description": "Rock title",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Rock description",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dueDate": {
+                                "description": "Due date in ISO 8601 format. Example: \"2026-12-31T00:00:00Z\"",
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "description": "Status code",
+                                "type": "string",
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
+                            },
+                            "levelCode": {
+                                "description": "Level code",
+                                "type": "string",
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
+                            },
+                            "quarter": {
+                                "description": "Quarter",
+                                "type": "string",
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
+                            },
+                            "teamId": {
+                                "description": "Team ID",
+                                "type": "string"
+                            },
+                            "notes": {
+                                "description": "Notes",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "assigneeId": {
+                                "description": "Assignee user ID",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_updaterock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "type": "string",
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
+                            },
+                            "levelCode": {
+                                "type": "string",
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
+                            },
+                            "quarter": {
+                                "type": "string",
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "notes": {
+                                "type": "string"
+                            },
+                            "assigneeId": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "deletedDate": {
+                                "type": "string"
+                            },
+                            "deletedByUserId": {
+                                "type": "string"
+                            },
+                            "milestones": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "rockId": {
+                                            "type": "string"
+                                        },
+                                        "teamId": {
+                                            "type": "string"
+                                        },
+                                        "ownedByUserId": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "dueDate": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "isDone": {
+                                            "type": "boolean"
+                                        },
+                                        "isDeleted": {
+                                            "type": "boolean"
+                                        },
+                                        "completedDate": {
+                                            "type": "string"
+                                        },
+                                        "createdBy": {
+                                            "type": "string"
+                                        },
+                                        "createdDate": {
+                                            "type": "string"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter",
+                            "teamId",
+                            "createdByUserId",
+                            "createdDate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Partially update a to-do.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_updatetodo",
+            "name": "update-todo",
+            "output": [
+                "ActionOutput_ninety_io_updatetodo"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_updatetodo",
+                "ActionOutput_ninety_io_updatetodo"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_updatetodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "To-Do ID. Example: \"6a6174ad545a6c26e85e387e\""
+                            },
+                            "title": {
+                                "description": "Title of the to-do",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "Description or notes",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dueDate": {
+                                "description": "Due date in ISO 8601 or YYYY-MM-DD",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "completed": {
+                                "description": "Whether the to-do is completed",
+                                "type": "boolean"
+                            },
+                            "archived": {
+                                "description": "Whether the to-do is archived",
+                                "type": "boolean"
+                            },
+                            "teamId": {
+                                "description": "Team ID. Omit or empty for personal to-do",
+                                "type": "string"
+                            },
+                            "userId": {
+                                "description": "User ID",
+                                "type": "string"
+                            },
+                            "repeat": {
+                                "description": "Recurrence pattern, e.g. weekly, monthly",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_updatetodo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dueDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "originalDueDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "isPersonal": {
+                                "type": "boolean"
+                            },
+                            "createdBy": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "repeat": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "seriesId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            },
+                            "milestoneId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "autoGenerated": {
+                                "type": "boolean"
+                            },
+                            "dueDateChanged": {
+                                "type": "boolean"
+                            },
+                            "comments": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "archivedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "archivedByUserId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "completedByUserId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "deletedDate": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "deletedByUserId": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "imported": {
+                                "type": "boolean"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "version": {
+                                "type": "number"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "roleCode": {
+                                        "type": "string"
+                                    },
+                                    "primaryEmail": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "emailAddresses": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            },
+                            "createdByUser": {
+                                "type": "object",
+                                "properties": {
+                                    "active": {
+                                        "type": "boolean"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "properties": {},
+                                        "additionalProperties": {}
+                                    },
+                                    "roleCode": {
+                                        "type": "string"
+                                    },
+                                    "primaryEmail": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "emailAddresses": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {},
+                                            "additionalProperties": {}
+                                        }
+                                    }
+                                },
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create or update a measurable's note for a period.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_upsertscorecardnote",
+            "name": "upsert-scorecard-note",
+            "output": [
+                "ActionOutput_ninety_io_upsertscorecardnote"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_ninety_io_upsertscorecardnote",
+                "ActionOutput_ninety_io_upsertscorecardnote"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_upsertscorecardnote": {
+                        "type": "object",
+                        "properties": {
+                            "kpiId": {
+                                "type": "string",
+                                "description": "KPI ID. Example: \"6a616ba843cee8f7e09d7e31\""
+                            },
+                            "note": {
+                                "type": "string",
+                                "description": "Note text for the period."
+                            },
+                            "periodStartDate": {
+                                "type": "string",
+                                "description": "Period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
+                            }
+                        },
+                        "required": [
+                            "kpiId",
+                            "note",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_upsertscorecardnote": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "measurableId": {
+                                "type": "string"
+                            },
+                            "periodStartDate": {
+                                "type": "string"
+                            },
+                            "note": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "number"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create or update a measurable's score for a period.",
+            "endpoint": null,
+            "input": "ActionInput_ninety_io_upsertscorecardscore",
+            "name": "upsert-scorecard-score",
+            "output": [
+                "ActionOutput_ninety_io_upsertscorecardscore"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_ninety_io_upsertscorecardscore",
+                "ActionOutput_ninety_io_upsertscorecardscore"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_ninety_io_upsertscorecardscore": {
+                        "type": "object",
+                        "properties": {
+                            "kpiId": {
+                                "type": "string",
+                                "description": "The KPI ID. Example: \"6a616ba843cee8f7e09d7e31\""
+                            },
+                            "value": {
+                                "type": "number",
+                                "description": "The score value. Example: 8"
+                            },
+                            "periodStartDate": {
+                                "type": "string",
+                                "description": "The period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
+                            }
+                        },
+                        "required": [
+                            "kpiId",
+                            "value",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_ninety_io_upsertscorecardscore": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "kpiId": {
+                                "type": "string"
+                            },
+                            "periodStartDate": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "number"
+                            },
+                            "note": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "kpiId",
+                            "periodStartDate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync issues.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "issues",
+            "output": [
+                "Issue"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Issue"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Issue": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "createdBy": {
+                                "type": "string"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "intervalCode": {
+                                "type": "string"
+                            },
+                            "priority": {
+                                "type": "number"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedDate": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "userId",
+                            "teamId",
+                            "companyId",
+                            "archived",
+                            "completed",
+                            "createdBy",
+                            "deleted",
+                            "title",
+                            "createdDate"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync rocks (quarterly goals), including their nested milestones",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "rocks",
+            "output": [
+                "Rock",
+                "Milestone"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Rock",
+                "Milestone"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Rock": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "type": "string"
+                            },
+                            "levelCode": {
+                                "type": "string"
+                            },
+                            "quarter": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "Milestone": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "rockId": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "statusCode": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "updatedBy": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "rockId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync scorecard measurable (KPI) definitions.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "scorecard-kpis",
+            "output": [
+                "ScorecardKpi"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "ScorecardKpi"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "ScorecardKpi": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "unit": {
+                                "type": "string"
+                            },
+                            "goal": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "scorecardId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "interval": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync teams visible to the connected user.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "teams",
+            "output": [
+                "Team"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Team"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Team": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "project": {
+                                "type": "boolean"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "sync",
+            "description": "Sync to-dos (personal and team-based).",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "todos",
+            "output": [
+                "Todo"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Todo"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Todo": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "teamId": {
+                                "type": "string"
+                            },
+                            "userId": {
+                                "type": "string"
+                            },
+                            "companyId": {
+                                "type": "string"
+                            },
+                            "createdDate": {
+                                "type": "string"
+                            },
+                            "dueDate": {
+                                "type": "string"
+                            },
+                            "originalDueDate": {
+                                "type": "string"
+                            },
+                            "completedDate": {
+                                "type": "string"
+                            },
+                            "completed": {
+                                "type": "boolean"
+                            },
+                            "completedByUserId": {
+                                "type": "string"
+                            },
+                            "archived": {
+                                "type": "boolean"
+                            },
+                            "archivedDate": {
+                                "type": "string"
+                            },
+                            "archivedByUserId": {
+                                "type": "string"
+                            },
+                            "createdByUserId": {
+                                "type": "string"
+                            },
+                            "milestoneId": {
+                                "type": "string"
+                            },
+                            "isPersonal": {
+                                "type": "boolean"
+                            },
+                            "repeat": {
+                                "type": "string"
+                            },
+                            "seriesId": {
+                                "type": "string"
+                            },
+                            "autoGenerated": {
+                                "type": "boolean"
+                            },
+                            "dueDateChanged": {
+                                "type": "boolean"
+                            },
+                            "imported": {
+                                "type": "boolean"
+                            },
+                            "followers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "teamName": {
+                                "type": "string"
+                            },
+                            "ordinal": {
+                                "type": "number"
+                            },
+                            "userOrdinal": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

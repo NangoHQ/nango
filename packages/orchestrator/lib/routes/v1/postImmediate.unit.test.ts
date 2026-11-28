@@ -4,15 +4,20 @@ import getPort from 'get-port';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
-import { metrics, Ok } from '@nangohq/utils';
+import { TaskCapExceededError } from '@nangohq/scheduler';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
+import type { Result } from '@nangohq/utils';
 import type { Server } from 'node:http';
 import type { MockInstance } from 'vitest';
 
-const immediate = vi.fn((props: { name: string }) => Promise.resolve(Ok({ id: `task-${props.name}`, retryKey: `retry-${props.name}` })));
+const immediate = vi.fn(
+    (props: { name: string }): Promise<Result<{ id: string; retryKey: string }>> =>
+        Promise.resolve(Ok({ id: `task-${props.name}`, retryKey: `retry-${props.name}` }))
+);
 const immediateBatch = vi.fn((propsList: { name: string }[]) =>
     Promise.resolve(
         Ok({
@@ -74,6 +79,17 @@ describe('immediate routes', () => {
         expect(limited.status).toBe(429);
         expect(spy).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
         expect(spy).not.toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_DROPPED, expect.anything(), expect.anything());
+    });
+
+    it('returns 429 when the scheduler rejects a capped task', async () => {
+        const error = new TaskCapExceededError({ groupKey: 'group', cap: 10 });
+        immediate.mockResolvedValueOnce(Err(error));
+
+        const response = await post('/v1/immediate', buildTask('capped'));
+
+        expect(response.status).toBe(429);
+        await expect(response.json()).resolves.toEqual({ error: { code: 'task_cap_exceeded', message: error.message } });
+        expect(immediate).toHaveBeenCalledOnce();
     });
 
     it('rejects an empty rate limit key', async () => {

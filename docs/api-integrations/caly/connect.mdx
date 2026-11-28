@@ -1,0 +1,39 @@
+---
+title: 'Caly - How do I link my account?'
+sidebarTitle: 'Caly'
+---
+
+## Overview
+
+To authenticate with Caly, you need:
+
+1. **API Key** — a Caly API key.
+
+This guide will show you how to get it.
+
+### Prerequisites
+
+- A Caly account. You can [sign up](https://app.trycaly.com/signup) for the Free plan without a card.
+
+### Step 1: Create an API key
+
+1. Sign in to Caly and open [Settings → Developer → API keys](https://app.trycaly.com/settings/developer/api-keys).
+2. Click **Add**.
+
+<img src="/api-integrations/caly/api_keys_page.png" alt="Caly API keys page in Settings → Developer with the Add button"/>
+
+3. Enter a name for the key, choose an expiration (or **Never expires**), and under **What may this key do through MCP?** keep only the permissions your integration needs, for example **Read your data**. Click **Save**.
+
+<img src="/api-integrations/caly/create_api_key_dialog.png" alt="Caly create API key dialog with a name, an expiration and the Read your data permission checked"/>
+
+4. Click **Copy** to copy the API key, then click **Done**. The key starts with `cal_`, and Caly shows it only once.
+
+<img src="/api-integrations/caly/api_key_created.png" alt="Caly API key created successfully dialog with the Copy button"/>
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Caly.
+2. Enter your **API Key** from Step 1.
+3. Submit the form. Nango checks the key with Caly, and you are connected.
+
+<img src="/api-integrations/caly/form.png" alt="Caly Connect UI form with the API Key field" style={{maxWidth: "450px" }}/>

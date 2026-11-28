@@ -349,7 +349,7 @@ const { data } = await nango.createConnectSession({
       }
     }
     ```
-    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+    When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials. Only set them to empty strings: Connect UI ignores any value, and Nango doesn't use it to build the authorization URL. To pass known credentials, for example in a [headless flow](/reference/frontend/frontend-sdk#connect-using-the-headless-client), pass them to `nango.auth()` in `credentials` instead.
   </ResponseField>
 
   <ResponseField name="webhook_url_override" type="string">

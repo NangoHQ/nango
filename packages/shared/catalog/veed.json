@@ -1,0 +1,3032 @@
+{
+    "providerConfigKey": "veed",
+    "actions": [],
+    "syncs": [],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "cancel-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Attempt to cancel a pending audio cleanup request without deleting the original recording or completed media.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_cancelaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_cancelaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_cancelaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque audio cleanup request identifier to attempt to cancel."
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The audio cleanup request to attempt to cancel."
+                    },
+                    "FunctionOutput_veed_cancelaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The audio cleanup request identifier supplied for cancellation."
+                            },
+                            "cancelled": {
+                                "description": "Provider-reported cancellation success. False means unsuccessful; omitted means the provider gave no success flag, not that cancellation succeeded.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The cancellation attempt and any provider-reported success indicator."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Pass the id from `create-audio-cleanup-request`. Cancellation can be too late and is not a promise of a refund or deletion. Use `get-audio-cleanup-request` to inspect the outcome. A cancelled request has no promised undo; submit a new request if cleaning is needed again."
+            },
+            "filePath": "./veed/tools/cancel-audio-cleanup-request.ts",
+            "version": "0fd1082b41d8ffe0105f57de531d800d038b9a57b01861fa957f6b972782e89b",
+            "location": {
+                "js": "templates-zero/veed/tools/cancel-audio-cleanup-request/0fd1082b41d8ffe0105f57de531d800d038b9a57b01861fa957f6b972782e89b.cjs",
+                "ts": "templates-zero/veed/tools/cancel-audio-cleanup-request/0fd1082b41d8ffe0105f57de531d800d038b9a57b01861fa957f6b972782e89b.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "cancel-avatar-video-request",
+            "integrationId": "veed",
+            "description": "Attempt to cancel a pending audio- or text-driven preset-avatar video request. Cancellation is not deletion of a completed video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_cancelavatarvideorequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_cancelavatarvideorequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_cancelavatarvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque avatar video request handle returned by an audio- or text-avatar creation tool."
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The avatar video request to attempt to cancel."
+                    },
+                    "FunctionOutput_veed_cancelavatarvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The same opaque avatar request handle submitted for cancellation."
+                            },
+                            "cancelled": {
+                                "description": "Provider success flag: true means cancellation was reported successful, false means it was not. Omitted if the provider supplies no flag; omission is not success.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The unchanged request handle and the cancellation success flag, when supplied by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use the id from either avatar video request creation tool. This attempts to stop pending work; it does not delete source audio or a completed video, and cancellation may be too late. Use `get-avatar-video-request` to inspect the outcome. Starting over requires a new request; no undo or refund is promised."
+            },
+            "filePath": "./veed/tools/cancel-avatar-video-request.ts",
+            "version": "c73e28b5d04006c22059f95edcf5f2d12fd76e4758ab6a9e76510b7cf0521342",
+            "location": {
+                "js": "templates-zero/veed/tools/cancel-avatar-video-request/c73e28b5d04006c22059f95edcf5f2d12fd76e4758ab6a9e76510b7cf0521342.cjs",
+                "ts": "templates-zero/veed/tools/cancel-avatar-video-request/c73e28b5d04006c22059f95edcf5f2d12fd76e4758ab6a9e76510b7cf0521342.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "cancel-talking-video-request",
+            "integrationId": "veed",
+            "description": "Attempt to cancel a pending standard or fast image-and-audio talking-video request.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_canceltalkingvideorequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_canceltalkingvideorequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_canceltalkingvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque standard/fast talking-video handle returned by create-talking-video-request-from-audio."
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The image-and-audio talking-video request to attempt to cancel."
+                    },
+                    "FunctionOutput_veed_canceltalkingvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The same opaque talking-video handle submitted for cancellation."
+                            },
+                            "cancelled": {
+                                "description": "Provider cancellation success flag if supplied. False is unsuccessful; omission means no flag was returned and must not be treated as success.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The submitted handle and the provider cancellation flag, when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use the id from `create-talking-video-request-from-audio`; the handle retains its processing variant. This attempts to stop pending generation, not delete sources or completed output. Cancellation may be too late and has no promised undo or refund. Inspect with `get-talking-video-request`. Use text-specific cancellation for text-driven requests."
+            },
+            "filePath": "./veed/tools/cancel-talking-video-request.ts",
+            "version": "a0f22fe5fc2de3cc1e20cbe575793dfab33a134ca18797450309c50553a3097e",
+            "location": {
+                "js": "templates-zero/veed/tools/cancel-talking-video-request/a0f22fe5fc2de3cc1e20cbe575793dfab33a134ca18797450309c50553a3097e.cjs",
+                "ts": "templates-zero/veed/tools/cancel-talking-video-request/a0f22fe5fc2de3cc1e20cbe575793dfab33a134ca18797450309c50553a3097e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "cancel-video-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Attempt to cancel pending video audio cleanup without deleting source video or completed output.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_cancelvideoaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_cancelvideoaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_cancelvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque video audio cleanup request identifier to attempt to cancel."
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target video audio cleanup request for a single cancellation attempt."
+                    },
+                    "FunctionOutput_veed_cancelvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Video audio cleanup request identifier submitted for cancellation."
+                            },
+                            "cancelled": {
+                                "description": "Provider cancellation success flag if supplied. Omission means unknown, not successful cancellation.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Cancellation acknowledgement with the provider success flag only when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Pass the id from `create-video-audio-cleanup-request`. Cancellation may be too late, has no promised undo, and does not promise a refund or output deletion. Use `get-video-audio-cleanup-request` to inspect the outcome."
+            },
+            "filePath": "./veed/tools/cancel-video-audio-cleanup-request.ts",
+            "version": "c3342fec674b0bee16c1e1b60f232deed2af6dec7fce75a8b462baf53b33f16a",
+            "location": {
+                "js": "templates-zero/veed/tools/cancel-video-audio-cleanup-request/c3342fec674b0bee16c1e1b60f232deed2af6dec7fce75a8b462baf53b33f16a.cjs",
+                "ts": "templates-zero/veed/tools/cancel-video-audio-cleanup-request/c3342fec674b0bee16c1e1b60f232deed2af6dec7fce75a8b462baf53b33f16a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "cancel-video-processing-request",
+            "integrationId": "veed",
+            "description": "Attempt to cancel a known Fabric text, lip-sync, subtitle, or background-removal request. Reports the provider's cancellation outcome without promising cancellation of work that has already advanced too far.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_cancelvideoprocessingrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_cancelvideoprocessingrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_cancelvideoprocessingrequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the processing request to cancel, scoped to the selected route."
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Original processing route for this request. fabricText identifies the Fabric 1.0 text route; other values match submission results."
+                            }
+                        },
+                        "required": [
+                            "requestId",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the known processing request and its original processing route to attempt cancellation."
+                    },
+                    "FunctionOutput_veed_cancelvideoprocessingrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the request targeted by this cancellation attempt."
+                            },
+                            "cancelled": {
+                                "description": "Provider's success flag: true means the provider reports successful cancellation; false means it reports no successful cancellation. Omitted when the provider does not supply an outcome; never synthesized as false.",
+                                "type": "boolean"
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Processing route targeted by the cancellation."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The targeted request and the cancellation outcome only when supplied by the provider."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "false",
+                "instructions": "Use this to attempt stopping unwanted processing, not to delete a source video or finished output. Obtain requestId and processingType from submission or an existing Fabric text request record. Cancellation eligibility depends on provider state and can race with completion; it does not promise a refund or reversible pause. Use `get-video-processing-request` to inspect subsequent state or `get-video-processing-result` to retrieve any completed output. A missing cancellation outcome is not evidence that no change occurred."
+            },
+            "filePath": "./veed/tools/cancel-video-processing-request.ts",
+            "version": "88c6f0573bb2cc440c90f616c073845dedd239d84ca61e495087c1da8a045b34",
+            "location": {
+                "js": "templates-zero/veed/tools/cancel-video-processing-request/88c6f0573bb2cc440c90f616c073845dedd239d84ca61e495087c1da8a045b34.cjs",
+                "ts": "templates-zero/veed/tools/cancel-video-processing-request/88c6f0573bb2cc440c90f616c073845dedd239d84ca61e495087c1da8a045b34.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Submit an audio or video recording for denoising into a 48 kHz mono 16-bit audio file, with optional loudness normalization.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "audioUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri",
+                                "description": "Public URL or data URI of any audio/video recording ffmpeg can decode. A video's audio is used; multichannel input is mixed to mono. Maximum 30 minutes and 512 MB."
+                            },
+                            "strength": {
+                                "description": "Noise suppression strength. Lower retains more room tone beneath speech; silence between words is always fully cleaned. Suppression floor is 1 minus this value.",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "targetLufs": {
+                                "description": "Output integrated loudness in LUFS (ITU-R BS.1770); default -19. Explicit null skips loudness normalization and retains input level. True peak is capped at -1.1 dBTP when normalizing.",
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "minimum": -40,
+                                        "maximum": -8
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "outputFormat": {
+                                "description": "Container for 48 kHz mono 16-bit output. FLAC is lossless and smaller; default flac.",
+                                "type": "string",
+                                "enum": [
+                                    "flac",
+                                    "wav"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "audioUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording source and optional noise suppression, loudness, and audio container settings."
+                    },
+                    "FunctionOutput_veed_createaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque upstream audio cleanup request identifier; use as requestId for inspection or cancellation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Provider state acknowledged at submission; not a finished audio file."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position if supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the audio cleanup submission, not the processed audio."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this when the desired output is audio, even if the source is a video. Use `create-video-audio-cleanup-request` to retain the picture. Sources may be up to 30 minutes and 512 MB. Pass targetLufs:null to retain input loudness instead of normalizing. Save the returned id for `get-audio-cleanup-request` or `cancel-audio-cleanup-request`. The tool only submits work; repeating it may incur another charge."
+            },
+            "filePath": "./veed/tools/create-audio-cleanup-request.ts",
+            "version": "13506a5292ede36a349623ba96c5d1c1644ccce68e205f6c8ec8d223793ccc48",
+            "location": {
+                "js": "templates-zero/veed/tools/create-audio-cleanup-request/13506a5292ede36a349623ba96c5d1c1644ccce68e205f6c8ec8d223793ccc48.cjs",
+                "ts": "templates-zero/veed/tools/create-audio-cleanup-request/13506a5292ede36a349623ba96c5d1c1644ccce68e205f6c8ec8d223793ccc48.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-avatar-video-request-from-audio",
+            "integrationId": "veed",
+            "description": "Submit recorded speech and a preset avatar for asynchronous video generation. Returns a request identifier, not a finished video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createavatarvideorequestfromaudio",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createavatarvideorequestfromaudio",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createavatarvideorequestfromaudio": {
+                        "type": "object",
+                        "properties": {
+                            "audioUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible audio URL containing the speech to animate; passed unchanged."
+                            },
+                            "avatarId": {
+                                "type": "string",
+                                "enum": [
+                                    "emily_vertical_primary",
+                                    "emily_vertical_secondary",
+                                    "marcus_vertical_primary",
+                                    "marcus_vertical_secondary",
+                                    "mira_vertical_primary",
+                                    "mira_vertical_secondary",
+                                    "jasmine_vertical_primary",
+                                    "jasmine_vertical_secondary",
+                                    "jasmine_vertical_walking",
+                                    "aisha_vertical_walking",
+                                    "elena_vertical_primary",
+                                    "elena_vertical_secondary",
+                                    "any_male_vertical_primary",
+                                    "any_female_vertical_primary",
+                                    "any_male_vertical_secondary",
+                                    "any_female_vertical_secondary",
+                                    "any_female_vertical_walking",
+                                    "emily_primary",
+                                    "emily_side",
+                                    "marcus_primary",
+                                    "marcus_side",
+                                    "aisha_walking",
+                                    "elena_primary",
+                                    "elena_side",
+                                    "any_male_primary",
+                                    "any_female_primary",
+                                    "any_male_side",
+                                    "any_female_side"
+                                ],
+                                "description": "Preset avatar and framing selection; any_* choices allow provider-selected avatars of the indicated category."
+                            }
+                        },
+                        "required": [
+                            "audioUrl",
+                            "avatarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Existing speech audio and the preset avatar to animate."
+                    },
+                    "FunctionOutput_veed_createavatarvideorequestfromaudio": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque avatar video request handle, including routing context; pass unchanged to request inspection or cancellation tools."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "State observed when submission was acknowledged; completed does not itself include the video."
+                            },
+                            "queuePosition": {
+                                "description": "Provider queue position if supplied; indexing is provider-defined. Omitted when absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission acknowledgment for asynchronous avatar video generation, not a finished video."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a preset avatar speaking existing audio. For a written script use `create-avatar-video-request-from-text`; for your own image use `create-talking-video-request-from-audio`. Save the returned id and pass it as requestId to `get-avatar-video-request` or `cancel-avatar-video-request`. Submission does not wait for rendering, and repeating it can create another billable request."
+            },
+            "filePath": "./veed/tools/create-avatar-video-request-from-audio.ts",
+            "version": "8293a6d86a534276ad5f0ed81bef30abb2b69793e4e79e7651c00b476244a7b6",
+            "location": {
+                "js": "templates-zero/veed/tools/create-avatar-video-request-from-audio/8293a6d86a534276ad5f0ed81bef30abb2b69793e4e79e7651c00b476244a7b6.cjs",
+                "ts": "templates-zero/veed/tools/create-avatar-video-request-from-audio/8293a6d86a534276ad5f0ed81bef30abb2b69793e4e79e7651c00b476244a7b6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-avatar-video-request-from-text",
+            "integrationId": "veed",
+            "description": "Submit a script and a preset avatar for asynchronous video generation. Returns a request identifier rather than waiting for a finished video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createavatarvideorequestfromtext",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createavatarvideorequestfromtext",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createavatarvideorequestfromtext": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Ordinary Unicode script to speak. Whitespace and line breaks are preserved; no caller encoding is required."
+                            },
+                            "avatarId": {
+                                "type": "string",
+                                "enum": [
+                                    "emily_vertical_primary",
+                                    "emily_vertical_secondary",
+                                    "marcus_vertical_primary",
+                                    "marcus_vertical_secondary",
+                                    "mira_vertical_primary",
+                                    "mira_vertical_secondary",
+                                    "jasmine_vertical_primary",
+                                    "jasmine_vertical_secondary",
+                                    "jasmine_vertical_walking",
+                                    "aisha_vertical_walking",
+                                    "elena_vertical_primary",
+                                    "elena_vertical_secondary",
+                                    "any_male_vertical_primary",
+                                    "any_female_vertical_primary",
+                                    "any_male_vertical_secondary",
+                                    "any_female_vertical_secondary",
+                                    "any_female_vertical_walking",
+                                    "emily_primary",
+                                    "emily_side",
+                                    "marcus_primary",
+                                    "marcus_side",
+                                    "aisha_walking",
+                                    "elena_primary",
+                                    "elena_side",
+                                    "any_male_primary",
+                                    "any_female_primary",
+                                    "any_male_side",
+                                    "any_female_side"
+                                ],
+                                "description": "Preset avatar and framing selection; any_* choices delegate avatar selection within the indicated category."
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "avatarId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A written script and preset avatar to submit for asynchronous video generation."
+                    },
+                    "FunctionOutput_veed_createavatarvideorequestfromtext": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque avatar video request handle including routing context; pass unchanged to inspection or cancellation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "State acknowledged at submission; does not establish that a usable video has been retrieved."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position if supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission acknowledgment and an opaque handle for later inspection or cancellation."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for a preset avatar speaking a written script. Use `create-avatar-video-request-from-audio` for recorded speech or `create-talking-video-request-from-text` for your own image. Save the returned id for `get-avatar-video-request` or `cancel-avatar-video-request`. Repeating submission can create another billable request."
+            },
+            "filePath": "./veed/tools/create-avatar-video-request-from-text.ts",
+            "version": "50bf8f40be7f42de0e70f64faa00b934793da5ba60b2bfb10f0f4cc2ca1bb902",
+            "location": {
+                "js": "templates-zero/veed/tools/create-avatar-video-request-from-text/50bf8f40be7f42de0e70f64faa00b934793da5ba60b2bfb10f0f4cc2ca1bb902.cjs",
+                "ts": "templates-zero/veed/tools/create-avatar-video-request-from-text/50bf8f40be7f42de0e70f64faa00b934793da5ba60b2bfb10f0f4cc2ca1bb902.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-background-removal-request",
+            "integrationId": "veed",
+            "description": "Submit a video for standard, fast, or green-screen background removal, preserving output codec and applicable extraction controls. Returns a processing request rather than waiting for the processed files.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createbackgroundremovalrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createbackgroundremovalrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createbackgroundremovalrequest": {
+                        "type": "object",
+                        "properties": {
+                            "mode": {
+                                "description": "Extraction route. standard and fast use general foreground extraction; greenScreen selects the green-screen removal route. Omission selects standard.",
+                                "default": "standard",
+                                "type": "string",
+                                "enum": [
+                                    "standard",
+                                    "fast",
+                                    "greenScreen"
+                                ]
+                            },
+                            "videoUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible URL of the source video whose background should be removed."
+                            },
+                            "outputCodec": {
+                                "description": "vp9 returns a single video with alpha; h264 returns separate RGB and alpha videos and is recommended by the provider for better RGB quality. Omission selects vp9.",
+                                "default": "vp9",
+                                "type": "string",
+                                "enum": [
+                                    "vp9",
+                                    "h264"
+                                ]
+                            },
+                            "subjectIsPerson": {
+                                "description": "For standard or fast mode only: whether the foreground subject is a person. Omission selects true; false supports non-person subjects.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "refineForegroundEdges": {
+                                "description": "For standard or fast mode only: improve the extracted foreground's edges. Omission selects true.",
+                                "default": true,
+                                "type": "boolean"
+                            },
+                            "spillSuppressionStrength": {
+                                "description": "For greenScreen mode only: strength from 0 through 1. Increase for remaining green spots and decrease for unwanted subject color changes. Omission uses 0.8; explicit null is forwarded without assigning additional meaning.",
+                                "default": 0.8,
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "videoUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Source video, extraction mode, output codec, and applicable foreground extraction controls.",
+                        "allOf": [
+                            {
+                                "if": {
+                                    "required": [
+                                        "mode"
+                                    ],
+                                    "properties": {
+                                        "mode": {
+                                            "const": "greenScreen"
+                                        }
+                                    }
+                                },
+                                "else": {
+                                    "not": {
+                                        "required": [
+                                            "spillSuppressionStrength"
+                                        ],
+                                        "properties": {
+                                            "spillSuppressionStrength": true
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "not": {
+                                        "anyOf": [
+                                            {
+                                                "required": [
+                                                    "subjectIsPerson"
+                                                ],
+                                                "properties": {
+                                                    "subjectIsPerson": true
+                                                }
+                                            },
+                                            {
+                                                "required": [
+                                                    "refineForegroundEdges"
+                                                ],
+                                                "properties": {
+                                                    "refineForegroundEdges": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "FunctionOutput_veed_createbackgroundremovalrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque request identifier to retain for later status, result, or cancellation calls."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "processing",
+                                    "completed"
+                                ],
+                                "description": "Provider-reported request state at submission, not the processed files."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-reported queue position when present, without an assumed index base; omitted if unavailable.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Selected processing route; pass unchanged along with id to related tools."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Asynchronous background removal acknowledgment for subsequent status, result, or cancellation calls."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to extract a video's foreground. Select standard or fast for general extraction, or greenScreen for green-screen footage. VP9 produces a single alpha-channel video; H264 produces separate RGB and alpha videos. Have a provider-accessible video URL. Save id and processingType, then use `get-video-processing-request` for progress, `get-video-processing-result` for files, or `cancel-video-processing-request`. Submission may start billable work and repeating it may create another request."
+            },
+            "filePath": "./veed/tools/create-background-removal-request.ts",
+            "version": "fe141f6665e2958db9d46eaef3780dd37e01492338c77410fcc60b377a424837",
+            "location": {
+                "js": "templates-zero/veed/tools/create-background-removal-request/fe141f6665e2958db9d46eaef3780dd37e01492338c77410fcc60b377a424837.cjs",
+                "ts": "templates-zero/veed/tools/create-background-removal-request/fe141f6665e2958db9d46eaef3780dd37e01492338c77410fcc60b377a424837.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-lipsync-request",
+            "integrationId": "veed",
+            "description": "Submit a source video and a new audio track for lip-syncing. Returns a processing request, not a finished video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createlipsyncrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createlipsyncrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createlipsyncrequest": {
+                        "type": "object",
+                        "properties": {
+                            "audioUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible URL of the new audio track to articulate."
+                            },
+                            "videoUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible URL of the source video whose lip movements will be changed."
+                            }
+                        },
+                        "required": [
+                            "audioUrl",
+                            "videoUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Source video and replacement audio URLs for a new lip-sync processing request."
+                    },
+                    "FunctionOutput_veed_createlipsyncrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque processing request identifier; retain it for status, result, and cancellation calls."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "processing",
+                                    "completed"
+                                ],
+                                "description": "Provider-reported state at submission; completed does not itself include the output file."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-reported queue position when available; omitted if absent. No zero- or one-based interpretation is added.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "const": "lipsync",
+                                "description": "Processing route to use with this request's identifier in related tools."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledged lip-sync processing request, without the finished video."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this when a video's speaker should articulate a new audio track. Have provider-accessible video and audio URLs ready. Save the returned id and processingType. Use `get-video-processing-request` to check progress, `get-video-processing-result` for the finished video, or `cancel-video-processing-request` to attempt cancellation. Submission can start billable work; repeating it can create another request."
+            },
+            "filePath": "./veed/tools/create-lipsync-request.ts",
+            "version": "f1540cf4b1783232b50b812ff2055ac6c6a9fc03bfe8839c6f5fac0c4602f41f",
+            "location": {
+                "js": "templates-zero/veed/tools/create-lipsync-request/f1540cf4b1783232b50b812ff2055ac6c6a9fc03bfe8839c6f5fac0c4602f41f.cjs",
+                "ts": "templates-zero/veed/tools/create-lipsync-request/f1540cf4b1783232b50b812ff2055ac6c6a9fc03bfe8839c6f5fac0c4602f41f.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-subtitle-request",
+            "integrationId": "veed",
+            "description": "Submit a video for styled subtitle rendering, using automatic transcription or supplied SRT subtitles, with optional translation and style overrides. Returns a processing request rather than waiting for the rendered video.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createsubtitlerequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createsubtitlerequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createsubtitlerequest": {
+                        "type": "object",
+                        "properties": {
+                            "videoUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible URL of the video to render subtitles onto."
+                            },
+                            "preset": {
+                                "type": "string",
+                                "enum": [
+                                    "glass",
+                                    "whisper",
+                                    "glide2",
+                                    "fusion",
+                                    "glide",
+                                    "terminal",
+                                    "handwritten",
+                                    "backdrop",
+                                    "backdrop2",
+                                    "simple",
+                                    "plain",
+                                    "beans",
+                                    "corpo",
+                                    "boo",
+                                    "shadeplay",
+                                    "casper",
+                                    "capri",
+                                    "lowkey",
+                                    "vinta",
+                                    "diego",
+                                    "ali",
+                                    "slay",
+                                    "kitty",
+                                    "hustle",
+                                    "karl",
+                                    "sprout",
+                                    "flex",
+                                    "mint",
+                                    "rizz",
+                                    "vegas"
+                                ],
+                                "description": "Style controlling fonts, colors, layout, and animation. Dynamic presets glass, whisper, glide2, fusion, glide, terminal, handwritten, backdrop, and backdrop2 have a 2x pricing multiplier; all other listed presets are basic at 1x. No default is chosen."
+                            },
+                            "srtText": {
+                                "description": "Ordinary SRT text, including cue numbers and relative timecodes. Skips transcription; mutually exclusive with srtFileUrl. Text is not base64-encoded.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "srtFileUrl": {
+                                "description": "Provider-accessible URL of an SRT file. Skips transcription; mutually exclusive with srtText.",
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri"
+                            },
+                            "vocabulary": {
+                                "description": "Correct spellings and common transcription mistakes. Used only for automatic transcription; ignored with supplied SRT. An empty array supplies no corrections.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "word": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 100,
+                                            "description": "Correct spelling of a brand, product, or domain-specific term."
+                                        },
+                                        "replaces": {
+                                            "minItems": 1,
+                                            "maxItems": 20,
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 100,
+                                                "description": "A misspelling to replace with the correct word."
+                                            },
+                                            "description": "Misspellings replaced by word, using whole-word case-insensitive matching. No need to enumerate casing variants."
+                                        }
+                                    },
+                                    "required": [
+                                        "word",
+                                        "replaces"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A correct spelling and the transcription mistakes it replaces."
+                                }
+                            },
+                            "customization": {
+                                "description": "Optional style overrides. Omitted fields retain preset defaults; an empty object changes no preset settings.",
+                                "type": "object",
+                                "properties": {
+                                    "shadow": {
+                                        "description": "Shadow intensity for readability; none explicitly disables shadow and omission retains the preset.",
+                                        "type": "string",
+                                        "enum": [
+                                            "none",
+                                            "min",
+                                            "mid",
+                                            "max"
+                                        ]
+                                    },
+                                    "position": {
+                                        "description": "Vertical placement of static subtitles; omit to retain preset placement.",
+                                        "type": "string",
+                                        "enum": [
+                                            "top",
+                                            "center",
+                                            "bottom"
+                                        ]
+                                    },
+                                    "textCustomizations": {
+                                        "description": "Overrides by word-importance tier; omitted tiers keep preset styling.",
+                                        "type": "object",
+                                        "properties": {
+                                            "baseline": {
+                                                "description": "Styling applied to every transcript word before per-word emphasis.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "font": {
+                                                        "description": "Supported Google Font name. Unsupported fonts are rejected by the provider; omission keeps the preset font.",
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    },
+                                                    "color": {
+                                                        "description": "Text color as a three- or six-digit hexadecimal color with a leading #; omit for preset color.",
+                                                        "type": "string",
+                                                        "pattern": "^#([0-9A-Fa-f]{3}){1,2}$"
+                                                    },
+                                                    "weight": {
+                                                        "description": "Font weight from 100 through 900; values at least 700 render as bold.",
+                                                        "type": "integer",
+                                                        "minimum": 100,
+                                                        "maximum": 900
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "highlighted": {
+                                                "description": "Styling for automatically selected noteworthy words, such as key nouns and verbs.",
+                                                "type": "object",
+                                                "properties": {
+                                                    "font": {
+                                                        "description": "Supported Google Font name. Unsupported fonts are rejected by the provider; omission keeps the preset font.",
+                                                        "type": "string",
+                                                        "minLength": 1
+                                                    },
+                                                    "color": {
+                                                        "description": "Text color as a three- or six-digit hexadecimal color with a leading #; omit for preset color.",
+                                                        "type": "string",
+                                                        "pattern": "^#([0-9A-Fa-f]{3}){1,2}$"
+                                                    },
+                                                    "weight": {
+                                                        "description": "Font weight from 100 through 900; values at least 700 render as bold.",
+                                                        "type": "integer",
+                                                        "minimum": 100,
+                                                        "maximum": 900
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "sourceLanguage": {
+                                "description": "Language of the source audio, or supplied SRT when translating. Improves transcription accuracy; omission leaves selection to the provider. Not the output language.",
+                                "type": "string",
+                                "enum": [
+                                    "af-ZA",
+                                    "am-ET",
+                                    "ar-AE",
+                                    "ar-BH",
+                                    "ar-DZ",
+                                    "ar-EG",
+                                    "ar-IL",
+                                    "ar-IQ",
+                                    "ar-JO",
+                                    "ar-KW",
+                                    "ar-LB",
+                                    "ar-MA",
+                                    "ar-OM",
+                                    "ar-PS",
+                                    "ar-QA",
+                                    "ar-SA",
+                                    "ar-TN",
+                                    "ast-ES",
+                                    "az-AZ",
+                                    "ba",
+                                    "bas",
+                                    "be-BY",
+                                    "bg-BG",
+                                    "br",
+                                    "bs-BA",
+                                    "ca-ES",
+                                    "ceb-PH",
+                                    "ckb-IQ",
+                                    "cs-CZ",
+                                    "cy-GB",
+                                    "da-DK",
+                                    "de-DE",
+                                    "dyu",
+                                    "el-GR",
+                                    "en-AU",
+                                    "en-GB",
+                                    "en-IN",
+                                    "en-NZ",
+                                    "en-US",
+                                    "eo",
+                                    "es-AR",
+                                    "es-BO",
+                                    "es-CL",
+                                    "es-CO",
+                                    "es-CR",
+                                    "es-DO",
+                                    "es-EC",
+                                    "es-ES",
+                                    "es-GT",
+                                    "es-HN",
+                                    "es-MX",
+                                    "es-NI",
+                                    "es-PA",
+                                    "es-PE",
+                                    "es-PR",
+                                    "es-PY",
+                                    "es-SV",
+                                    "es-US",
+                                    "es-UY",
+                                    "es-VE",
+                                    "et-EE",
+                                    "eu-ES",
+                                    "fa-IR",
+                                    "ff",
+                                    "fi-FI",
+                                    "fil-PH",
+                                    "fo",
+                                    "fr-CA",
+                                    "fr-FR",
+                                    "fy",
+                                    "ga",
+                                    "gd",
+                                    "gl-ES",
+                                    "ha-NG",
+                                    "haw",
+                                    "he-IL",
+                                    "hr-HR",
+                                    "hsb",
+                                    "ht",
+                                    "hu-HU",
+                                    "hy-AM",
+                                    "id-ID",
+                                    "ig",
+                                    "is-IS",
+                                    "it-IT",
+                                    "ja-JP",
+                                    "ja-Latn-JP",
+                                    "jv-ID",
+                                    "ka-GE",
+                                    "kab",
+                                    "kam-KE",
+                                    "kea-CV",
+                                    "kk-KZ",
+                                    "ko-KR",
+                                    "ku",
+                                    "ky-KG",
+                                    "la",
+                                    "lb-LU",
+                                    "lg",
+                                    "lij",
+                                    "ln-CD",
+                                    "lo-LA",
+                                    "lt-LT",
+                                    "luo-KE",
+                                    "lv-LV",
+                                    "mg",
+                                    "mi-NZ",
+                                    "mk-MK",
+                                    "mn-MN",
+                                    "ms-MY",
+                                    "mt-MT",
+                                    "nb-NO",
+                                    "nl-NL",
+                                    "nso-ZA",
+                                    "ny-MW",
+                                    "oc-FR",
+                                    "pl-PL",
+                                    "ps-AF",
+                                    "pt-BR",
+                                    "pt-PT",
+                                    "ro-RO",
+                                    "roh",
+                                    "ru-RU",
+                                    "rw-RW",
+                                    "sah",
+                                    "sk-SK",
+                                    "sl-SI",
+                                    "sm",
+                                    "sn-ZW",
+                                    "so-SO",
+                                    "sq-AL",
+                                    "sr-Latn-RS",
+                                    "sr-RS",
+                                    "srd",
+                                    "ss",
+                                    "su-ID",
+                                    "sv-SE",
+                                    "sw-KE",
+                                    "sw-TZ",
+                                    "tg-TJ",
+                                    "th-TH",
+                                    "tk",
+                                    "tn",
+                                    "tok",
+                                    "ton",
+                                    "tr-TR",
+                                    "ts-ZA",
+                                    "tt",
+                                    "uk-UA",
+                                    "umb-AO",
+                                    "ur-IN",
+                                    "ur-PK",
+                                    "uz-UZ",
+                                    "vi-VN",
+                                    "vro",
+                                    "wo-SN",
+                                    "xh-ZA",
+                                    "yi",
+                                    "yo-NG",
+                                    "yue-Hant-HK",
+                                    "zh",
+                                    "zh-HK",
+                                    "zh-TW",
+                                    "zu-ZA"
+                                ]
+                            },
+                            "translationLanguage": {
+                                "description": "Target subtitle language; omit to keep the original language. For supplied SRT, also specify sourceLanguage for reliable translation.",
+                                "type": "string",
+                                "enum": [
+                                    "ab",
+                                    "ace",
+                                    "ach",
+                                    "af-ZA",
+                                    "ak",
+                                    "alz",
+                                    "am-ET",
+                                    "ar-AE",
+                                    "ar-BH",
+                                    "ar-DZ",
+                                    "ar-EG",
+                                    "ar-IL",
+                                    "ar-IQ",
+                                    "ar-JO",
+                                    "ar-KW",
+                                    "ar-LB",
+                                    "ar-MA",
+                                    "ar-OM",
+                                    "ar-PS",
+                                    "ar-QA",
+                                    "ar-SA",
+                                    "ar-TN",
+                                    "awa",
+                                    "ay",
+                                    "az-AZ",
+                                    "ban",
+                                    "bbc",
+                                    "be-BY",
+                                    "bem",
+                                    "bew",
+                                    "bg-BG",
+                                    "bho",
+                                    "bik",
+                                    "bm",
+                                    "bs-BA",
+                                    "bts",
+                                    "btx",
+                                    "bua",
+                                    "ca-ES",
+                                    "ceb-PH",
+                                    "cgg",
+                                    "chm",
+                                    "ckb-IQ",
+                                    "cnh",
+                                    "co",
+                                    "crh",
+                                    "crs",
+                                    "cs-CZ",
+                                    "cv",
+                                    "cy-GB",
+                                    "da-DK",
+                                    "de-DE",
+                                    "din",
+                                    "doi",
+                                    "dov",
+                                    "dv",
+                                    "dz",
+                                    "ee",
+                                    "el-GR",
+                                    "en-AU",
+                                    "en-GB",
+                                    "en-IN",
+                                    "en-NZ",
+                                    "en-US",
+                                    "eo",
+                                    "es-AR",
+                                    "es-BO",
+                                    "es-CL",
+                                    "es-CO",
+                                    "es-CR",
+                                    "es-DO",
+                                    "es-EC",
+                                    "es-ES",
+                                    "es-GT",
+                                    "es-HN",
+                                    "es-MX",
+                                    "es-NI",
+                                    "es-PA",
+                                    "es-PE",
+                                    "es-PR",
+                                    "es-PY",
+                                    "es-SV",
+                                    "es-US",
+                                    "es-UY",
+                                    "es-VE",
+                                    "et-EE",
+                                    "eu-ES",
+                                    "fa-IR",
+                                    "ff",
+                                    "fi-FI",
+                                    "fil-PH",
+                                    "fj",
+                                    "fr-CA",
+                                    "fr-FR",
+                                    "fy",
+                                    "ga",
+                                    "gaa",
+                                    "gd",
+                                    "gl-ES",
+                                    "gn",
+                                    "gom",
+                                    "ha-NG",
+                                    "haw",
+                                    "he-IL",
+                                    "hil",
+                                    "hmn",
+                                    "hr-HR",
+                                    "hrx",
+                                    "ht",
+                                    "hu-HU",
+                                    "hy-AM",
+                                    "id-ID",
+                                    "ig",
+                                    "ilo",
+                                    "is-IS",
+                                    "it-IT",
+                                    "ja-JP",
+                                    "ja-Latn-JP",
+                                    "jv-ID",
+                                    "ka-GE",
+                                    "kk-KZ",
+                                    "ko-KR",
+                                    "kri",
+                                    "ktu",
+                                    "ku",
+                                    "ky-KG",
+                                    "la",
+                                    "lb-LU",
+                                    "lg",
+                                    "li",
+                                    "lij",
+                                    "lmo",
+                                    "ln-CD",
+                                    "lo-LA",
+                                    "lt-LT",
+                                    "ltg",
+                                    "luo-KE",
+                                    "lus",
+                                    "lv-LV",
+                                    "mai",
+                                    "mak",
+                                    "mg",
+                                    "mi-NZ",
+                                    "min",
+                                    "mk-MK",
+                                    "mn-MN",
+                                    "mni-Mtei",
+                                    "ms-Arab",
+                                    "ms-MY",
+                                    "mt-MT",
+                                    "nb-NO",
+                                    "new",
+                                    "nl-NL",
+                                    "nr",
+                                    "nso-ZA",
+                                    "nus",
+                                    "ny-MW",
+                                    "oc-FR",
+                                    "om",
+                                    "pag",
+                                    "pam",
+                                    "pap",
+                                    "pl-PL",
+                                    "ps-AF",
+                                    "pt-BR",
+                                    "pt-PT",
+                                    "qu",
+                                    "rn",
+                                    "ro-RO",
+                                    "rom",
+                                    "ru-RU",
+                                    "rw-RW",
+                                    "scn",
+                                    "sg",
+                                    "shn",
+                                    "sk-SK",
+                                    "sl-SI",
+                                    "sm",
+                                    "sn-ZW",
+                                    "so-SO",
+                                    "sq-AL",
+                                    "sr-Latn-RS",
+                                    "sr-RS",
+                                    "ss",
+                                    "st",
+                                    "su-ID",
+                                    "sv-SE",
+                                    "sw-KE",
+                                    "sw-TZ",
+                                    "szl",
+                                    "tet",
+                                    "tg-TJ",
+                                    "th-TH",
+                                    "ti",
+                                    "tk",
+                                    "tn",
+                                    "tr-TR",
+                                    "ts-ZA",
+                                    "tt",
+                                    "ug",
+                                    "uk-UA",
+                                    "ur-IN",
+                                    "ur-PK",
+                                    "uz-UZ",
+                                    "vi-VN",
+                                    "xh-ZA",
+                                    "yi",
+                                    "yo-NG",
+                                    "yua",
+                                    "yue-Hant-HK",
+                                    "zh",
+                                    "zh-HK",
+                                    "zh-TW",
+                                    "zu-ZA"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "videoUrl",
+                            "preset"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Video, subtitle source, language choices, and preset overrides for one subtitle render.",
+                        "not": {
+                            "required": [
+                                "srtText",
+                                "srtFileUrl"
+                            ],
+                            "properties": {
+                                "srtText": true,
+                                "srtFileUrl": true
+                            }
+                        }
+                    },
+                    "FunctionOutput_veed_createsubtitlerequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque subtitle-processing request identifier to use with related request tools."
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "const": "subtitles",
+                                "description": "Processing route for this request; pass it unchanged to related tools."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "processing",
+                                    "completed"
+                                ],
+                                "description": "Provider-reported submission state; the completed file is obtained separately."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-reported queue position if available, without assuming its index base; omitted if absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "processingType",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of a subtitle-processing request, without waiting for the rendered video."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to render subtitles onto a video, including translation or supplied SRT. Have a provider-accessible video URL and select a preset. Dynamic presets cost 2x versus basic presets at 1x. Supply at most one SRT source; otherwise the provider transcribes the audio. Source language is not the translation target. Save id and processingType, then use `get-video-processing-request`, `get-video-processing-result`, or `cancel-video-processing-request`. Repeating submission may create and charge for another render."
+            },
+            "filePath": "./veed/tools/create-subtitle-request.ts",
+            "version": "40260aa1ad168f858be684fe1a818e013827af921d02d61f362fad716367f40e",
+            "location": {
+                "js": "templates-zero/veed/tools/create-subtitle-request/40260aa1ad168f858be684fe1a818e013827af921d02d61f362fad716367f40e.cjs",
+                "ts": "templates-zero/veed/tools/create-subtitle-request/40260aa1ad168f858be684fe1a818e013827af921d02d61f362fad716367f40e.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-talking-video-request-from-audio",
+            "integrationId": "veed",
+            "description": "Submit a still image and speech audio for asynchronous talking-video generation with standard or fast processing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createtalkingvideorequestfromaudio",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createtalkingvideorequestfromaudio",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createtalkingvideorequestfromaudio": {
+                        "type": "object",
+                        "properties": {
+                            "audioUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible speech audio URL driving the animation."
+                            },
+                            "imageUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible still-image URL supplying the subject to animate."
+                            },
+                            "resolution": {
+                                "type": "string",
+                                "enum": [
+                                    "720p",
+                                    "480p"
+                                ],
+                                "description": "Requested video resolution; required so the caller chooses the output setting."
+                            },
+                            "processingMode": {
+                                "description": "Generation variant. Standard uses the base model; fast selects the separately exposed fast variant. No numeric speed or quality guarantee is implied.",
+                                "type": "string",
+                                "enum": [
+                                    "standard",
+                                    "fast"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "audioUrl",
+                            "imageUrl",
+                            "resolution"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Still image, speech audio, resolution, and optional processing variant for a new talking-video request."
+                    },
+                    "FunctionOutput_veed_createtalkingvideorequestfromaudio": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque talking-video request handle including standard/fast routing context; pass unchanged to inspection or cancellation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Provider state acknowledged at submission, not retrieved media."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position when supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Asynchronous talking-video submission acknowledgment with a route-aware request handle."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this for animating your own image to recorded speech. Use `create-avatar-video-request-from-audio` for a preset avatar or `create-talking-video-request-from-text` for a script. Choose resolution and optionally the fast variant. Save id for `get-talking-video-request` or `cancel-talking-video-request`. Submission does not wait for generation; repeating it can create another billable request."
+            },
+            "filePath": "./veed/tools/create-talking-video-request-from-audio.ts",
+            "version": "472ac53ee369d882ab8fdd04106cc4c9cbee142a51481d8a87432b28402d2c45",
+            "location": {
+                "js": "templates-zero/veed/tools/create-talking-video-request-from-audio/472ac53ee369d882ab8fdd04106cc4c9cbee142a51481d8a87432b28402d2c45.cjs",
+                "ts": "templates-zero/veed/tools/create-talking-video-request-from-audio/472ac53ee369d882ab8fdd04106cc4c9cbee142a51481d8a87432b28402d2c45.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-talking-video-request-from-text",
+            "integrationId": "veed",
+            "description": "Submit an image and script for asynchronous talking-video generation, optionally supplementing the image-derived voice with written voice direction.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createtalkingvideorequestfromtext",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createtalkingvideorequestfromtext",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createtalkingvideorequestfromtext": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2000,
+                                "description": "Ordinary Unicode script to speak, 1–2000 characters. Whitespace and newlines are preserved."
+                            },
+                            "imageUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2083,
+                                "format": "uri",
+                                "description": "Provider-accessible still-image URL used as the animated subject and the basis for the automatically generated primary voice description."
+                            },
+                            "resolution": {
+                                "type": "string",
+                                "enum": [
+                                    "720p",
+                                    "480p"
+                                ],
+                                "description": "Requested output resolution; required so the caller controls this setting."
+                            },
+                            "voiceDescription": {
+                                "description": "Optional supplemental voice direction, such as British accent or Confident. The primary description is generated from the image. Omission delegates without adding a description; null and empty string are passed distinctly.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "text",
+                            "imageUrl",
+                            "resolution"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Image, script, resolution, and optional supplemental voice direction for asynchronous talking-video generation."
+                    },
+                    "FunctionOutput_veed_createtalkingvideorequestfromtext": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque upstream text-driven talking-video request identifier. Use only with the text-driven request lifecycle operations, not standard/fast audio-driven handles."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Provider state acknowledged at submission; no completed media is returned here."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position if supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Submission acknowledgment for a text-driven talking-video request, without rendered media."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to animate your own image speaking a script of 1–2000 characters. Use `create-talking-video-request-from-audio` for recorded speech or `create-avatar-video-request-from-text` for a preset avatar. Save the returned id for the text-driven request status, result, or cancellation tools. This returns a submission acknowledgment, not a completed render; repeated submission may create another billable request."
+            },
+            "filePath": "./veed/tools/create-talking-video-request-from-text.ts",
+            "version": "0d31c1d477a76b077d39f8b285afbe8921b8185d5ba175e728a54fcc6454d9d6",
+            "location": {
+                "js": "templates-zero/veed/tools/create-talking-video-request-from-text/0d31c1d477a76b077d39f8b285afbe8921b8185d5ba175e728a54fcc6454d9d6.cjs",
+                "ts": "templates-zero/veed/tools/create-talking-video-request-from-text/0d31c1d477a76b077d39f8b285afbe8921b8185d5ba175e728a54fcc6454d9d6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-video-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Submit a video for audio denoising while copying its picture unchanged. The generated video contains cleaned mono audio.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_createvideoaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_createvideoaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_createvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "strength": {
+                                "description": "Suppression strength, default 0.874. Lower retains more room tone under speech; silence between words is always fully cleaned.",
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "videoUrl": {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri",
+                                "description": "Public URL or data URI of mp4, mov, mkv, or webm containing h264, hevc, av1, mpeg4, vp8, or vp9 video and an audio track. First audio track is used. Maximum 30 minutes of audio and 2 GB."
+                            },
+                            "targetLufs": {
+                                "description": "Integrated output loudness in LUFS (ITU-R BS.1770), default -19; explicit null skips loudness normalization. Normalized true peak is capped at -1.1 dBTP.",
+                                "anyOf": [
+                                    {
+                                        "type": "number",
+                                        "minimum": -40,
+                                        "maximum": -8
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "videoUrl"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Video source and optional noise suppression and loudness settings for an asynchronous cleanup request."
+                    },
+                    "FunctionOutput_veed_createvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque video audio cleanup request identifier for inspection and cancellation."
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Provider state acknowledged at submission, not a retrieved video result."
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position when supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Acknowledgment of the submitted video audio cleanup request without waiting for its result."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this to retain a video's picture while cleaning its first audio track. Use `create-audio-cleanup-request` when only audio is wanted. Inputs support mp4/mov/mkv/webm and documented codecs, up to 30 minutes of audio and 2 GB. Save id for `get-video-audio-cleanup-request` or `cancel-video-audio-cleanup-request`. Submission returns before processing finishes; repeated submission can incur another charge."
+            },
+            "filePath": "./veed/tools/create-video-audio-cleanup-request.ts",
+            "version": "84e0fc87fc20e853f16e0a1c39f94c984993bb73915f13d63133115d4891abc1",
+            "location": {
+                "js": "templates-zero/veed/tools/create-video-audio-cleanup-request/84e0fc87fc20e853f16e0a1c39f94c984993bb73915f13d63133115d4891abc1.cjs",
+                "ts": "templates-zero/veed/tools/create-video-audio-cleanup-request/84e0fc87fc20e853f16e0a1c39f94c984993bb73915f13d63133115d4891abc1.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Inspect an audio cleanup request and retrieve its cleaned audio file and input duration when completed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_getaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_getaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_getaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque request identifier returned by create-audio-cleanup-request."
+                            },
+                            "includeLogs": {
+                                "description": "Request diagnostic logs; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Audio cleanup request to inspect and optional diagnostic log selection."
+                    },
+                    "FunctionOutput_veed_getaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque audio cleanup request identifier."
+                            },
+                            "logs": {
+                                "description": "Opaque provider diagnostic JSON entries if supplied; omitted otherwise.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "audio": {
+                                "description": "Cleaned 48 kHz mono 16-bit audio, with the input duration; present only on successful completion.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "description": "Provider download URL for the cleaned audio; retention is not guaranteed."
+                                    },
+                                    "fileName": {
+                                        "description": "Provider filename; explicit null retained and absence omitted.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "contentType": {
+                                        "description": "Provider MIME type; explicit null retained and absence omitted.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "fileSizeBytes": {
+                                        "description": "File size in bytes; explicit null retained and absence omitted.",
+                                        "anyOf": [
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "url"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Current provider state; completed results include audio and audioDurationSeconds."
+                            },
+                            "metrics": {
+                                "description": "Provider metric names and JSON values with no assumed units; omitted if absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position when supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "audioDurationSeconds": {
+                                "description": "Input recording duration in seconds, without billing rounding; present only with the completed result.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current cleanup state, provider diagnostics, and cleaned audio when successfully completed."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Pass the id from `create-audio-cleanup-request` as requestId. Queued/running requests return promptly without a file; inspect again later. A completed result includes audio.url and audioDurationSeconds. Use `cancel-audio-cleanup-request` to attempt to stop pending work."
+            },
+            "filePath": "./veed/tools/get-audio-cleanup-request.ts",
+            "version": "3c41a1a74ffa3777c30624038beb9b69b32a9c6458f9783146d1e0d37cbbf82c",
+            "location": {
+                "js": "templates-zero/veed/tools/get-audio-cleanup-request/3c41a1a74ffa3777c30624038beb9b69b32a9c6458f9783146d1e0d37cbbf82c.cjs",
+                "ts": "templates-zero/veed/tools/get-audio-cleanup-request/3c41a1a74ffa3777c30624038beb9b69b32a9c6458f9783146d1e0d37cbbf82c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-avatar-video-request",
+            "integrationId": "veed",
+            "description": "Get the current state of an audio- or text-driven preset-avatar request, including the generated video when completed.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_getavatarvideorequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_getavatarvideorequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_getavatarvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque handle returned by either avatar video request creation tool; pass unchanged."
+                            },
+                            "includeLogs": {
+                                "description": "Whether to request diagnostic logs; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Look up one preset-avatar video request, optionally requesting diagnostic logs."
+                    },
+                    "FunctionOutput_veed_getavatarvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The same opaque avatar video request handle used for this lookup."
+                            },
+                            "logs": {
+                                "description": "Opaque provider diagnostic entries, preserved as JSON when supplied; omitted when absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "video": {
+                                "description": "Generated video file, present on successful completion only.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "description": "Provider download URL; no expiry or permanence guarantee is implied."
+                                    },
+                                    "fileName": {
+                                        "description": "Provider filename, retaining explicit null; omitted if absent.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "contentType": {
+                                        "description": "Provider MIME type, retaining explicit null; omitted if absent.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "fileSizeBytes": {
+                                        "description": "File size in bytes, retaining explicit null; omitted if absent.",
+                                        "anyOf": [
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "url"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Current provider request state. video is present only after the completed result is retrieved."
+                            },
+                            "metrics": {
+                                "description": "Provider metric names and JSON values, without assumed units; omitted when absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position when supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current avatar request state and, on successful completion, the generated video metadata."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an id returned by `create-avatar-video-request-from-audio` or `create-avatar-video-request-from-text` as requestId. This returns promptly: if queued or running, inspect it again later; if completed, use video.url. Use `cancel-avatar-video-request` to stop pending work. Enable logs only when diagnostics are useful."
+            },
+            "filePath": "./veed/tools/get-avatar-video-request.ts",
+            "version": "048713aba1e7da30bea7cdc3227d4ba04c1766dfe9fda6645bdaf2694d641732",
+            "location": {
+                "js": "templates-zero/veed/tools/get-avatar-video-request/048713aba1e7da30bea7cdc3227d4ba04c1766dfe9fda6645bdaf2694d641732.cjs",
+                "ts": "templates-zero/veed/tools/get-avatar-video-request/048713aba1e7da30bea7cdc3227d4ba04c1766dfe9fda6645bdaf2694d641732.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-talking-video-request",
+            "integrationId": "veed",
+            "description": "Inspect an image-and-audio talking-video request, returning its generated video when completed. Supports standard and fast generation handles.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_gettalkingvideorequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_gettalkingvideorequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_gettalkingvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque standard/fast talking-video handle returned by create-talking-video-request-from-audio; pass unchanged."
+                            },
+                            "includeLogs": {
+                                "description": "Request provider diagnostic logs; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Inspect one image-and-audio talking-video request using its opaque handle."
+                    },
+                    "FunctionOutput_veed_gettalkingvideorequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The same opaque talking-video handle used for lookup."
+                            },
+                            "logs": {
+                                "description": "Opaque provider diagnostic JSON entries if supplied; omitted otherwise.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "video": {
+                                "description": "Generated video file, present only on successful completion.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "description": "Provider download URL; retention and expiry are not guaranteed."
+                                    },
+                                    "fileName": {
+                                        "description": "Provider filename; explicit null retained, absence omitted.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "contentType": {
+                                        "description": "Provider MIME type; explicit null retained, absence omitted.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "fileSizeBytes": {
+                                        "description": "File size in bytes; explicit null retained, absence omitted.",
+                                        "anyOf": [
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "url"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Current provider request state; video appears only on successfully retrieved completion."
+                            },
+                            "metrics": {
+                                "description": "Provider metric names and JSON values without inferred units; omitted otherwise.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position when supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current talking-video state and the generated video when successfully retrieved."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Pass an id from `create-talking-video-request-from-audio` as requestId; its handle remembers standard versus fast mode. Queued/running requests return promptly; inspect them later. Completed results include video.url. Use `cancel-talking-video-request` for pending work. Text-driven requests use their text-specific request inspection tools instead."
+            },
+            "filePath": "./veed/tools/get-talking-video-request.ts",
+            "version": "bfe80e91fe423c11ddc6192c40a5522b614988eb07877c8865f85d6003c3d3ef",
+            "location": {
+                "js": "templates-zero/veed/tools/get-talking-video-request/bfe80e91fe423c11ddc6192c40a5522b614988eb07877c8865f85d6003c3d3ef.cjs",
+                "ts": "templates-zero/veed/tools/get-talking-video-request/bfe80e91fe423c11ddc6192c40a5522b614988eb07877c8865f85d6003c3d3ef.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-video-audio-cleanup-request",
+            "integrationId": "veed",
+            "description": "Inspect video audio cleanup state and retrieve the completed video and input audio duration.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_getvideoaudiocleanuprequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_getvideoaudiocleanuprequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_getvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier returned by create-video-audio-cleanup-request."
+                            },
+                            "includeLogs": {
+                                "description": "Whether to request diagnostic logs; defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "requestId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Inspect one video audio cleanup request, optionally requesting diagnostic logs."
+                    },
+                    "FunctionOutput_veed_getvideoaudiocleanuprequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque video audio cleanup request identifier."
+                            },
+                            "logs": {
+                                "description": "Opaque provider diagnostic JSON entries if supplied; omitted otherwise.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "video": {
+                                "description": "Completed video with unchanged picture and cleaned 48 kHz mono AAC (mp4) or Opus (webm) audio, same duration as the input.",
+                                "type": "object",
+                                "properties": {
+                                    "url": {
+                                        "type": "string",
+                                        "description": "Provider video download URL; permanence is not guaranteed."
+                                    },
+                                    "fileName": {
+                                        "description": "Provider filename, retaining explicit null; omitted if absent.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "contentType": {
+                                        "description": "Provider MIME type, retaining explicit null; omitted if absent.",
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "fileSizeBytes": {
+                                        "description": "File size in bytes, retaining explicit null; omitted if absent.",
+                                        "anyOf": [
+                                            {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                            },
+                                            {
+                                                "type": "null"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "url"
+                                ],
+                                "additionalProperties": false
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "running",
+                                    "completed"
+                                ],
+                                "description": "Current provider request state; completed successful results include video and audioDurationSeconds."
+                            },
+                            "metrics": {
+                                "description": "Provider metric names and JSON values without assumed units; omitted if absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "queuePosition": {
+                                "description": "Provider-defined queue position if supplied; omitted otherwise.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "audioDurationSeconds": {
+                                "description": "Input audio duration in seconds without billing rounding; present with the completed result.",
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current cleanup state and provider diagnostics, with video and source audio duration only after successful completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the id returned by `create-video-audio-cleanup-request`. Queued/running requests return without a video; inspect again later. Completed results include video.url. Use `cancel-video-audio-cleanup-request` to attempt to stop pending work. This tool does not download media bytes."
+            },
+            "filePath": "./veed/tools/get-video-audio-cleanup-request.ts",
+            "version": "9d499442d040ff912f0331287d62325a647adbbe80ee8ba464ccf56ce0bc614c",
+            "location": {
+                "js": "templates-zero/veed/tools/get-video-audio-cleanup-request/9d499442d040ff912f0331287d62325a647adbbe80ee8ba464ccf56ce0bc614c.cjs",
+                "ts": "templates-zero/veed/tools/get-video-audio-cleanup-request/9d499442d040ff912f0331287d62325a647adbbe80ee8ba464ccf56ce0bc614c.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-video-processing-request",
+            "integrationId": "veed",
+            "description": "Get the current state, queue position, and optional diagnostics for a known video-processing request. Supports Fabric text, lip-sync, subtitles, and all three background-removal routes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_getvideoprocessingrequest",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_getvideoprocessingrequest",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_getvideoprocessingrequest": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of a request created on the specified processing route and accessible to this connection."
+                            },
+                            "includeLogs": {
+                                "description": "Request diagnostic logs when true. Defaults to false; diagnostics are provider-defined and may be omitted.",
+                                "type": "boolean"
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Processing route that created this request; retain the value from submission. fabricText identifies the Fabric 1.0 text route."
+                            }
+                        },
+                        "required": [
+                            "requestId",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A known video-processing request, its original processing route, and an optional diagnostics choice."
+                    },
+                    "FunctionOutput_veed_getvideoprocessingrequest": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier returned by the provider for this request."
+                            },
+                            "logs": {
+                                "description": "Provider-defined diagnostic key/value data, preserved as JSON without interpreting undocumented fields; omitted when absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "queued",
+                                    "processing",
+                                    "completed"
+                                ],
+                                "description": "Current provider state: queued is IN_QUEUE, processing is IN_PROGRESS, and completed is COMPLETED. Failed or unavailable requests may instead return a tool error."
+                            },
+                            "metrics": {
+                                "description": "Provider-defined diagnostic metrics, preserved as JSON without inventing units or converting undocumented values; omitted when absent.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "queuePosition": {
+                                "description": "Provider-reported position when available, without an assumed index base; omitted when absent.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Route used for this read; retain for result and cancellation calls."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One current processing-status snapshot without result files or provider routing URLs."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a progress snapshot, not to wait for a render. Obtain the request id and processingType from submission or from your existing Fabric text request record. Keep the type paired with its id. When status is completed, use `get-video-processing-result` to obtain files; use `cancel-video-processing-request` to attempt stopping unwanted work. Each call makes a bounded status read and does not wait for completion."
+            },
+            "filePath": "./veed/tools/get-video-processing-request.ts",
+            "version": "4bf45854646ee5b6c614e799bda662b0d60888f8955752682cd75465c41bc944",
+            "location": {
+                "js": "templates-zero/veed/tools/get-video-processing-request/4bf45854646ee5b6c614e799bda662b0d60888f8955752682cd75465c41bc944.cjs",
+                "ts": "templates-zero/veed/tools/get-video-processing-request/4bf45854646ee5b6c614e799bda662b0d60888f8955752682cd75465c41bc944.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-video-processing-result",
+            "integrationId": "veed",
+            "description": "Get downloadable output-file metadata for a completed Fabric text, lip-sync, subtitle, or background-removal request. Retains every background-removal output file, including separate RGB and alpha outputs.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_veed_getvideoprocessingresult",
+            "output_schema_ref": "#/definitions/FunctionOutput_veed_getvideoprocessingresult",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_veed_getvideoprocessingresult": {
+                        "type": "object",
+                        "properties": {
+                            "requestId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Opaque identifier of the completed processing request, scoped to its original processing route."
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Route used when this request was submitted. fabricText identifies the Fabric 1.0 text route; other values match submission results."
+                            }
+                        },
+                        "required": [
+                            "requestId",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify a completed video processing request and its original processing route."
+                    },
+                    "FunctionOutput_veed_getvideoprocessingresult": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of the request whose result was retrieved."
+                            },
+                            "files": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Provider URL from which this output file can be downloaded; no lifetime or permanence guarantee is added."
+                                        },
+                                        "fileName": {
+                                            "description": "Provider-reported file name, preserved including null or an empty string; omitted when absent.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "contentType": {
+                                            "description": "Provider-reported MIME type, preserved verbatim even if unexpected; null is preserved and absence is omitted.",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "fileSizeBytes": {
+                                            "description": "Provider-reported size in bytes without rounding or unit conversion; null is preserved and absence is omitted.",
+                                            "anyOf": [
+                                                {
+                                                    "type": "integer",
+                                                    "minimum": -9007199254740991,
+                                                    "maximum": 9007199254740991
+                                                },
+                                                {
+                                                    "type": "null"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "url"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "Download URL and provider-reported metadata for one output file."
+                                },
+                                "description": "All output files in provider order. Single-video models return one element; background removal returns the provider's video array, without guessing RGB/alpha ordering."
+                            },
+                            "processingType": {
+                                "type": "string",
+                                "enum": [
+                                    "fabricText",
+                                    "lipsync",
+                                    "subtitles",
+                                    "backgroundRemoval",
+                                    "fastBackgroundRemoval",
+                                    "greenScreenRemoval"
+                                ],
+                                "description": "Processing route associated with these output files."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "files",
+                            "processingType"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Downloadable output-file metadata for the completed processing request; no media bytes are downloaded."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this after `get-video-processing-request` reports completed, or when you already know the request finished. Obtain requestId and processingType from submission or your existing Fabric text request record. This returns file URLs and metadata, not video bytes, and does not wait for unfinished processing. For progress use `get-video-processing-request`; to attempt stopping work use `cancel-video-processing-request`. Background removal can return more than one output; retain all files and their provider order."
+            },
+            "filePath": "./veed/tools/get-video-processing-result.ts",
+            "version": "3df31584e987277c658f0418d1d0d0c9750ec9be1077727304bb5325b360b341",
+            "location": {
+                "js": "templates-zero/veed/tools/get-video-processing-result/3df31584e987277c658f0418d1d0d0c9750ec9be1077727304bb5325b360b341.cjs",
+                "ts": "templates-zero/veed/tools/get-video-processing-result/3df31584e987277c658f0418d1d0d0c9750ec9be1077727304bb5325b360b341.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

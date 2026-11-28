@@ -1,0 +1,1754 @@
+{
+    "providerConfigKey": "microsoft-word-oauth2-cc",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Copy a Word document to a (possibly different) folder, optionally renaming it.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_copyworddocument",
+            "name": "copy-word-document",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_copyworddocument"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_copyworddocument",
+                "ActionOutput_microsoft_word_oauth2_cc_copyworddocument"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_copyworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the source document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the Word document to copy. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            },
+                            "name": {
+                                "description": "Optional new name for the copied document. If omitted and no destination is given, a unique name is generated automatically to avoid overwriting the source.",
+                                "type": "string"
+                            },
+                            "destinationDriveId": {
+                                "description": "Optional ID of the destination drive. Defaults to the source drive if omitted. If provided without destinationFolderId, the drive root is used.",
+                                "type": "string"
+                            },
+                            "destinationFolderId": {
+                                "description": "Optional ID of the destination folder. If omitted, the copy is placed in the same folder as the source (or the destination drive root).",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_copyworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "description": "Polling URL for async copy status when the copy is not completed synchronously.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a folder in a drive to organize Word documents.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_createfolder",
+            "name": "create-folder",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_createfolder"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_createfolder",
+                "ActionOutput_microsoft_word_oauth2_cc_createfolder"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive where the folder will be created. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the new folder. Example: \"My Documents\""
+                            },
+                            "parentId": {
+                                "description": "The ID of the parent folder. If omitted, the folder is created at the root of the drive. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\"",
+                                "type": "string"
+                            },
+                            "conflictBehavior": {
+                                "description": "Behavior if a folder with the same name already exists. Defaults to \"rename\".",
+                                "type": "string",
+                                "enum": [
+                                    "rename",
+                                    "replace",
+                                    "fail"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_createfolder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "folder": {
+                                "type": "object",
+                                "properties": {
+                                    "childCount": {
+                                        "type": "number"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a sharing link for a Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_createsharinglink",
+            "name": "create-sharing-link",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_createsharinglink"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_createsharinglink",
+                "ActionOutput_microsoft_word_oauth2_cc_createsharinglink"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_createsharinglink": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the Word document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "DriveItem ID of the Word document. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "view",
+                                    "edit",
+                                    "embed"
+                                ],
+                                "description": "Permission type for the sharing link."
+                            },
+                            "scope": {
+                                "description": "Scope of the sharing link. Omit to use the tenant/site default scope.",
+                                "type": "string",
+                                "enum": [
+                                    "anonymous",
+                                    "organization",
+                                    "users"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_createsharinglink": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "scope": {
+                                "type": "string"
+                            },
+                            "hasPassword": {
+                                "type": "boolean"
+                            },
+                            "expirationDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Upload a new Word document to a drive folder",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_createworddocument",
+            "name": "create-word-document",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_createworddocument"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_createworddocument",
+                "ActionOutput_microsoft_word_oauth2_cc_createworddocument"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_createworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "parentId": {
+                                "description": "Parent folder item ID. If provided, the file is created in this folder instead of the root.",
+                                "type": "string"
+                            },
+                            "path": {
+                                "description": "Folder path within the drive root. Used if parentId is not provided. Example: \"folder/subfolder\"",
+                                "type": "string"
+                            },
+                            "fileName": {
+                                "type": "string",
+                                "description": "Name of the file including .docx extension. Example: \"document.docx\""
+                            },
+                            "contentBase64": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+                                "description": "Base64-encoded .docx file content. Must not exceed 250 MB decoded."
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "fileName",
+                            "contentBase64"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_createworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_deleteworddocument",
+            "name": "delete-word-document",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_deleteworddocument"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_deleteworddocument",
+                "ActionOutput_microsoft_word_oauth2_cc_deleteworddocument"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_deleteworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "DriveItem ID of the Word document. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_deleteworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "itemId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get the default document library (drive) for a SharePoint site.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_getsitedrive",
+            "name": "get-site-drive",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_getsitedrive"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_getsitedrive",
+                "ActionOutput_microsoft_word_oauth2_cc_getsitedrive"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "siteId": {
+                                "type": "string",
+                                "description": "SharePoint site ID. Example: \"nangodevelopers.sharepoint.com,4c97403e-1663-4673-90fa-d2f8690b4510,29d15734-3d19-43f6-976b-43ece3ff81a8\""
+                            }
+                        },
+                        "required": [
+                            "siteId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_getsitedrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Get a user's personal OneDrive (drive).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_getuserdrive",
+            "name": "get-user-drive",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_getuserdrive"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_getuserdrive",
+                "ActionOutput_microsoft_word_oauth2_cc_getuserdrive"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "userId": {
+                                "type": "string",
+                                "description": "User ID. Example: \"aea0ba47-35e8-4a85-92bb-03ea32f9d3f6\""
+                            }
+                        },
+                        "required": [
+                            "userId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_getuserdrive": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "driveType": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "object",
+                                "properties": {
+                                    "user": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "displayName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download a Word document converted to PDF",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_getworddocumentaspdf",
+            "name": "get-word-document-as-pdf",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocumentaspdf"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_getworddocumentaspdf",
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocumentaspdf"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_getworddocumentaspdf": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item (driveItem) ID. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_getworddocumentaspdf": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "PDF content as a base64-encoded string"
+                            },
+                            "contentType": {
+                                "description": "Content-Type header value from the response",
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number",
+                                "description": "Size of the PDF content in bytes"
+                            }
+                        },
+                        "required": [
+                            "content",
+                            "size"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Download the raw .docx content of a Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_getworddocumentcontent",
+            "name": "get-word-document-content",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocumentcontent"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_getworddocumentcontent",
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocumentcontent"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_getworddocumentcontent": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "Item ID (driveItem ID). Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_getworddocumentcontent": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "Base64-encoded raw .docx content"
+                            }
+                        },
+                        "required": [
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve metadata for a Word document (driveItem).",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_getworddocument",
+            "name": "get-word-document",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocument"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_getworddocument",
+                "ActionOutput_microsoft_word_oauth2_cc_getworddocument"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_getworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the Word document (driveItem). Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_getworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "createdBy": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "lastModifiedBy": {
+                                "type": "object",
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Search/list SharePoint sites accessible to the app",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_listsites",
+            "name": "list-sites",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_listsites"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_listsites",
+                "ActionOutput_microsoft_word_oauth2_cc_listsites"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "description": "Search query. Use \"*\" for a broad listing of all accessible sites.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response nextLink field.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_listsites": {
+                        "type": "object",
+                        "properties": {
+                            "sites": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "description": "URL to retrieve the next page of results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "sites"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List/search tenant users, to resolve a user id for personal OneDrive access.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_listusers",
+            "name": "list-users",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_listusers"
+            ],
+            "scopes": [
+                "User.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_listusers",
+                "ActionOutput_microsoft_word_oauth2_cc_listusers"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "OData $filter expression. Example: \"startswith(displayName, 'A')\"",
+                                "type": "string"
+                            },
+                            "search": {
+                                "description": "OData $search expression. Example: \"api@nango.dev\"",
+                                "type": "string"
+                            },
+                            "top": {
+                                "description": "Maximum number of users to return per page. Example: 10",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 999
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (@odata.nextLink). Omit for the first page.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_listusers": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "mail": {
+                                            "type": "string"
+                                        },
+                                        "userPrincipalName": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List sharing permissions on a Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_listworddocumentpermissions",
+            "name": "list-word-document-permissions",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocumentpermissions"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_listworddocumentpermissions",
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocumentpermissions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_listworddocumentpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "drive_id": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "item_id": {
+                                "type": "string",
+                                "description": "Item (driveItem) ID. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            }
+                        },
+                        "required": [
+                            "drive_id",
+                            "item_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_listworddocumentpermissions": {
+                        "type": "object",
+                        "properties": {
+                            "permissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "link": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string"
+                                                },
+                                                "scope": {
+                                                    "type": "string"
+                                                },
+                                                "webUrl": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "grantedTo": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "application": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "device": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": {}
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "grantedToIdentities": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": {}
+                                                    },
+                                                    "application": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": {}
+                                                    },
+                                                    "device": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "displayName": {
+                                                                "type": "string"
+                                                            },
+                                                            "id": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        },
+                                        "invitation": {
+                                            "type": "object",
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "signInRequired": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "expirationDateTime": {
+                                            "type": "string"
+                                        },
+                                        "hasPassword": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            }
+                        },
+                        "required": [
+                            "permissions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the version history of a Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_listworddocumentversions",
+            "name": "list-word-document-versions",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocumentversions"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_listworddocumentversions",
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocumentversions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_listworddocumentversions": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the Word document (driveItem). Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response (the value of nextLink). Omit for the first page.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_listworddocumentversions": {
+                        "type": "object",
+                        "properties": {
+                            "versions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedBy": {
+                                            "type": "object",
+                                            "properties": {
+                                                "user": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "application": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "device": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "displayName": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "downloadUrl": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "versions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List/search .docx files within a drive",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_listworddocuments",
+            "name": "list-word-documents",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocuments"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_listworddocuments",
+                "ActionOutput_microsoft_word_oauth2_cc_listworddocuments"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_listworddocuments": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "query": {
+                                "description": "Search query to filter documents by name. Omit to list documents in the root folder only (not recursive).",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_listworddocuments": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "webUrl": {
+                                            "type": "string"
+                                        },
+                                        "size": {
+                                            "type": "number"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        },
+                                        "file": {
+                                            "type": "object",
+                                            "properties": {
+                                                "mimeType": {
+                                                    "type": "string"
+                                                },
+                                                "hashes": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "quickXorHash": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "parentReference": {
+                                            "type": "object",
+                                            "properties": {
+                                                "driveId": {
+                                                    "type": "string"
+                                                },
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "path": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a Word document to a different folder.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_moveworddocument",
+            "name": "move-word-document",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_moveworddocument"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_moveworddocument",
+                "ActionOutput_microsoft_word_oauth2_cc_moveworddocument"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_moveworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "Drive ID containing the document. Example: \"b!abc123\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "ID of the Word document (driveItem) to move. Example: \"01RFYLAY...\""
+                            },
+                            "destinationFolderId": {
+                                "type": "string",
+                                "description": "ID of the destination folder (driveItem) within the same drive. Example: \"01RFYLAY...\""
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "destinationFolderId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_moveworddocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "driveId": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "path": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Replace the content of an existing Word document.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_updateworddocumentcontent",
+            "name": "update-word-document-content",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentcontent"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_updateworddocumentcontent",
+                "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentcontent"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_updateworddocumentcontent": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the Word document driveItem to update. Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            },
+                            "content": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+                                "description": "Base64-encoded .docx file content to replace the existing document content. Must not exceed 250 MB decoded."
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "content"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentcontent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Rename a Word document or update its description, without touching content.",
+            "endpoint": null,
+            "input": "ActionInput_microsoft_word_oauth2_cc_updateworddocumentmetadata",
+            "name": "update-word-document-metadata",
+            "output": [
+                "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentmetadata"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_word_oauth2_cc_updateworddocumentmetadata",
+                "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentmetadata"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_microsoft_word_oauth2_cc_updateworddocumentmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string",
+                                "description": "The ID of the drive containing the document. Example: \"b!PkCXTGMWc0aQ-tL4aQtFEDRX0SkZPfZDl2tD7OP_gahvi-nd5TAvTJG6KTmx6Mm0\""
+                            },
+                            "itemId": {
+                                "type": "string",
+                                "description": "The ID of the driveItem (Word document). Example: \"01RFYLAYGCHWM67HNJIZBJNCQTFNXT6YGT\""
+                            },
+                            "name": {
+                                "description": "The new name for the document. Example: \"updated-name.docx\"",
+                                "type": "string"
+                            },
+                            "description": {
+                                "description": "The new description for the document. Pass null to clear.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_microsoft_word_oauth2_cc_updateworddocumentmetadata": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "parentReference": {
+                                "type": "object",
+                                "properties": {
+                                    "driveId": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "file": {
+                                "type": "object",
+                                "properties": {
+                                    "mimeType": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync .docx files within a drive",
+            "auto_start": false,
+            "endpoints": [],
+            "input": "SyncMetadata_microsoft_word_oauth2_cc_worddocuments",
+            "name": "word-documents",
+            "output": [
+                "WordDocument"
+            ],
+            "runs": "every hour",
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "WordDocument",
+                "SyncMetadata_microsoft_word_oauth2_cc_worddocuments"
+            ],
+            "version": "1.0.2",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "WordDocument": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "webUrl": {
+                                "type": "string"
+                            },
+                            "createdDateTime": {
+                                "type": "string"
+                            },
+                            "lastModifiedDateTime": {
+                                "type": "string"
+                            },
+                            "size": {
+                                "type": "number"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "parentId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_microsoft_word_oauth2_cc_worddocuments": {
+                        "type": "object",
+                        "properties": {
+                            "driveId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "driveId"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

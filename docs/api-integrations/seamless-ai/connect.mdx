@@ -1,0 +1,43 @@
+---
+title: 'Seamless.AI - How do I link my account?'
+sidebarTitle: 'Seamless.AI'
+---
+
+## Overview
+
+To authenticate with Seamless.AI, you need:
+
+1. **API Key** - A Seamless.AI API key that lets Nango call the Seamless.AI API on behalf of your organization.
+
+This guide will show you how to create one.
+
+### Prerequisites
+
+- A Seamless.AI account with Public API access. The API settings page appears only if your account has Public API access.
+
+### Step 1: Create an API key
+
+1. Sign in to [Seamless.AI](https://login.seamless.ai/login) and go to **Settings** -> [API](https://login.seamless.ai/settings/public-api) (under **Company Settings**).
+2. Stay on the **API Key** tab and click **Create New API Key**.
+
+<img src="/api-integrations/seamless-ai/public_api_settings.png" alt="Seamless.AI API settings page with the API Key tab and the Create New API Key button"/>
+
+3. In **Create New Connection**, keep the connection type **API Key** and enter a **Connection Name** (for example, `nango`). Keep the **Public API v1** scope checked; check **MCP** only if you also use the key for the Seamless.AI MCP server. Click **Save Connection**.
+
+<img src="/api-integrations/seamless-ai/create_new_connection.png" alt="Create New Connection dialog with a connection name and the Public API v1 scope checked"/>
+
+4. The new key appears in the **Manage API keys** table. Click the copy icon in the **API Key** column to copy it, and store it somewhere safe.
+
+<img src="/api-integrations/seamless-ai/api_key_created.png" alt="Manage API keys table with the new key and the copy icon in the API Key column"/>
+
+See [API keys](https://docs.seamless.ai/authentication/api-keys) in the Seamless.AI docs for details.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with Seamless.AI.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/seamless-ai/form.png" alt="Seamless.AI connection form in Nango's Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Seamless.AI.

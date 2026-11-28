@@ -1,0 +1,79 @@
+---
+title: 'Impact'
+sidebarTitle: 'Impact'
+description: 'Integrate your application with the impact.com API'
+---
+
+## 🚀 Quickstart
+
+Connect to impact.com with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Impact_.
+    </Step>
+    <Step id="authorize-impact" title="Authorize Impact">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Account SID and Auth Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-impact-api" title="Call the Impact API">
+    Let's make your first request to the impact.com API to get the company information of a Partner account. Replace `<ACCOUNT-SID>` with the connection's Account SID (its `credentials.username`), and the other placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/Mediapartners/<ACCOUNT-SID>/CompanyInformation" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/Mediapartners/<ACCOUNT-SID>/CompanyInformation',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    impact.com paths start with the account type, then the Account SID. The example uses **Mediapartners** (Partner accounts); Brand accounts use **Advertisers** and Agency accounts use **Agencies** in its place.
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Impact integration guides
+
+- [How do I link my account?](/api-integrations/impact/connect)  
+Create an API access token in impact.com and connect its Account SID and Auth Token in the Connect UI.
+
+Official docs: [impact.com API quick start](https://integrations.impact.com/rest-apis/api-quick-start)
+
+## 🧩 Pre-built syncs & tools for Impact
+
+Explore Nango-provided tools in your dashboard. Extend and customize them to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/impact/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

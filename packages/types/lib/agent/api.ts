@@ -29,7 +29,7 @@ export interface AgentSessionMetaToolsInput {
     nango_execute?: boolean | { enabled: boolean } | undefined;
     nango_proxy?: boolean | { enabled: boolean } | undefined;
     nango_create_connection?: boolean | { enabled: boolean; tags?: Tags | undefined } | undefined;
-    nango_run_code?: boolean | { enabled: boolean } | undefined;
+    nango_query_result?: boolean | { enabled: boolean } | undefined;
 }
 
 export interface PostAgentSessionsBody {
@@ -57,7 +57,7 @@ export interface AgentSessionMetaToolsSummary {
     nango_execute: boolean;
     nango_proxy: boolean;
     nango_create_connection: AgentSessionCreateConnectionConfig;
-    nango_run_code?: boolean;
+    nango_query_result?: boolean;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {
@@ -150,5 +150,33 @@ export type DeleteAgentSession = ApiEndpoint<{
     Params: { sessionId: string };
     Success: {
         data: ApiTerminatedAgentSession;
+    };
+}>;
+
+export type GetAgentSessionTools = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
+    Method: 'GET';
+    Path: '/sessions/:sessionId/tools';
+    Params: { sessionId: string };
+    Querystring: { cursor?: string };
+    Error: ApiError<'session_not_found'>;
+    Success: {
+        tools: {
+            name: string;
+            description: string;
+            inputSchema: Record<string, unknown>;
+            outputSchema?: Record<string, unknown> | undefined;
+            annotations?:
+                | {
+                      title?: string | undefined;
+                      readOnlyHint?: boolean | undefined;
+                      destructiveHint?: boolean | undefined;
+                      idempotentHint?: boolean | undefined;
+                      openWorldHint?: boolean | undefined;
+                  }
+                | undefined;
+            _meta?: Record<string, unknown> | undefined;
+        }[];
+        next_cursor?: string;
     };
 }>;

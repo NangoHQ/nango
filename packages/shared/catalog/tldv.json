@@ -1,0 +1,1836 @@
+{
+    "providerConfigKey": "tldv",
+    "actions": [],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Make accessible meeting notes available as one record per meeting, preserving structured entries, Markdown, and topics.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meeting-notes",
+            "output": [
+                "MeetingNotes"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeetingNotes"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeetingNotes": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Record identity equal to the parent meeting ID because the notes response supplies no separate notes ID."
+                            },
+                            "topics": {
+                                "description": "Topic records in provider order with explicit ordering values retained.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque topic identifier.",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Provider-defined ordering value without renumbering.",
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "description": "Topic title as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "description": "Topic summary as ordinary text.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A meeting notes topic with provider-defined identity and ordering."
+                                }
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the meeting to which these notes belong."
+                            },
+                            "markdownContent": {
+                                "description": "Meeting notes as ordinary Markdown text, retaining formatting and Unicode.",
+                                "type": "string"
+                            },
+                            "structuredNotes": {
+                                "description": "Structured note entries in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "description": "Note entry as ordinary Unicode text.",
+                                            "type": "string"
+                                        },
+                                        "topicId": {
+                                            "description": "Opaque reference to a topic in this record's topics array.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "Provider timestamp position in undocumented numeric units; not a wall-clock instant.",
+                                            "type": "number"
+                                        },
+                                        "segmentId": {
+                                            "description": "Opaque note segment identifier when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A structured meeting note entry with its original topic reference and numeric position."
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current notes for one meeting, preserving structured entries, Markdown, and topics."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make completed, accessible meeting transcripts available as records with ordered speaker-attributed segments.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meeting-transcripts",
+            "output": [
+                "MeetingTranscripts"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "MeetingTranscripts"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "MeetingTranscripts": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque transcript identifier and record identity."
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Opaque identifier of the parent meeting."
+                            },
+                            "segments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Transcript segment as ordinary Unicode text."
+                                        },
+                                        "speaker": {
+                                            "description": "Provider's speaker label, not necessarily a user identifier.",
+                                            "type": "string"
+                                        },
+                                        "endPosition": {
+                                            "description": "Numeric endTime in the same undocumented units as startPosition.",
+                                            "type": "number"
+                                        },
+                                        "startPosition": {
+                                            "description": "Numeric startTime preserved in provider-native undocumented units; not an instant.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "text"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One speaker-attributed transcript segment in provider order."
+                                },
+                                "description": "Completed transcript segments in provider order."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "meetingId",
+                            "segments"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A completed, accessible meeting transcript with ordered speaker-attributed segments."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Make accessible meeting metadata, organizer and invitee details, and caller correlation metadata available as meeting records. Programmatic visibility depends on provider permissions and the organizer's plan.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "sync-meetings",
+            "output": [
+                "Meetings"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Meetings"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Meetings": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque meeting identifier and record identity."
+                            },
+                            "url": {
+                                "description": "Provider meeting-page URL, not a media download URL.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Meeting or recording title.",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Provider-native duration value with undocumented units; no seconds or milliseconds assumption.",
+                                "type": "number"
+                            },
+                            "invitees": {
+                                "description": "Invited people in provider order, retaining an empty array.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Person's display name, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Person's email address as returned, when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A person associated with a meeting."
+                                }
+                            },
+                            "metadata": {
+                                "description": "Correlation map preserving key names and scalar value types.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        }
+                                    ]
+                                }
+                            },
+                            "template": {
+                                "description": "Provider-native meeting template value when available.",
+                                "type": "string"
+                            },
+                            "organizer": {
+                                "description": "Meeting organizer whose plan can determine API export access.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Person's display name, when supplied.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Person's email address as returned, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "happenedAt": {
+                                "description": "Meeting occurrence instant normalized to UTC Z without rounding fractional precision; omitted when absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "phoneNumber": {
+                                "description": "Associated phone number stored verbatim.",
+                                "type": "string"
+                            },
+                            "conferenceId": {
+                                "description": "Conference identifier from extra properties when supplied.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accessible meeting metadata, people, and caller correlation values."
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [
+        {
+            "type": "tool",
+            "name": "cancel-recording-upload",
+            "integrationId": "tldv",
+            "description": "Abort a pending beta recording upload and discard its stored parts. This does not delete an already imported meeting.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_cancelrecordingupload",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_cancelrecordingupload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_cancelrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "uploadId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque pending upload session ID whose stored parts should be discarded."
+                            }
+                        },
+                        "required": [
+                            "uploadId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the pending recording upload to cancel."
+                    },
+                    "FunctionOutput_tldv_cancelrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "canceled": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True when the abort operation succeeded, including already aborted or expired no-op cases; does not prove this call newly removed parts."
+                            },
+                            "uploadId": {
+                                "type": "string",
+                                "description": "Upload session for which cancellation or the documented no-op was accepted."
+                            }
+                        },
+                        "required": [
+                            "canceled",
+                            "uploadId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Accepted cancellation or documented no-op for the requested recording upload."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "true",
+                "instructions": "Use the ID from `create-recording-upload`. Cancellation drops stored parts and is not a way to delete a completed meeting. Already aborted or expired uploads are a no-op; completed uploads cannot be canceled. Use `get-recording-upload` to inspect a session or `complete-recording-upload` to finish it. You must start a new session to upload again after cancellation."
+            },
+            "filePath": "./tldv/tools/cancel-recording-upload.ts",
+            "version": "f8854d72c0803f537250901e5ed606d6409ae809187e82c0f7d5981d40508ca6",
+            "location": {
+                "js": "templates-zero/tldv/tools/cancel-recording-upload/f8854d72c0803f537250901e5ed606d6409ae809187e82c0f7d5981d40508ca6.cjs",
+                "ts": "templates-zero/tldv/tools/cancel-recording-upload/f8854d72c0803f537250901e5ed606d6409ae809187e82c0f7d5981d40508ca6.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "complete-recording-upload",
+            "integrationId": "tldv",
+            "description": "Assemble an uploaded recording and obtain its asynchronous import job ID. All planned parts must already be stored.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_completerecordingupload",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_completerecordingupload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_completerecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "uploadId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque upload session ID whose full part plan has been transferred to storage."
+                            }
+                        },
+                        "required": [
+                            "uploadId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The fully transferred recording upload session to complete."
+                    },
+                    "FunctionOutput_tldv_completerecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "jobId": {
+                                "type": "string",
+                                "description": "Opaque import job ID; repeated successful completion returns the same ID. This is not a meeting ID."
+                            },
+                            "message": {
+                                "description": "Provider's human-readable completion message when supplied.",
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider-reported completion request result, not completion of import processing."
+                            },
+                            "uploadId": {
+                                "type": "string",
+                                "description": "Upload session whose completion was requested."
+                            }
+                        },
+                        "required": [
+                            "jobId",
+                            "success",
+                            "uploadId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Immediate completion acknowledgement and asynchronous import job reference."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "true",
+                "idempotent_hint": "true",
+                "instructions": "After your application has transferred every part from `create-recording-upload`, use this to complete the session. Use `get-recording-upload` to find missing parts or refresh URLs, and complete before expiresAt. This returns a job reference, not a ready meeting or transcript. The provider permits retrying completion: an already completed upload returns the same job ID. Use `cancel-recording-upload` instead to discard an unfinished session."
+            },
+            "filePath": "./tldv/tools/complete-recording-upload.ts",
+            "version": "4679e99c9c8b3a2c9477ec775c5ecf47ea65f5bff3900a00a13d0af1757133cd",
+            "location": {
+                "js": "templates-zero/tldv/tools/complete-recording-upload/4679e99c9c8b3a2c9477ec775c5ecf47ea65f5bff3900a00a13d0af1757133cd.cjs",
+                "ts": "templates-zero/tldv/tools/complete-recording-upload/4679e99c9c8b3a2c9477ec775c5ecf47ea65f5bff3900a00a13d0af1757133cd.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "create-recording-upload",
+            "integrationId": "tldv",
+            "description": "Create a beta recording-upload session and obtain the signed part plan for a file up to 2 GiB. This prepares the upload; it does not transfer file bytes or wait for processing.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_createrecordingupload",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_createrecordingupload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_createrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "maxLength": 500,
+                                "description": "Title for the meeting created from the recording."
+                            },
+                            "fileName": {
+                                "description": "Original file name retained only for reference; does not transfer the file.",
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "metadata": {
+                                "description": "Flat correlation map with at most 20 keys and scalar values, stored verbatim; {} remains empty and omission leaves it unspecified.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                                    "description": "Correlation key."
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "maxLength": 256
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        }
+                                    ],
+                                    "description": "Scalar correlation value stored verbatim."
+                                },
+                                "maxProperties": 20
+                            },
+                            "sizeBytes": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2147483648,
+                                "description": "Exact byte length of the source file, at most 2 GiB; each planned part must contain exactly its declared byte count."
+                            },
+                            "happenedAt": {
+                                "description": "Meeting occurrence instant with explicit offset; omitted uses the provider's current date/time.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "contentType": {
+                                "description": "Known media MIME type in the video or audio family, or application/octet-stream. Omit when unknown.",
+                                "type": "string",
+                                "maxLength": 100,
+                                "pattern": "^(video\\/[^\\s]+|audio\\/[^\\s]+|application\\/octet-stream)$"
+                            },
+                            "phoneNumber": {
+                                "description": "Associated phone number preserved verbatim, including formatting.",
+                                "type": "string",
+                                "maxLength": 64
+                            },
+                            "participants": {
+                                "description": "Email addresses of invited participants; omitted is unspecified and [] explicitly supplies none.",
+                                "maxItems": 100,
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Invited participant email address."
+                                }
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "sizeBytes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting details and exact file declaration for a recording-upload session; no file bytes."
+                    },
+                    "FunctionOutput_tldv_createrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque recording-upload session ID used as uploadId by related tools."
+                            },
+                            "jobId": {
+                                "description": "Opaque import job ID when supplied; distinct from upload and meeting IDs.",
+                                "type": "string"
+                            },
+                            "parts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Sensitive signed URL for this part's byte transfer, when supplied; preserve exactly and do not attach the API key.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "uploaded": {
+                                            "type": "boolean",
+                                            "description": "Whether storage already holds this part."
+                                        },
+                                        "sizeBytes": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Exact byte count to send for this part, taken from size."
+                                        },
+                                        "startByte": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Zero-based first byte offset, provisionally mapped from byteRange.start; see validation assumption."
+                                        },
+                                        "partNumber": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Provider-assigned part number; do not renumber it."
+                                        },
+                                        "urlExpiresAt": {
+                                            "description": "Signed part URL expiry normalized to UTC Z; omitted when no URL is supplied.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "uploaded",
+                                        "sizeBytes",
+                                        "startByte",
+                                        "partNumber"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-issued part and its exact source byte span."
+                                },
+                                "description": "Provider-issued part plan; used for exact byte transfer by the caller's application."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider-native upload status, such as Pending; not a processing-completion guarantee."
+                            },
+                            "expiresAt": {
+                                "description": "Deadline for completing this upload, normalized to UTC Z without fractional rounding.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "partCount": {
+                                "description": "Number of parts in the provider plan.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "sizeBytes": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Total declared file size in bytes."
+                            },
+                            "partSizeBytes": {
+                                "description": "Provider's nominal part size in bytes; individual parts may differ.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "parts",
+                            "status",
+                            "sizeBytes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Created recording-upload session and signed part plan; file bytes have not been transferred."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Requires upload beta access from tl;dv support. Use when the recording is in your own system; use `import-meeting` for an existing public media URL. Supply the exact file size. Your application must send each planned byte range to its signed URL, then call `complete-recording-upload`. Use `get-recording-upload` to resume or refresh expired part URLs, or `cancel-recording-upload` to discard the session. Finish before expiresAt. Never send the API key to signed storage URLs."
+            },
+            "filePath": "./tldv/tools/create-recording-upload.ts",
+            "version": "f79b0f23e28500228ebc8a7542f749d69977c03b5886b20d385af7d4326717df",
+            "location": {
+                "js": "templates-zero/tldv/tools/create-recording-upload/f79b0f23e28500228ebc8a7542f749d69977c03b5886b20d385af7d4326717df.cjs",
+                "ts": "templates-zero/tldv/tools/create-recording-upload/f79b0f23e28500228ebc8a7542f749d69977c03b5886b20d385af7d4326717df.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-api-health",
+            "integrationId": "tldv",
+            "description": "Check whether the tl;dv API responds successfully to its health check.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getapihealth",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getapihealth",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getapihealth": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No parameters are needed to check API availability."
+                    },
+                    "FunctionOutput_tldv_getapihealth": {
+                        "type": "object",
+                        "properties": {
+                            "healthy": {
+                                "type": "boolean",
+                                "const": true,
+                                "description": "True when the provider health endpoint returned its documented successful response; not a guarantee about all API features."
+                            }
+                        },
+                        "required": [
+                            "healthy"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The result of a successful tl;dv API health check."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this for a quick API availability check. Success does not establish that a particular meeting is accessible; use `get-meeting` for that."
+            },
+            "filePath": "./tldv/tools/get-api-health.ts",
+            "version": "09f26d08595545fa41216bb6d405bb23a3fd093e108d8150db06094dbc5e1491",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-api-health/09f26d08595545fa41216bb6d405bb23a3fd093e108d8150db06094dbc5e1491.cjs",
+                "ts": "templates-zero/tldv/tools/get-api-health/09f26d08595545fa41216bb6d405bb23a3fd093e108d8150db06094dbc5e1491.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting",
+            "integrationId": "tldv",
+            "description": "Get an accessible meeting's details and correlation metadata by its ID.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque meeting ID returned by list-meetings; not a meeting-page URL."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify one accessible meeting by its opaque ID."
+                    },
+                    "FunctionOutput_tldv_getmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque identifier of this meeting."
+                            },
+                            "url": {
+                                "description": "Meeting-page URL, not a recording download link.",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Meeting or recording title.",
+                                "type": "string"
+                            },
+                            "duration": {
+                                "description": "Provider-native duration value with undocumented units; not assumed to be seconds or milliseconds.",
+                                "type": "number"
+                            },
+                            "invitees": {
+                                "description": "Invited people in provider order; empty remains empty.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Person's display name, when supplied.",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Person's email address as returned, when supplied.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A person associated with the meeting."
+                                }
+                            },
+                            "metadata": {
+                                "description": "Correlation metadata with scalar values preserved without coercion.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        }
+                                    ]
+                                }
+                            },
+                            "template": {
+                                "description": "Provider-native template value, when supplied.",
+                                "type": "string"
+                            },
+                            "organizer": {
+                                "description": "Meeting organizer whose plan may govern programmatic access.",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "description": "Person's display name, when supplied.",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Person's email address as returned, when supplied.",
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "happenedAt": {
+                                "description": "Meeting occurrence instant normalized to UTC Z, preserving fractional precision; omitted if absent.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "phoneNumber": {
+                                "description": "Associated phone number preserved verbatim.",
+                                "type": "string"
+                            },
+                            "conferenceId": {
+                                "description": "Conference identifier, when supplied in extra properties.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting details and correlation metadata, returned directly without a response envelope."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Obtain an ID from `list-meetings`, then use this for meeting metadata. Use `get-meeting-transcript` or `get-meeting-notes` for content, or `get-meeting-recording-download-url` for a recording link. UI sharing alone does not guarantee API access."
+            },
+            "filePath": "./tldv/tools/get-meeting.ts",
+            "version": "c4011a9c033603f64c881ec53f1eebe81fa24b03005ed3e017c45dac869de82a",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-meeting/c4011a9c033603f64c881ec53f1eebe81fa24b03005ed3e017c45dac869de82a.cjs",
+                "ts": "templates-zero/tldv/tools/get-meeting/c4011a9c033603f64c881ec53f1eebe81fa24b03005ed3e017c45dac869de82a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting-highlights",
+            "integrationId": "tldv",
+            "description": "Get a meeting's legacy highlights, including source and topic information. This endpoint is deprecated; prefer current meeting notes.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getmeetinghighlights",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getmeetinghighlights",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getmeetinghighlights": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque meeting ID whose legacy highlights are requested."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting whose legacy highlights are requested."
+                    },
+                    "FunctionOutput_tldv_getmeetinghighlights": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "description": "Highlight text as ordinary Unicode text.",
+                                            "type": "string"
+                                        },
+                                        "topic": {
+                                            "description": "Associated topic when present.",
+                                            "type": "object",
+                                            "properties": {
+                                                "title": {
+                                                    "description": "Topic title as ordinary text.",
+                                                    "type": "string"
+                                                },
+                                                "summary": {
+                                                    "description": "Topic summary as ordinary text.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "source": {
+                                            "description": "Provider source value such as manual, preserved without assuming a closed set.",
+                                            "type": "string"
+                                        },
+                                        "startPosition": {
+                                            "description": "Provider-native numeric startTime with undocumented units; not an instant.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "A legacy highlight with available source, topic, text, and position information."
+                                },
+                                "description": "Legacy highlight entries in provider order."
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Meeting identifier returned with these highlights."
+                            }
+                        },
+                        "required": [
+                            "items",
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Available legacy highlights and their meeting identifier."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this only when legacy highlight source or topic data is specifically needed. Prefer `get-meeting-notes` for current notes. Obtain meetingId from `list-meetings`. Highlights are available only after the transcript is complete; this call does not wait. Numeric positions have undocumented units."
+            },
+            "filePath": "./tldv/tools/get-meeting-highlights.ts",
+            "version": "940e1d44c5291183559ecb16472888546790961f7d2a26846116ca1d1dc71f9a",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-meeting-highlights/940e1d44c5291183559ecb16472888546790961f7d2a26846116ca1d1dc71f9a.cjs",
+                "ts": "templates-zero/tldv/tools/get-meeting-highlights/940e1d44c5291183559ecb16472888546790961f7d2a26846116ca1d1dc71f9a.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting-notes",
+            "integrationId": "tldv",
+            "description": "Get a meeting's structured notes, Markdown content, and ordered topics.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getmeetingnotes",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getmeetingnotes",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getmeetingnotes": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque meeting identifier whose notes are requested."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the meeting whose notes are requested."
+                    },
+                    "FunctionOutput_tldv_getmeetingnotes": {
+                        "type": "object",
+                        "properties": {
+                            "topics": {
+                                "description": "Topic records in returned order, retaining the provider's explicit order values.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "description": "Opaque topic identifier.",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Provider-defined topic ordering value, copied without renumbering.",
+                                            "type": "number"
+                                        },
+                                        "title": {
+                                            "description": "Topic title as ordinary text.",
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "description": "Topic summary as ordinary text.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Meeting identifier to which these notes belong."
+                            },
+                            "markdownContent": {
+                                "description": "Notes in Markdown as ordinary text; no transport decoding is required by the caller.",
+                                "type": "string"
+                            },
+                            "structuredNotes": {
+                                "description": "Structured note entries in provider order.",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "description": "Note text as ordinary Unicode text.",
+                                            "type": "string"
+                                        },
+                                        "topicId": {
+                                            "description": "Opaque reference to a topic in the topics collection when supplied.",
+                                            "type": "string"
+                                        },
+                                        "position": {
+                                            "description": "Numeric provider timestamp position with undocumented units; not a wall-clock instant.",
+                                            "type": "number"
+                                        },
+                                        "segmentId": {
+                                            "description": "Opaque segment identifier supplied by the provider.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Meeting notes with structured entries, Markdown content, and topics when supplied."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an ID from `list-meetings`. Prefer this over `get-meeting-highlights` for current notes. Use `get-meeting-transcript` for verbatim speaker-attributed content. This does not wait for note generation. Note positions are provider-native numbers with undocumented units."
+            },
+            "filePath": "./tldv/tools/get-meeting-notes.ts",
+            "version": "2fdb9cdaaf82d0241d609093d0873527721199e7c9033a1fc42975440a444088",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-meeting-notes/2fdb9cdaaf82d0241d609093d0873527721199e7c9033a1fc42975440a444088.cjs",
+                "ts": "templates-zero/tldv/tools/get-meeting-notes/2fdb9cdaaf82d0241d609093d0873527721199e7c9033a1fc42975440a444088.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-meeting-transcript",
+            "integrationId": "tldv",
+            "description": "Get a meeting's completed transcript as ordered speaker-attributed segments.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getmeetingtranscript",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getmeetingtranscript",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getmeetingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "meetingId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque meeting ID whose completed transcript is requested."
+                            }
+                        },
+                        "required": [
+                            "meetingId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identify the meeting whose completed transcript is requested."
+                    },
+                    "FunctionOutput_tldv_getmeetingtranscript": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque transcript identifier, distinct from the meeting identifier."
+                            },
+                            "meetingId": {
+                                "type": "string",
+                                "description": "Opaque meeting identifier to which this transcript belongs."
+                            },
+                            "segments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Transcript text preserved as ordinary Unicode text."
+                                        },
+                                        "speaker": {
+                                            "description": "Provider's speaker label as ordinary text, not necessarily a user ID.",
+                                            "type": "string"
+                                        },
+                                        "endPosition": {
+                                            "description": "Provider-native numeric endTime position in the same undocumented units as startPosition; not a wall-clock instant.",
+                                            "type": "number"
+                                        },
+                                        "startPosition": {
+                                            "description": "Provider-native numeric startTime position; units are undocumented, so no seconds or milliseconds interpretation is promised.",
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "text"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One speaker-attributed transcript segment in provider order."
+                                },
+                                "description": "Transcript segments in provider order; empty remains empty."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "meetingId",
+                            "segments"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A completed meeting transcript with ordered segments and provider-native numeric positions."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use an ID from `list-meetings`. This returns only a completed transcript and does not wait for transcription. Use `get-meeting-notes` for summarized notes. Segment positions retain the provider's numeric values because their units are undocumented; do not treat them as wall-clock timestamps."
+            },
+            "filePath": "./tldv/tools/get-meeting-transcript.ts",
+            "version": "a741cdba6709a3c9bd56a3fd383634c114a9de2874bc036de8ab006de5fd8ada",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-meeting-transcript/a741cdba6709a3c9bd56a3fd383634c114a9de2874bc036de8ab006de5fd8ada.cjs",
+                "ts": "templates-zero/tldv/tools/get-meeting-transcript/a741cdba6709a3c9bd56a3fd383634c114a9de2874bc036de8ab006de5fd8ada.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "get-recording-upload",
+            "integrationId": "tldv",
+            "description": "Get a beta recording upload's status and part plan, including fresh signed URLs for missing parts.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_getrecordingupload",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_getrecordingupload",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_getrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "uploadId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "pattern": "^[^/#?]+$",
+                                "description": "Opaque recording-upload session ID returned as id by create-recording-upload."
+                            }
+                        },
+                        "required": [
+                            "uploadId"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Recording-upload session to inspect for progress and a refreshed part plan."
+                    },
+                    "FunctionOutput_tldv_getrecordingupload": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Opaque upload session identifier."
+                            },
+                            "jobId": {
+                                "description": "Opaque import job ID, not a meeting ID; may be present even while pending.",
+                                "type": "string"
+                            },
+                            "parts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "description": "Sensitive signed URL for uploading this part when supplied, normally for a missing part; never attach the API key.",
+                                            "type": "string",
+                                            "format": "uri"
+                                        },
+                                        "uploaded": {
+                                            "type": "boolean",
+                                            "description": "True when storage already holds this part."
+                                        },
+                                        "sizeBytes": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Exact byte count for this part from the provider's size value."
+                                        },
+                                        "startByte": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Zero-based starting byte offset, provisionally mapped from byteRange.start."
+                                        },
+                                        "partNumber": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991,
+                                            "description": "Provider-assigned part number, not renumbered."
+                                        },
+                                        "urlExpiresAt": {
+                                            "description": "Signed URL expiry normalized to UTC Z; omitted if absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        }
+                                    },
+                                    "required": [
+                                        "uploaded",
+                                        "sizeBytes",
+                                        "startByte",
+                                        "partNumber"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "One provider-planned part with its storage presence and optional signed upload URL."
+                                },
+                                "description": "Part plan with storage-presence flags and fresh URLs for missing parts."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider-native status such as Pending or Completed; no exhaustive state set is assumed."
+                            },
+                            "expiresAt": {
+                                "description": "Upload completion deadline in UTC Z, retaining fractional precision.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "partCount": {
+                                "description": "Provider's number of planned parts when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            },
+                            "sizeBytes": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Declared file size in bytes."
+                            },
+                            "partSizeBytes": {
+                                "description": "Nominal part size in bytes when supplied.",
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "parts",
+                            "status",
+                            "sizeBytes"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Current recording-upload status and part plan; this does not indicate import processing completion."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use the ID returned by `create-recording-upload` to inspect progress or resume after an interruption or URL expiry. Transfer only missing parts using the refreshed plan, then call `complete-recording-upload`; use `cancel-recording-upload` to discard the session. Finish before expiresAt. This reads storage status and does not transfer bytes or wait for import processing."
+            },
+            "filePath": "./tldv/tools/get-recording-upload.ts",
+            "version": "400e268a3b4dc4ee5e18296ecdfb1ee39c7650151dbcfe5c38eef92754337147",
+            "location": {
+                "js": "templates-zero/tldv/tools/get-recording-upload/400e268a3b4dc4ee5e18296ecdfb1ee39c7650151dbcfe5c38eef92754337147.cjs",
+                "ts": "templates-zero/tldv/tools/get-recording-upload/400e268a3b4dc4ee5e18296ecdfb1ee39c7650151dbcfe5c38eef92754337147.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "import-meeting",
+            "integrationId": "tldv",
+            "description": "Submit a publicly accessible media URL for asynchronous meeting import, or validate the request without persisting it using dryRun.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_importmeeting",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_importmeeting",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_importmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "pattern": "^https?://",
+                                "format": "uri",
+                                "description": "Publicly accessible media URL. Supported formats are mp3, mp4, wav, m4a, mkv, mov, avi, wma and flac; signed URLs must remain accessible for provider processing."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Title of the imported meeting or recording, as ordinary Unicode text."
+                            },
+                            "dryRun": {
+                                "default": false,
+                                "description": "True validates without persistence or processing; false submits a real import.",
+                                "type": "boolean"
+                            },
+                            "metadata": {
+                                "description": "Flat correlation map with at most 20 keys; string values are at most 256 characters and scalar types are preserved. Omit for unspecified metadata; {} is an explicitly empty map.",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string",
+                                    "pattern": "^[A-Za-z0-9_-]{1,64}$",
+                                    "description": "Correlation key containing 1 to 64 letters, digits, underscores or hyphens."
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "maxLength": 256,
+                                            "description": "Correlation text of at most 256 characters."
+                                        },
+                                        {
+                                            "type": "number",
+                                            "description": "Numeric correlation value, preserved without string conversion."
+                                        },
+                                        {
+                                            "type": "boolean",
+                                            "description": "Boolean correlation value, preserved without string conversion."
+                                        }
+                                    ],
+                                    "description": "Scalar correlation value stored verbatim."
+                                },
+                                "maxProperties": 20
+                            },
+                            "happenedAt": {
+                                "description": "Meeting occurrence instant with an explicit UTC marker or numeric offset; omitted uses the provider's current date/time.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "phoneNumber": {
+                                "description": "Associated phone number stored verbatim, including formatting; omitted leaves it unspecified.",
+                                "type": "string",
+                                "maxLength": 64
+                            },
+                            "participants": {
+                                "description": "Email addresses of invited participants; omitted leaves them unspecified and [] explicitly supplies none.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                                    "description": "Invited participant email address."
+                                }
+                            }
+                        },
+                        "required": [
+                            "url",
+                            "name"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Public media URL and optional meeting details for import or validation."
+                    },
+                    "FunctionOutput_tldv_importmeeting": {
+                        "type": "object",
+                        "properties": {
+                            "jobId": {
+                                "description": "Opaque import job identifier when supplied; not a meeting ID and may be absent for a dry run.",
+                                "type": "string"
+                            },
+                            "message": {
+                                "description": "Provider's human-readable result message when supplied.",
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean",
+                                "description": "Provider-reported request success, not completion of media processing or transcript availability."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Immediate import submission or dry-run result, without waiting for media processing."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "false",
+                "destructive_hint": "false",
+                "idempotent_hint": "false",
+                "instructions": "Use this when the media already has a publicly accessible URL. It submits an import and does not wait for processing. Supported media: mp3, mp4, wav, m4a, mkv, mov, avi, wma and flac. Set dryRun to test without creating a meeting. Do not blindly repeat a real submission: duplicate imports are possible. Use `create-recording-upload` for a resumable upload from your own system."
+            },
+            "filePath": "./tldv/tools/import-meeting.ts",
+            "version": "ced89e2d0bbf1d479053a6a263cc7d8b18da6088d90bb2c0230f625a3e136884",
+            "location": {
+                "js": "templates-zero/tldv/tools/import-meeting/ced89e2d0bbf1d479053a6a263cc7d8b18da6088d90bb2c0230f625a3e136884.cjs",
+                "ts": "templates-zero/tldv/tools/import-meeting/ced89e2d0bbf1d479053a6a263cc7d8b18da6088d90bb2c0230f625a3e136884.ts"
+            }
+        },
+        {
+            "type": "tool",
+            "name": "list-meetings",
+            "integrationId": "tldv",
+            "description": "List one page of accessible meetings, optionally narrowed by a text query, meeting date, participation, or internal/external meeting type.",
+            "trigger": {
+                "kind": "http"
+            },
+            "requires": {
+                "connection": true,
+                "outbound": true,
+                "invoke": false
+            },
+            "capabilities": {
+                "usesRecords": false,
+                "usesCheckpoints": false,
+                "usesMetadata": false,
+                "usesOutbound": true,
+                "usesInvoke": false
+            },
+            "limits": {
+                "concurrency": {
+                    "perConnection": "max"
+                }
+            },
+            "input_schema_ref": "#/definitions/FunctionInput_tldv_listmeetings",
+            "output_schema_ref": "#/definitions/FunctionOutput_tldv_listmeetings",
+            "model_schema_refs": [],
+            "metadata_schema_ref": null,
+            "checkpoint_schema_ref": null,
+            "json_schema": {
+                "definitions": {
+                    "FunctionInput_tldv_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "to": {
+                                "description": "Upper meeting-date filter as an RFC 3339 instant with an explicit offset; must not precede from. Endpoint inclusivity is provider-defined.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "from": {
+                                "description": "Lower meeting-date filter as an RFC 3339 instant with an explicit offset; endpoint inclusivity is provider-defined.",
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "limit": {
+                                "description": "Maximum meetings in one returned provider page. Keep unchanged while using a cursor.",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 100
+                            },
+                            "query": {
+                                "description": "Provider text search query; omitted means no text filter. Matching fields and syntax are provider-defined.",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Opaque continuation from this tool for the same connection, filters, and limit; omit for the first page.",
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "meetingType": {
+                                "description": "Internal means all participants belong to the same organization; external means at least one belongs to another organization. Omit to include both.",
+                                "type": "string",
+                                "enum": [
+                                    "internal",
+                                    "external"
+                                ]
+                            },
+                            "onlyParticipated": {
+                                "description": "If true, return only meetings in which the connected user participated; false does not impose that restriction.",
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Filters and continuation for one page of accessible meetings. Limit defaults to 50; onlyParticipated defaults to false."
+                    },
+                    "FunctionOutput_tldv_listmeetings": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Opaque meeting identifier used by meeting-content tools."
+                                        },
+                                        "url": {
+                                            "description": "Provider meeting-page URL; not a recording download URL.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Meeting or recording title.",
+                                            "type": "string"
+                                        },
+                                        "duration": {
+                                            "description": "Provider-native duration value. Its unit is not documented; do not interpret it as seconds or milliseconds.",
+                                            "type": "number"
+                                        },
+                                        "invitees": {
+                                            "description": "Invited people, preserving provider order and empty arrays.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Display name, when supplied.",
+                                                        "type": "string"
+                                                    },
+                                                    "email": {
+                                                        "description": "Email address as returned by the provider, when supplied.",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "description": "A person associated with the meeting."
+                                            }
+                                        },
+                                        "metadata": {
+                                            "description": "Caller correlation metadata, preserving key names and scalar value types.",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string",
+                                                        "description": "A string correlation value."
+                                                    },
+                                                    {
+                                                        "type": "number",
+                                                        "description": "A numeric correlation value."
+                                                    },
+                                                    {
+                                                        "type": "boolean",
+                                                        "description": "A boolean correlation value."
+                                                    }
+                                                ],
+                                                "description": "A correlation value, retaining its string, number, or boolean type."
+                                            }
+                                        },
+                                        "template": {
+                                            "description": "Provider's meeting template value, without interpreting its opaque meaning.",
+                                            "type": "string"
+                                        },
+                                        "organizer": {
+                                            "description": "Meeting organizer, whose plan can determine API export access.",
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Display name, when supplied.",
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "description": "Email address as returned by the provider, when supplied.",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "happenedAt": {
+                                            "description": "Instant the meeting occurred, normalized to UTC with Z without rounding fractional seconds; omitted when absent.",
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                        },
+                                        "phoneNumber": {
+                                            "description": "Associated phone number preserved verbatim, without normalization.",
+                                            "type": "string"
+                                        },
+                                        "conferenceId": {
+                                            "description": "Conference identifier from the provider's extra properties, when present.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "An accessible meeting with provider-supplied details."
+                                },
+                                "description": "Meetings in this provider page, in provider order; may be empty."
+                            },
+                            "total": {
+                                "description": "Provider-reported total matching meetings, subject to its 10,000-result ceiling; omitted if unavailable, not computed from this page.",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "nextCursor": {
+                                "description": "Opaque continuation for the next provider page; omitted when page metadata says the collection is exhausted.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false,
+                        "description": "One provider page of accessible meetings and its continuation, when available."
+                    }
+                }
+            },
+            "tags": {
+                "read_only_hint": "true",
+                "destructive_hint": "false",
+                "idempotent_hint": "true",
+                "instructions": "Use this to discover meeting IDs or browse meetings. Use `get-meeting` for a known ID, and `get-meeting-transcript` or `get-meeting-notes` for content. Pass nextCursor back as cursor with identical filters and limit. Limit defaults to 50 and must be 1–100. Results are subject to the provider's 10,000-result cap; narrow the date range when necessary. UI sharing alone does not guarantee API access."
+            },
+            "filePath": "./tldv/tools/list-meetings.ts",
+            "version": "7cd42da28366fa3db56eabf2e550e87445eb507b72fac408e0d20a8c73253843",
+            "location": {
+                "js": "templates-zero/tldv/tools/list-meetings/7cd42da28366fa3db56eabf2e550e87445eb507b72fac408e0d20a8c73253843.cjs",
+                "ts": "templates-zero/tldv/tools/list-meetings/7cd42da28366fa3db56eabf2e550e87445eb507b72fac408e0d20a8c73253843.ts"
+            }
+        }
+    ],
+    "sdkVersion": "0.72.6"
+}

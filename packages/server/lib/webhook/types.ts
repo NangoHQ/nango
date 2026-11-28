@@ -38,12 +38,26 @@ export interface WebhookResponseNoForward extends WebhookResponseOnly {
     noForward: true;
 }
 
+export interface WebhookForwardGroup {
+    connectionIds: string[];
+    payload: unknown;
+}
+
+/**
+ * One forward per group, for batches that mix connections: each connection only receives its own events.
+ * A group without connection ids is forwarded without a `connectionId`.
+ */
+export interface WebhookResponseWithForwardGroups extends WebhookResponseWithConnectionIds {
+    forwardGroups: WebhookForwardGroup[];
+}
+
 export type WebhookResponse =
     | WebhookResponseOnly
     | WebhookResponseWithConnectionIds
     | WebhookResponseWithForward
     | WebhookResponseNoContent
-    | WebhookResponseNoForward;
+    | WebhookResponseNoForward
+    | WebhookResponseWithForwardGroups;
 
 export type WebhookHandlersMap = Record<string, WebhookHandler>;
 
@@ -403,6 +417,28 @@ export interface FathomWebhookResponse {
     default_summary?: DefaultSummary;
     action_items: ActionItem[] | null;
     crm_matches?: CRMMatches;
+}
+
+/** https://learn.microsoft.com/en-us/graph/api/resources/changenotification */
+export interface MicrosoftGraphNotification {
+    id?: string;
+    subscriptionId?: string;
+    subscriptionExpirationDateTime?: string;
+    clientState?: string | null;
+    changeType?: 'created' | 'updated' | 'deleted' | (string & {});
+    lifecycleEvent?: 'reauthorizationRequired' | 'subscriptionRemoved' | 'missed' | (string & {});
+    resource?: string;
+    tenantId?: string;
+    resourceData?: {
+        id?: string;
+        '@odata.type'?: string;
+        '@odata.id'?: string;
+        organizationId?: string;
+    };
+}
+
+export interface MicrosoftGraphNotificationPayload {
+    value?: MicrosoftGraphNotification[];
 }
 
 /** https://developer.okta.com/docs/concepts/event-hooks/#sample-event-delivery-payload */

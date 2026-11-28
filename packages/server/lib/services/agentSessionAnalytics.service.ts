@@ -2,9 +2,9 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 import { productTracking } from '@nangohq/shared';
 
-import { isPlaygroundSession } from './agentPlaygroundTags.js';
+import { isPlaygroundSession } from './agentPlayground/tags.js';
 
-import type { CreateAgentSessionParams } from './agentSession.service.js';
+import type { CreateAgentSessionParams } from './agentSessionCreation.service.js';
 import type { CallToolResult } from '@modelcontextprotocol/server';
 import type {
     AgentSession,
@@ -105,7 +105,7 @@ export function trackAgentSessionCreated(session: AgentSession, requested: Sessi
             is_execute_enabled: session.metaTools.nangoExecute,
             is_proxy_enabled: session.metaTools.nangoProxy,
             is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled,
-            is_run_code_enabled: session.metaTools.nangoRunCode ?? false,
+            is_query_result_enabled: session.metaTools.nangoQueryResult ?? false,
             pinned_tool_count: sum(compiled.map((integration) => integration.pinned.length)),
             searchable_tool_count: sum(compiled.map((integration) => integration.searchable.length)),
             toolset_mode: toolsetMode(requested.toolset),
@@ -305,7 +305,7 @@ function sanitizeRequest(body: PostAgentSessionsBody): { request: TrackedRequest
                 ...(metaTools.nango_tool_search !== undefined && { nango_tool_search: metaTools.nango_tool_search }),
                 ...(metaTools.nango_execute !== undefined && { nango_execute: metaTools.nango_execute }),
                 ...(metaTools.nango_proxy !== undefined && { nango_proxy: metaTools.nango_proxy }),
-                ...(metaTools.nango_run_code !== undefined && { nango_run_code: metaTools.nango_run_code }),
+                ...(metaTools.nango_query_result !== undefined && { nango_query_result: metaTools.nango_query_result }),
                 ...(createConnection !== undefined && {
                     nango_create_connection:
                         typeof createConnection === 'boolean'

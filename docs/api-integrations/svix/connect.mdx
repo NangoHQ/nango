@@ -1,0 +1,58 @@
+---
+title: 'Svix - How do I link my account?'
+sidebarTitle: 'Svix'
+---
+
+## Overview
+
+To authenticate with Svix, you need:
+
+1. **Region** — the Svix API host your environment runs in.
+2. **API Key** — a Svix API key for that environment.
+
+This guide will show you how to get them.
+
+### Prerequisites
+
+- A Svix account. You can [sign up for free](https://dashboard.svix.com/signup).
+
+### Step 1: Find your region
+
+1. Sign in to the [Svix Dashboard](https://dashboard.svix.com) and switch to the environment you want to connect.
+2. In the left sidebar, click **API Access**.
+
+<img src="/api-integrations/svix/sidebar_api_access.png" alt="Svix Dashboard sidebar with API Access selected"/>
+
+3. On the **Environment API keys** tab, note the server URL shown in the description, for example `https://api.eu.svix.com`. Its host is your region:
+
+| Server URL | Region to select |
+|------------|------------------|
+| `https://api.us.svix.com` | `api.us.svix.com` |
+| `https://api.eu.svix.com` | `api.eu.svix.com` |
+| `https://api.ca.svix.com` | `api.ca.svix.com` |
+| `https://api.au.svix.com` | `api.au.svix.com` |
+
+<img src="/api-integrations/svix/create_key_button.png" alt="Environment API keys tab in the Svix Dashboard showing the server URL and the Create key button"/>
+
+### Step 2: Create an API key
+
+API keys are per environment, so create the key in the environment you picked in Step 1.
+
+1. On the same **Environment API keys** tab, click **Create key**.
+2. Enter a key name. To limit what the key can do, turn on **Restrict scopes** and pick the **Read** preset; keep **Applications** > **Read** checked. Then click **Create**.
+
+<img src="/api-integrations/svix/create_key_dialog.png" alt="Create an API key dialog in the Svix Dashboard with the key name, Restrict scopes and the Read preset"/>
+
+3. In the **API key created** dialog, copy the key. Svix will not show it again.
+
+<img src="/api-integrations/svix/api_key_created.png" alt="API key created dialog in the Svix Dashboard with the key and its copy button"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Svix.
+2. Select your **Region** and enter your **API Key** in the designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/svix/form.png" alt="Svix connection form in the Nango Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Svix.

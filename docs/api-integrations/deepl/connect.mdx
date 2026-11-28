@@ -1,0 +1,53 @@
+---
+title: 'DeepL - How do I link my account?'
+sidebarTitle: 'DeepL'
+---
+
+## Overview
+
+To authenticate with DeepL, you need:
+
+1. **Region** — the DeepL API host for your plan and region.
+2. **API Key** — a DeepL API authentication key.
+
+This guide will show you how to find them.
+
+### Prerequisites
+
+- A DeepL API account. Choose a plan on the [DeepL API plans page](https://www.deepl.com/pro-api#api-pricing) and sign up. A DeepL Translator account does not give API access: you need a separate account for the API.
+
+### Step 1: Find your API host
+
+Pick the host that matches your plan and region:
+
+| Plan or region | API host |
+| --- | --- |
+| DeepL API Free (keys ending in `:fx`) | `api-free.deepl.com` |
+| DeepL API Pro, European Union (default) | `api.deepl.com` |
+| United States | `api-us.deepl.com` |
+| Japan | `api-jp.deepl.com` |
+
+The United States and Japan hosts are only available to customers who have signed a regional deployment addendum with DeepL. See [Regional endpoints](https://developers.deepl.com/docs/getting-started/regional-endpoints).
+
+### Step 2: Copy your API key
+
+1. Sign in to your DeepL API account and open the [API Keys tab](https://www.deepl.com/your-account/keys) under **API Keys & Limits**.
+2. To use a new key, click **Create key**. You can name it; otherwise it's named "DeepL API Key".
+3. Optionally, choose **Custom permissions** to limit the key to some endpoints, then click **Save**. A scoped key can only call endpoints covered by its scopes, so include every scope your integration needs. See [API key permissions](https://developers.deepl.com/docs/admin/api-key-permissions).
+
+<img src="/api-integrations/deepl/key_permissions.png" alt="Custom permissions for a DeepL API key with usage:read and languages:read selected"/>
+
+4. Copy the key from the popup, or click the copy icon next to it in the key table. Free plan keys end in `:fx`.
+
+<img src="/api-integrations/deepl/copy_api_key.png" alt="Copy icon next to the API key in the DeepL API Keys tab"/>
+
+### Step 3: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with DeepL.
+2. Select your **Region** (the API host from Step 1).
+3. Enter your **API Key** in the designated field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/deepl/form.png" alt="DeepL connection form in Nango's Connect UI" style={{maxWidth: "450px" }}/>
+
+You are now connected to DeepL.

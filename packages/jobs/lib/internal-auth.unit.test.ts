@@ -74,6 +74,18 @@ describe('mintTaskAuthToken', () => {
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
     });
 
+    it('keeps the default expiry for an inline function', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const issuedAt = Math.floor(Date.now() / 1000);
+        const token = await mintTaskAuthToken('task-1', { execMode: 'transform', lifecycle: { killAfterMs: 10_000, interruptAfterMs: 10_000 } });
+        if (!token) {
+            throw new Error('expected a token');
+        }
+        const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
+        expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS + 5);
+    });
+
     it('uses the bounded expiry when killAfterMs is 0', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);

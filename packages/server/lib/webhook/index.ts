@@ -10,6 +10,7 @@ export { default as checkrPartnerWebhookRouting } from './checkr-partner-webhook
 export { default as microsoftTeamsWebhookRouting } from './microsoft-teams-webhook-routing.js';
 export { default as microsoftClientCredentialsWebhookRouting } from './microsoft-client-credentials-webhook-routing.js';
 export { default as outlookWebhookRouting } from './outlook-webhook-routing.js';
+export { default as microsoftWebhookRouting } from './microsoft-webhook-routing.js';
 export { default as unauthenticatedWebhookRouting } from './unauthenticated-webhook-routing.js';
 export { default as airtableWebhookRouting } from './airtable-webhook-routing.js';
 export { default as calendlyWebhookRouting } from './calendly-webhook-routing.js';

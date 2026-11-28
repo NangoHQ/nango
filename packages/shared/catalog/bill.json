@@ -1,0 +1,193 @@
+{
+    "providerConfigKey": "bill",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Bill.",
+            "endpoint": null,
+            "input": "ActionInput_bill_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_bill_createuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_bill_createuser",
+                "ActionOutput_bill_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_bill_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "roleId": {
+                                "type": "string"
+                            },
+                            "acceptTermsOfService": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_bill_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Archive an existing user in Bill",
+            "endpoint": null,
+            "input": "ActionInput_bill_disableuser",
+            "name": "disable-user",
+            "output": [
+                "ActionOutput_bill_disableuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_bill_disableuser",
+                "ActionOutput_bill_disableuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_bill_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_bill_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Bill sandbox",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_bill_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every day",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_bill_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_bill_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -2663,6 +2663,25 @@ dash:
 databricks-account:
     - all-apis
 
+# source: https://docs.databricks.com/api/o-auth/v1/create-custom-o-auth-app-integration + https://docs.databricks.com/api/account/scopes
+databricks-account-oauth:
+    - access-management
+    - all-apis
+    - authentication
+    - billing
+    - disaster-recovery
+    - email
+    - identity
+    - networking
+    - offline_access
+    - openid
+    - profile
+    - provisioning
+    - scim
+    - settings
+    - sql
+    - unity-catalog
+
 # source: https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html
 # Databricks M2M (service principal) OAuth uses a single scope.
 # Note: Databricks U2M (user) OAuth also uses `offline_access` (space-separated).

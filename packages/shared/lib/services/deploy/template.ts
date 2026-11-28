@@ -62,7 +62,7 @@ export async function deployTemplate({
 
     // Copy the main js file
     const copyJs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
+        sourcePath: `${remoteFileService.publicZeroYamlRoute}/${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${version}.js`,
         destinationLocalFileName: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
     });
@@ -75,7 +75,7 @@ export async function deployTemplate({
 
     // Copy the typescript source file
     const copyTs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
+        sourcePath: `${remoteFileService.publicZeroYamlRoute}/${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
         destinationLocalFileName: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
     });
@@ -214,7 +214,7 @@ export async function upgradeTemplate({
 
     // Copy the main js file
     const copyJs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`,
+        sourcePath: `${remoteFileService.publicZeroYamlRoute}/${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${template.version}.js`,
         destinationLocalFileName: `build/${provider}-${template.type}s-${template.name}.cjs`
     });
@@ -227,7 +227,7 @@ export async function upgradeTemplate({
 
     // Copy the typescript source file
     const copyTs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
+        sourcePath: `${remoteFileService.publicZeroYamlRoute}/${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
         destinationLocalFileName: `${provider_config_key}/${template.type}s/${template.name}.ts`
     });

@@ -149,9 +149,9 @@ describe('agentSessionMetaToolsSchema', () => {
         });
     });
 
-    it('maps nango_run_code like the other on and off meta tools', () => {
-        expect(agentSessionMetaToolsSchema.parse({ nango_run_code: true }).metaTools).toStrictEqual({ nangoRunCode: true });
-        expect(agentSessionMetaToolsSchema.parse({ nango_run_code: { enabled: false } }).metaTools).toStrictEqual({ nangoRunCode: false });
+    it('maps nango_query_result like the other on and off meta tools', () => {
+        expect(agentSessionMetaToolsSchema.parse({ nango_query_result: true }).metaTools).toStrictEqual({ nangoQueryResult: true });
+        expect(agentSessionMetaToolsSchema.parse({ nango_query_result: { enabled: false } }).metaTools).toStrictEqual({ nangoQueryResult: false });
     });
 
     it('keeps the tags nango_create_connection was configured with', () => {

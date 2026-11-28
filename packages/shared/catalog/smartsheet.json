@@ -1,0 +1,240 @@
+{
+    "providerConfigKey": "smartsheet",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Creates a user in Smartsheet",
+            "endpoint": null,
+            "input": "ActionInput_smartsheet_createuser",
+            "name": "create-user",
+            "output": [
+                "ActionOutput_smartsheet_createuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_createuser",
+                "ActionOutput_smartsheet_createuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_smartsheet_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_smartsheet_createuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Deletes a user from Smartsheet. User is transitioned to a free collaborator with read-only access to owned reports, sheets, Sights, workspaces, and any shared templates (unless those are optionally transferred to another user).",
+            "endpoint": null,
+            "input": "ActionInput_smartsheet_deleteuser",
+            "name": "delete-user",
+            "output": [
+                "ActionOutput_smartsheet_deleteuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_deleteuser",
+                "ActionOutput_smartsheet_deleteuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_smartsheet_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_smartsheet_deleteuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Disables a user in an organization account. User will no longer be able to access Smartsheet in any way. User's assets will continue to be owned by this user until they are transferred to another user.",
+            "endpoint": null,
+            "input": "ActionInput_smartsheet_disableuser",
+            "name": "disable-user",
+            "output": [
+                "ActionOutput_smartsheet_disableuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_disableuser",
+                "ActionOutput_smartsheet_disableuser"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_smartsheet_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_smartsheet_disableuser": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Fetches a list of users from Smartsheet",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/users",
+                    "group": "Users"
+                }
+            ],
+            "input": "SyncMetadata_smartsheet_users",
+            "name": "users",
+            "output": [
+                "User"
+            ],
+            "runs": "every 6 hours",
+            "scopes": [
+                "READ_USERS"
+            ],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "User",
+                "SyncMetadata_smartsheet_users"
+            ],
+            "version": "1.1.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "User": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "SyncMetadata_smartsheet_users": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

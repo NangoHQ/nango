@@ -1,0 +1,43 @@
+---
+title: 'Databricks Account (OAuth) - How do I link my account?'
+sidebarTitle: 'Databricks Account (OAuth)'
+---
+
+## Overview
+
+To authenticate with Databricks, you need:
+
+1. **Cloud region** — the account console host for the cloud your Databricks account runs on.
+2. **Account ID** — your Databricks account ID.
+
+You then sign in to Databricks. This guide shows you how to find both values.
+
+### Prerequisites
+
+- A Databricks account. To call account-level APIs, you must sign in as an account admin.
+
+### Step 1: Find your account console host
+
+Pick the host of the account console you sign in to:
+
+| Cloud | Account console host |
+|-------|----------------------|
+| AWS   | `accounts.cloud.databricks.com` |
+| GCP   | `accounts.gcp.databricks.com` |
+| Azure | `accounts.azuredatabricks.net` |
+
+### Step 2: Find your account ID
+
+1. Sign in to the account console for your cloud.
+2. Click the down arrow next to your username in the upper right corner.
+3. Copy your account ID.
+
+### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Databricks.
+2. Select your **Cloud region** and enter your **Account ID**.
+3. Click **Connect**. You'll be redirected to Databricks to sign in and authorize access.
+
+<img src="/api-integrations/databricks-account-oauth/form.png" alt="Nango Connect UI form with the Cloud region and Account ID fields and the Connect button" style={{maxWidth: "450px" }}/>
+
+You are now connected to Databricks.

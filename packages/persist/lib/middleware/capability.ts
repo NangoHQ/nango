@@ -13,7 +13,8 @@ export type PersistCredential = { kind: 'secret' } | { kind: 'task'; auth: TaskC
 /** `credential` is absent until `authenticate` has accepted the caller. */
 export type PersistLocals = AuthLocals & { credential?: PersistCredential };
 
-const KNOWN_PARAMS = new Set(['environmentId', 'nangoConnectionId', 'syncId', 'syncJobId', 'taskId']);
+// sessionId is not bound to a token claim yet. Bind it in authorizeTask once jobs mints persist tokens.
+const KNOWN_PARAMS = new Set(['environmentId', 'nangoConnectionId', 'syncId', 'syncJobId', 'taskId', 'sessionId']);
 
 /**
  * Credential check for every `/environment/:environmentId` route. Mount before any JSON parser.

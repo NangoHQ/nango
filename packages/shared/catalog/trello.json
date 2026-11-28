@@ -1,0 +1,4703 @@
+{
+    "providerConfigKey": "trello",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add a comment to a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_addcardcomment",
+            "name": "add-card-comment",
+            "output": [
+                "ActionOutput_trello_addcardcomment"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_addcardcomment",
+                "ActionOutput_trello_addcardcomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_addcardcomment": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "Card ID. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Comment text. Example: \"This is a comment.\""
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_addcardcomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "cardId": {
+                                "type": "string"
+                            },
+                            "memberId": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "cardId",
+                            "memberId",
+                            "text",
+                            "date"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Add an item to a Trello checklist.",
+            "endpoint": null,
+            "input": "ActionInput_trello_addchecklistitem",
+            "name": "add-checklist-item",
+            "output": [
+                "ActionOutput_trello_addchecklistitem"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_addchecklistitem",
+                "ActionOutput_trello_addchecklistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_addchecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "checklistId": {
+                                "type": "string",
+                                "description": "Checklist ID. Example: \"6a26f332aa39a5f5b4c671bf\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the checklist item."
+                            },
+                            "pos": {
+                                "description": "Position of the item. Example: \"bottom\", \"top\", or a number.",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "checked": {
+                                "description": "Whether the item is checked. Defaults to false.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "checklistId",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_addchecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "due": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dueReminder": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            },
+                            "idMember": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "state",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create an attachment on a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_createattachment",
+            "name": "create-attachment",
+            "output": [
+                "ActionOutput_trello_createattachment"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_createattachment",
+                "ActionOutput_trello_createattachment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_createattachment": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "The ID of the card to attach to. Example: \"5abbe4b7ddc1b351ef961414\""
+                            },
+                            "name": {
+                                "description": "The name of the attachment. Example: \"Nango Docs\"",
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the attachment. Example: \"https://docs.nango.dev\""
+                            },
+                            "mimeType": {
+                                "description": "The MIME type of the attachment. Example: \"text/html\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_createattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "isUpload": {
+                                "type": "boolean"
+                            },
+                            "pos": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a board in Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_createboard",
+            "name": "create-board",
+            "output": [
+                "ActionOutput_trello_createboard"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_createboard",
+                "ActionOutput_trello_createboard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_createboard": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the board. Example: \"Project Roadmap\""
+                            },
+                            "desc": {
+                                "description": "Description for the board. Example: \"Q3 planning board\"",
+                                "type": "string"
+                            },
+                            "idOrganization": {
+                                "description": "ID of the organization to create the board in. Example: \"6a26ebb15b58213488fb7401\"",
+                                "type": "string"
+                            },
+                            "defaultLists": {
+                                "description": "Whether to add the default set of lists (To Do, Doing, Done). Defaults to true.",
+                                "type": "boolean"
+                            },
+                            "prefs_permissionLevel": {
+                                "description": "Permission level of the board. Example: \"private\"",
+                                "type": "string",
+                                "enum": [
+                                    "private",
+                                    "org",
+                                    "public"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_createboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "idOrganization": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "pinned": {
+                                "type": "boolean"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "permissionLevel": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a card in Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_createcard",
+            "name": "create-card",
+            "output": [
+                "ActionOutput_trello_createcard"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_createcard",
+                "ActionOutput_trello_createcard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_createcard": {
+                        "type": "object",
+                        "properties": {
+                            "idList": {
+                                "type": "string",
+                                "description": "The ID of the list the card should be created in. Example: \"5f3c8c1c3f8f7e8b7c8b9c0a\""
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the card. Example: \"My new card\""
+                            },
+                            "desc": {
+                                "description": "The description of the card. Example: \"This is a description\"",
+                                "type": "string"
+                            },
+                            "due": {
+                                "description": "The due date of the card in ISO 8601 format. Example: \"2024-01-01T00:00:00.000Z\"",
+                                "type": "string"
+                            },
+                            "idLabels": {
+                                "description": "Array of label IDs to attach to the card. Example: [\"5f3c8c1c3f8f7e8b7c8b9c0a\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idMembers": {
+                                "description": "Array of member IDs to attach to the card. Example: [\"5f3c8c1c3f8f7e8b7c8b9c0a\"]",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "idList",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_createcard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "due": {
+                                "type": "string"
+                            },
+                            "idList": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idLabels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idMembers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idList"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a list in Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_createlist",
+            "name": "create-list",
+            "output": [
+                "ActionOutput_trello_createlist"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_createlist",
+                "ActionOutput_trello_createlist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the list. Example: \"To Do\""
+                            },
+                            "idBoard": {
+                                "type": "string",
+                                "description": "The ID of the board to create the list on. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "pos": {
+                                "description": "The position of the list. Example: \"top\", \"bottom\", or a number.",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "idBoard"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_createlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idBoard",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an attachment from a Trello card",
+            "endpoint": null,
+            "input": "ActionInput_trello_deleteattachment",
+            "name": "delete-attachment",
+            "output": [
+                "ActionOutput_trello_deleteattachment"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deleteattachment",
+                "ActionOutput_trello_deleteattachment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deleteattachment": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "The ID of the card. Example: \"5f3d9e4e3f4e3f4e3f4e3f4e\""
+                            },
+                            "attachmentId": {
+                                "type": "string",
+                                "description": "The ID of the attachment. Example: \"5f3d9e4e3f4e3f4e3f4e3f4e\""
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "attachmentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deleteattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a Trello board.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deleteboard",
+            "name": "delete-board",
+            "output": [
+                "ActionOutput_trello_deleteboard"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_deleteboard",
+                "ActionOutput_trello_deleteboard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deleteboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the board to delete. Example: \"6a26f2fbd1ccaa2cb9602757\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deleteboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletecard",
+            "name": "delete-card",
+            "output": [
+                "ActionOutput_trello_deletecard"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletecard",
+                "ActionOutput_trello_deletecard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletecard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the card to delete. Example: \"6a26f3127128c2af2fd32b1b\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletecard": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete an item from a Trello checklist.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletechecklistitem",
+            "name": "delete-checklist-item",
+            "output": [
+                "ActionOutput_trello_deletechecklistitem"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletechecklistitem",
+                "ActionOutput_trello_deletechecklistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletechecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "checklistId": {
+                                "type": "string",
+                                "description": "The ID of the checklist. Example: \"6a26f332aa39a5f5b4c671bf\""
+                            },
+                            "checkItemId": {
+                                "type": "string",
+                                "description": "The ID of the check item to delete. Example: \"6a26f6348bb9f2f466b322ea\""
+                            }
+                        },
+                        "required": [
+                            "checklistId",
+                            "checkItemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletechecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a Trello checklist.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletechecklist",
+            "name": "delete-checklist",
+            "output": [
+                "ActionOutput_trello_deletechecklist"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletechecklist",
+                "ActionOutput_trello_deletechecklist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletechecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the checklist to delete. Example: \"6a26f33578a03d1e69753e61\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletechecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a comment from a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletecomment",
+            "name": "delete-comment",
+            "output": [
+                "ActionOutput_trello_deletecomment"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletecomment",
+                "ActionOutput_trello_deletecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "card_id": {
+                                "type": "string",
+                                "description": "The ID of the card containing the comment. Example: \"5abbe4b7ddc1b351ef961414\""
+                            },
+                            "action_id": {
+                                "type": "string",
+                                "description": "The ID of the commentCard action to delete. Example: \"5abbe4b7ddc1b351ef961414\""
+                            }
+                        },
+                        "required": [
+                            "card_id",
+                            "action_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletecomment": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a Trello label.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletelabel",
+            "name": "delete-label",
+            "output": [
+                "ActionOutput_trello_deletelabel"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletelabel",
+                "ActionOutput_trello_deletelabel"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletelabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the label to delete. Example: \"6a26f31a38499a69b58916df\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletelabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "success": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "success"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Archive a Trello list. Trello does not support permanent list deletion; lists are archived by setting closed=true.",
+            "endpoint": null,
+            "input": "ActionInput_trello_deletelist",
+            "name": "delete-list",
+            "output": [
+                "ActionOutput_trello_deletelist"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_deletelist",
+                "ActionOutput_trello_deletelist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the list to archive. Example: \"6a26f315d65f93eeac0b1b11\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_deletelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "boardId": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single attachment from a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getattachment",
+            "name": "get-attachment",
+            "output": [
+                "ActionOutput_trello_getattachment"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_getattachment",
+                "ActionOutput_trello_getattachment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getattachment": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "The ID of the Trello card. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "attachmentId": {
+                                "type": "string",
+                                "description": "The ID of the attachment. Example: \"6a26f33c2f4cc3d61199de43\""
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "attachmentId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getattachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "bytes": {
+                                "type": "number"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "edgeColor": {
+                                "type": "string"
+                            },
+                            "idMember": {
+                                "type": "string"
+                            },
+                            "isUpload": {
+                                "type": "boolean"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "previews": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "scaled": {
+                                            "type": "boolean"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "bytes": {
+                                            "type": "number"
+                                        },
+                                        "height": {
+                                            "type": "number"
+                                        },
+                                        "width": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single board from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getboard",
+            "name": "get-board",
+            "output": [
+                "ActionOutput_trello_getboard"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_getboard",
+                "ActionOutput_trello_getboard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"5abbe4b7ddc1b351ef961414\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "idMemberCreator": {
+                                "type": "string"
+                            },
+                            "idOrganization": {
+                                "type": "string"
+                            },
+                            "pinned": {
+                                "type": "boolean"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            },
+                            "dateLastActivity": {
+                                "type": "string"
+                            },
+                            "dateLastView": {
+                                "type": "string"
+                            },
+                            "shortLink": {
+                                "type": "string"
+                            },
+                            "creationMethod": {
+                                "type": "string"
+                            },
+                            "enterpriseOwned": {
+                                "type": "boolean"
+                            },
+                            "ixUpdate": {
+                                "type": "number"
+                            },
+                            "labelNames": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                }
+                            },
+                            "prefs": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single card from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getcard",
+            "name": "get-card",
+            "output": [
+                "ActionOutput_trello_getcard"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getcard",
+                "ActionOutput_trello_getcard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getcard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the card to retrieve. Example: \"5abbe4b7ddc1b351ef961414\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getcard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "dateLastActivity": {
+                                "type": "string"
+                            },
+                            "due": {
+                                "type": "string"
+                            },
+                            "dueComplete": {
+                                "type": "boolean"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idList": {
+                                "type": "string"
+                            },
+                            "idMembers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idLabels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idChecklists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "idBoard": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "idBoard",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "shortLink": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            },
+                            "cover": {
+                                "type": "object",
+                                "properties": {
+                                    "color": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "idUploadedBackground": {
+                                        "type": [
+                                            "string",
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "size": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "brightness": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "isTemplate": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idBoard",
+                            "idList"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single checklist item from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getchecklistitem",
+            "name": "get-checklist-item",
+            "output": [
+                "ActionOutput_trello_getchecklistitem"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getchecklistitem",
+                "ActionOutput_trello_getchecklistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getchecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "checklistId": {
+                                "type": "string",
+                                "description": "The ID of the checklist. Example: \"6a26f332aa39a5f5b4c671bf\""
+                            },
+                            "checkItemId": {
+                                "type": "string",
+                                "description": "The ID of the check item. Example: \"6a26f370f88b34e822126264\""
+                            }
+                        },
+                        "required": [
+                            "checklistId",
+                            "checkItemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getchecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "idChecklist": {
+                                "type": "string"
+                            },
+                            "nameData": {
+                                "type": "object",
+                                "properties": {},
+                                "additionalProperties": {}
+                            },
+                            "due": {
+                                "type": "string"
+                            },
+                            "dueReminder": {
+                                "type": "number"
+                            },
+                            "idMember": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "state",
+                            "idChecklist"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single checklist from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getchecklist",
+            "name": "get-checklist",
+            "output": [
+                "ActionOutput_trello_getchecklist"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getchecklist",
+                "ActionOutput_trello_getchecklist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getchecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the checklist to retrieve. Example: \"6a26f332aa39a5f5b4c671bf\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getchecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idCard": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "checkItems": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "idChecklist": {
+                                            "type": "string"
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "due": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "idMember": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "state",
+                                        "idChecklist",
+                                        "pos"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idBoard",
+                            "idCard",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single label from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getlabel",
+            "name": "get-label",
+            "output": [
+                "ActionOutput_trello_getlabel"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getlabel",
+                "ActionOutput_trello_getlabel"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the label to retrieve. Example: \"6a26f2ed8e7484b03cb90f9b\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getlabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "idBoard",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single list from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getlist",
+            "name": "get-list",
+            "output": [
+                "ActionOutput_trello_getlist"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_getlist",
+                "ActionOutput_trello_getlist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the list to retrieve. Example: \"5abbe4b7ddc1b351ef961414\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getlist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "softLimit": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            },
+                            "limits": {}
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a Trello member by ID. Use 'me' to get the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getmember",
+            "name": "get-member",
+            "output": [
+                "ActionOutput_trello_getmember"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getmember",
+                "ActionOutput_trello_getmember"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getmember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Member ID. Use \"me\" for the authenticated user. Example: \"5abbe4b7ddc1b351ef961414\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getmember": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "fullName": {
+                                "type": "string"
+                            },
+                            "avatarUrl": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "confirmed": {
+                                "type": "boolean"
+                            },
+                            "memberType": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "initials": {
+                                "type": "string"
+                            },
+                            "bio": {
+                                "type": "string"
+                            },
+                            "idBoards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idOrganizations": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "username"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single organization (workspace) from Trello.",
+            "endpoint": null,
+            "input": "ActionInput_trello_getorganization",
+            "name": "get-organization",
+            "output": [
+                "ActionOutput_trello_getorganization"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_getorganization",
+                "ActionOutput_trello_getorganization"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the organization (workspace). Example: \"6a26ebb15b58213488fb7401\""
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_getorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "dateLastActivity": {
+                                "type": "string"
+                            },
+                            "prefs": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "idEnterprise": {
+                                "type": "string"
+                            },
+                            "offering": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "idBoards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "memberships": {
+                                "type": "array",
+                                "items": {}
+                            },
+                            "premiumFeatures": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List attachments on a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listattachments",
+            "name": "list-attachments",
+            "output": [
+                "ActionOutput_trello_listattachments"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listattachments",
+                "ActionOutput_trello_listattachments"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listattachments": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "The ID of the Trello card. Example: \"5d0b4f5060d98f6d3f5c6a1a\""
+                            },
+                            "filter": {
+                                "description": "Filter for attachments. Valid values: all, cover.",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "cover"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "cardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listattachments": {
+                        "type": "object",
+                        "properties": {
+                            "attachments": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "bytes": {
+                                            "type": "number"
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "edgeColor": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "idMember": {
+                                            "type": "string"
+                                        },
+                                        "isUpload": {
+                                            "type": "boolean"
+                                        },
+                                        "mimeType": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "previews": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "bytes": {
+                                                        "type": "number"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "width": {
+                                                        "type": "number"
+                                                    },
+                                                    "height": {
+                                                        "type": "number"
+                                                    },
+                                                    "scaled": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "attachments"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List activity actions (audit log) for a Trello board.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listboardactions",
+            "name": "list-board-actions",
+            "output": [
+                "ActionOutput_trello_listboardactions"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listboardactions",
+                "ActionOutput_trello_listboardactions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listboardactions": {
+                        "type": "object",
+                        "properties": {
+                            "board_id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "filter": {
+                                "description": "Comma-separated action types to filter. Example: \"commentCard,updateCard\"",
+                                "type": "string"
+                            },
+                            "limit": {
+                                "description": "Maximum number of actions to return (max 1000).",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 1000
+                            },
+                            "before": {
+                                "description": "Pagination cursor: action ID or ISO date before which to return results.",
+                                "type": "string"
+                            },
+                            "since": {
+                                "description": "Action ID or ISO date after which to return results.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "board_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listboardactions": {
+                        "type": "object",
+                        "properties": {
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "idMemberCreator": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "text": {
+                                                    "type": "string"
+                                                },
+                                                "card": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "idShort": {
+                                                            "type": "number"
+                                                        },
+                                                        "shortLink": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "board": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "shortLink": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "list": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "listAfter": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "listBefore": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "member": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "username": {
+                                                            "type": "string"
+                                                        },
+                                                        "fullName": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                },
+                                                "old": {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {}
+                                                },
+                                                "attachment": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "url": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "additionalProperties": false
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "memberCreator": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "username": {
+                                                    "type": "string"
+                                                },
+                                                "fullName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "date"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "next_cursor": {
+                                "description": "Cursor for the next page: pass as `before` to get older actions.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "actions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List boards for the authenticated Trello member.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listboards",
+            "name": "list-boards",
+            "output": [
+                "ActionOutput_trello_listboards"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listboards",
+                "ActionOutput_trello_listboards"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listboards": {
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "description": "Filter boards by status. Example: \"open\"",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "open",
+                                    "closed"
+                                ]
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of board fields to include. Example: \"name,desc,url\"",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listboards": {
+                        "type": "object",
+                        "properties": {
+                            "boards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "desc": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "shortUrl": {
+                                            "type": "string"
+                                        },
+                                        "idOrganization": {
+                                            "type": "string"
+                                        },
+                                        "closed": {
+                                            "type": "boolean"
+                                        },
+                                        "dateLastActivity": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "boards"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List activity actions for a Trello card (includes comments, moves, updates)",
+            "endpoint": null,
+            "input": "ActionInput_trello_listcardactions",
+            "name": "list-card-actions",
+            "output": [
+                "ActionOutput_trello_listcardactions"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listcardactions",
+                "ActionOutput_trello_listcardactions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listcardactions": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "Trello card ID. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "filter": {
+                                "description": "Comma-separated action types to filter. Example: \"commentCard,updateCard\"",
+                                "type": "string"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor (page number). Omit for the first page.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "cardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listcardactions": {
+                        "type": "object",
+                        "properties": {
+                            "actions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "idMemberCreator": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        },
+                                        "memberCreator": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "fullName": {
+                                                    "type": "string"
+                                                },
+                                                "username": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "idMemberCreator",
+                                        "type",
+                                        "date",
+                                        "data"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "actions"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List cards on a Trello board",
+            "endpoint": null,
+            "input": "ActionInput_trello_listcards",
+            "name": "list-cards",
+            "output": [
+                "ActionOutput_trello_listcards"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listcards",
+                "ActionOutput_trello_listcards"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listcards": {
+                        "type": "object",
+                        "properties": {
+                            "boardId": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "filter": {
+                                "description": "Filter for cards. Example: \"all\"",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "open",
+                                    "closed"
+                                ]
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of fields to return. Example: \"name,id\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "boardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listcards": {
+                        "type": "object",
+                        "properties": {
+                            "cards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "desc": {
+                                            "type": "string"
+                                        },
+                                        "closed": {
+                                            "type": "boolean"
+                                        },
+                                        "idBoard": {
+                                            "type": "string"
+                                        },
+                                        "idList": {
+                                            "type": "string"
+                                        },
+                                        "idMembers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "idLabels": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "idChecklists": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "due": {
+                                            "type": "string"
+                                        },
+                                        "dueComplete": {
+                                            "type": "boolean"
+                                        },
+                                        "dateLastActivity": {
+                                            "type": "string"
+                                        },
+                                        "shortUrl": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "labels": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "color": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "cards"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List checklists on a Trello card",
+            "endpoint": null,
+            "input": "ActionInput_trello_listchecklists",
+            "name": "list-checklists",
+            "output": [
+                "ActionOutput_trello_listchecklists"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listchecklists",
+                "ActionOutput_trello_listchecklists"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listchecklists": {
+                        "type": "object",
+                        "properties": {
+                            "card_id": {
+                                "type": "string",
+                                "description": "The ID of the Trello card. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            }
+                        },
+                        "required": [
+                            "card_id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listchecklists": {
+                        "type": "object",
+                        "properties": {
+                            "checklists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "id_card": {
+                                            "type": "string"
+                                        },
+                                        "id_board": {
+                                            "type": "string"
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "check_items": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "state": {
+                                                        "type": "string"
+                                                    },
+                                                    "id_checklist": {
+                                                        "type": "string"
+                                                    },
+                                                    "pos": {
+                                                        "type": "number"
+                                                    },
+                                                    "due": {
+                                                        "type": "string"
+                                                    },
+                                                    "id_member": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "state",
+                                                    "id_checklist",
+                                                    "pos"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "id_card",
+                                        "id_board",
+                                        "pos",
+                                        "check_items"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "checklists"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List labels on a Trello board.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listlabels",
+            "name": "list-labels",
+            "output": [
+                "ActionOutput_trello_listlabels"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listlabels",
+                "ActionOutput_trello_listlabels"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listlabels": {
+                        "type": "object",
+                        "properties": {
+                            "boardId": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "limit": {
+                                "description": "Maximum number of labels to return. Max 1000.",
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 1000
+                            }
+                        },
+                        "required": [
+                            "boardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listlabels": {
+                        "type": "object",
+                        "properties": {
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "idBoard": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "color": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "labels"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List lists on a Trello board.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listlists",
+            "name": "list-lists",
+            "output": [
+                "ActionOutput_trello_listlists"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listlists",
+                "ActionOutput_trello_listlists"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "boardId": {
+                                "type": "string",
+                                "description": "The ID of the board to list lists from. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "filter": {
+                                "description": "Filter for lists. One of: all, open, closed.",
+                                "type": "string",
+                                "enum": [
+                                    "all",
+                                    "open",
+                                    "closed"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "boardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listlists": {
+                        "type": "object",
+                        "properties": {
+                            "lists": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "closed": {
+                                            "type": "boolean"
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "idBoard": {
+                                            "type": "string"
+                                        },
+                                        "subscribed": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "closed",
+                                        "pos"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "lists"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List members of a Trello board",
+            "endpoint": null,
+            "input": "ActionInput_trello_listmembers",
+            "name": "list-members",
+            "output": [
+                "ActionOutput_trello_listmembers"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_trello_listmembers",
+                "ActionOutput_trello_listmembers"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listmembers": {
+                        "type": "object",
+                        "properties": {
+                            "boardId": {
+                                "type": "string",
+                                "description": "The ID of the Trello board. Example: \"6a26ebb3cd5f60a53a585978\""
+                            }
+                        },
+                        "required": [
+                            "boardId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listmembers": {
+                        "type": "object",
+                        "properties": {
+                            "members": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "fullName": {
+                                            "type": "string"
+                                        },
+                                        "username": {
+                                            "type": "string"
+                                        },
+                                        "avatarHash": {
+                                            "type": "string"
+                                        },
+                                        "initials": {
+                                            "type": "string"
+                                        },
+                                        "memberType": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "confirmed": {
+                                            "type": "boolean"
+                                        },
+                                        "bio": {
+                                            "type": "string"
+                                        },
+                                        "avatarUrl": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "gravatarHash": {
+                                            "type": "string"
+                                        },
+                                        "idOrganizations": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "idEnterprisesAdmin": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "members"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List organizations (workspaces) for the authenticated Trello member.",
+            "endpoint": null,
+            "input": "ActionInput_trello_listorganizations",
+            "name": "list-organizations",
+            "output": [
+                "ActionOutput_trello_listorganizations"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_listorganizations",
+                "ActionOutput_trello_listorganizations"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of organizations to return per page.",
+                                "type": "number"
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor from the previous response. Omit for the first page.",
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_listorganizations": {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": "string"
+                                        },
+                                        "dateLastActivity": {
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "idEnterprise": {
+                                            "type": "string"
+                                        },
+                                        "offering": {
+                                            "type": "string"
+                                        },
+                                        "idBoards": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "memberships": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "premiumFeatures": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "prefs": {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "nextCursor": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "items"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Move a Trello card to another list or board.",
+            "endpoint": null,
+            "input": "ActionInput_trello_movecard",
+            "name": "move-card",
+            "output": [
+                "ActionOutput_trello_movecard"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_movecard",
+                "ActionOutput_trello_movecard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_movecard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the card to move. Example: \"5f3c2b1a4b3d2a1c8e4f5g6h\""
+                            },
+                            "idList": {
+                                "description": "The ID of the list to move the card to. Example: \"5f3c2b1a4b3d2a1c8e4f5g6i\"",
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "description": "The ID of the board to move the card to. Example: \"5f3c2b1a4b3d2a1c8e4f5g6j\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_movecard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "idList": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello board",
+            "endpoint": null,
+            "input": "ActionInput_trello_updateboard",
+            "name": "update-board",
+            "output": [
+                "ActionOutput_trello_updateboard"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updateboard",
+                "ActionOutput_trello_updateboard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updateboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Board ID. Example: \"6a26ebb3cd5f60a53a585978\""
+                            },
+                            "name": {
+                                "description": "Name of the board",
+                                "type": "string"
+                            },
+                            "desc": {
+                                "description": "Description of the board",
+                                "type": "string"
+                            },
+                            "closed": {
+                                "description": "Whether the board is closed",
+                                "type": "boolean"
+                            },
+                            "prefs_permissionLevel": {
+                                "description": "Permission level. Example: \"private\", \"org\", \"public\"",
+                                "type": "string"
+                            },
+                            "prefs_voting": {
+                                "description": "Voting preference. Example: \"disabled\", \"members\", \"org\", \"public\"",
+                                "type": "string"
+                            },
+                            "prefs_comments": {
+                                "description": "Comments preference. Example: \"disabled\", \"members\", \"org\", \"public\", \"observers\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updateboard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "prefs_permissionLevel": {
+                                "type": "string"
+                            },
+                            "prefs_voting": {
+                                "type": "string"
+                            },
+                            "prefs_comments": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "desc",
+                            "closed"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatecard",
+            "name": "update-card",
+            "output": [
+                "ActionOutput_trello_updatecard"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_trello_updatecard",
+                "ActionOutput_trello_updatecard"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatecard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Card ID. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "name": {
+                                "description": "New name for the card.",
+                                "type": "string"
+                            },
+                            "desc": {
+                                "description": "New description for the card. Pass null to clear.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "closed": {
+                                "description": "Whether the card is closed (archived).",
+                                "type": "boolean"
+                            },
+                            "due": {
+                                "description": "Due date in ISO 8601 format. Pass null to clear.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dueComplete": {
+                                "description": "Whether the due date is marked complete.",
+                                "type": "boolean"
+                            },
+                            "idList": {
+                                "description": "ID of the list to move the card to.",
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "description": "ID of the board to move the card to.",
+                                "type": "string"
+                            },
+                            "idLabels": {
+                                "description": "Label IDs to set on the card.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idMembers": {
+                                "description": "Member IDs to set on the card.",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatecard": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "due": {
+                                "type": "string"
+                            },
+                            "dueComplete": {
+                                "type": "boolean"
+                            },
+                            "idList": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idLabels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idMembers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "labels": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "idBoard": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "idBoard"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "dateLastActivity": {
+                                "type": "string"
+                            },
+                            "shortLink": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "closed",
+                            "idList",
+                            "idBoard",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a checklist item on a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatechecklistitem",
+            "name": "update-checklist-item",
+            "output": [
+                "ActionOutput_trello_updatechecklistitem"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updatechecklistitem",
+                "ActionOutput_trello_updatechecklistitem"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatechecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "Card ID. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "checklistItemId": {
+                                "type": "string",
+                                "description": "Checklist item ID. Example: \"6a26f370f88b34e822126264\""
+                            },
+                            "name": {
+                                "description": "New name for the checklist item.",
+                                "type": "string"
+                            },
+                            "state": {
+                                "description": "State of the checklist item.",
+                                "type": "string",
+                                "enum": [
+                                    "complete",
+                                    "incomplete"
+                                ]
+                            },
+                            "pos": {
+                                "description": "Position of the checklist item.",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "due": {
+                                "description": "Due date for the checklist item.",
+                                "type": "string"
+                            },
+                            "idMember": {
+                                "description": "Member ID to assign to the checklist item.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "checklistItemId"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatechecklistitem": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "state": {
+                                "type": "string"
+                            },
+                            "idChecklist": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            },
+                            "due": {
+                                "type": "string"
+                            },
+                            "idMember": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello checklist.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatechecklist",
+            "name": "update-checklist",
+            "output": [
+                "ActionOutput_trello_updatechecklist"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updatechecklist",
+                "ActionOutput_trello_updatechecklist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatechecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Checklist ID. Example: \"6a26f332aa39a5f5b4c671bf\""
+                            },
+                            "name": {
+                                "description": "New name for the checklist",
+                                "type": "string"
+                            },
+                            "pos": {
+                                "description": "Position of the checklist on the card. Example: \"top\", \"bottom\", or 16384",
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatechecklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idCard": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idBoard",
+                            "idCard",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update an existing comment on a Trello card.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatecomment",
+            "name": "update-comment",
+            "output": [
+                "ActionOutput_trello_updatecomment"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updatecomment",
+                "ActionOutput_trello_updatecomment"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "cardId": {
+                                "type": "string",
+                                "description": "The ID of the card containing the comment. Example: \"6a26f2fdbc520ab9f45a5214\""
+                            },
+                            "actionId": {
+                                "type": "string",
+                                "description": "The ID of the commentCard action to update. Example: \"6a26f3375b582134880a0182\""
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "The new text for the comment."
+                            }
+                        },
+                        "required": [
+                            "cardId",
+                            "actionId",
+                            "text"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatecomment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "idMemberCreator": {
+                                "type": "string"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "cardId": {
+                                "type": "string"
+                            },
+                            "cardName": {
+                                "type": "string"
+                            },
+                            "boardId": {
+                                "type": "string"
+                            },
+                            "boardName": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello label.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatelabel",
+            "name": "update-label",
+            "output": [
+                "ActionOutput_trello_updatelabel"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updatelabel",
+                "ActionOutput_trello_updatelabel"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatelabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Label ID. Example: \"6a26f31a38499a69b58916df\""
+                            },
+                            "name": {
+                                "description": "Name of the label.",
+                                "type": "string"
+                            },
+                            "color": {
+                                "description": "Color of the label.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatelabel": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello list.",
+            "endpoint": null,
+            "input": "ActionInput_trello_updatelist",
+            "name": "update-list",
+            "output": [
+                "ActionOutput_trello_updatelist"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updatelist",
+                "ActionOutput_trello_updatelist"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updatelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the list to update. Example: \"5abbe4b7ee6c1d1ed5210aaa\""
+                            },
+                            "name": {
+                                "description": "The new name for the list.",
+                                "type": "string"
+                            },
+                            "closed": {
+                                "description": "Whether the list should be closed (archived).",
+                                "type": "boolean"
+                            },
+                            "pos": {
+                                "description": "The position of the list. Can be a number or \"top\" / \"bottom\".",
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
+                            },
+                            "subscribed": {
+                                "description": "Whether the authenticated user is subscribed to the list.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updatelist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "closed",
+                            "idBoard",
+                            "pos"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Update a Trello organization (workspace).",
+            "endpoint": null,
+            "input": "ActionInput_trello_updateorganization",
+            "name": "update-organization",
+            "output": [
+                "ActionOutput_trello_updateorganization"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_trello_updateorganization",
+                "ActionOutput_trello_updateorganization"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_trello_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Organization ID. Example: \"6a26ebb15b58213488fb7401\""
+                            },
+                            "displayName": {
+                                "description": "Display name of the organization",
+                                "type": "string"
+                            },
+                            "desc": {
+                                "description": "Description of the organization",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "Short name of the organization",
+                                "type": "string"
+                            },
+                            "website": {
+                                "description": "Website URL of the organization",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "ActionOutput_trello_updateorganization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync activity actions (audit log) for Trello boards.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/actions"
+                }
+            ],
+            "input": null,
+            "name": "actions",
+            "output": [
+                "Action"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Action"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Action": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "idMemberCreator": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "data": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "display": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "memberCreator": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            },
+                            "limits": {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "propertyNames": {
+                                            "type": "string"
+                                        },
+                                        "additionalProperties": {}
+                                    },
+                                    {
+                                        "type": "null"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "date"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync attachments from Trello cards.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/syncs/attachments"
+                }
+            ],
+            "input": null,
+            "name": "attachments",
+            "output": [
+                "Attachment"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Attachment"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Attachment": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "bytes": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            },
+                            "edgeColor": {
+                                "type": "string"
+                            },
+                            "idMember": {
+                                "type": "string"
+                            },
+                            "isUpload": {
+                                "type": "boolean"
+                            },
+                            "mimeType": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "idCard": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync boards from Trello.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/boards"
+                }
+            ],
+            "input": null,
+            "name": "boards",
+            "output": [
+                "Board"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Board"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Board": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "idOrganization": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "shortUrl": {
+                                "type": "string"
+                            },
+                            "dateLastActivity": {
+                                "type": "string"
+                            },
+                            "dateLastView": {
+                                "type": "string"
+                            },
+                            "pinned": {
+                                "type": "boolean"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            },
+                            "idMemberCreator": {
+                                "type": "string"
+                            },
+                            "starred": {
+                                "type": "boolean"
+                            },
+                            "shortLink": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "closed",
+                            "url",
+                            "shortUrl"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync cards from Trello boards",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/cards",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "cards",
+            "output": [
+                "Card"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Card"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Card": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Trello card ID"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Card name"
+                            },
+                            "desc": {
+                                "description": "Card description",
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean",
+                                "description": "Whether the card is closed or archived"
+                            },
+                            "dateLastActivity": {
+                                "type": "string",
+                                "description": "ISO 8601 timestamp of last activity"
+                            },
+                            "due": {
+                                "description": "ISO 8601 due date",
+                                "type": "string"
+                            },
+                            "dueComplete": {
+                                "description": "Whether the due date is complete",
+                                "type": "boolean"
+                            },
+                            "idBoard": {
+                                "type": "string",
+                                "description": "ID of the board the card belongs to"
+                            },
+                            "idList": {
+                                "type": "string",
+                                "description": "ID of the list the card belongs to"
+                            },
+                            "idMembers": {
+                                "description": "Member IDs assigned to the card",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idLabels": {
+                                "description": "Label IDs on the card",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "idChecklists": {
+                                "description": "Checklist IDs on the card",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "pos": {
+                                "type": "number",
+                                "description": "Position of the card in the list"
+                            },
+                            "shortLink": {
+                                "type": "string",
+                                "description": "Short link identifier"
+                            },
+                            "shortUrl": {
+                                "type": "string",
+                                "description": "Short URL"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Full URL"
+                            },
+                            "subscribed": {
+                                "description": "Whether the current user is subscribed",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "closed",
+                            "dateLastActivity",
+                            "idBoard",
+                            "idList",
+                            "pos",
+                            "shortLink",
+                            "shortUrl",
+                            "url"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync checklists (with their items) from Trello cards",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/checklists",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "checklists",
+            "output": [
+                "Checklist"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Checklist"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Checklist": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "idCard": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "checkItems": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "state": {
+                                            "type": "string"
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        },
+                                        "idChecklist": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync custom field definitions from Trello boards",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/custom-fields"
+                }
+            ],
+            "input": null,
+            "name": "custom-fields",
+            "output": [
+                "CustomField"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "CustomField"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "CustomField": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "boardId": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "options": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "color": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "pos": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "boardId",
+                            "name",
+                            "type"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync labels from Trello boards.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "path": "/syncs/labels",
+                    "method": "GET"
+                }
+            ],
+            "input": null,
+            "name": "labels",
+            "output": [
+                "Label"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Label"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Label": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "color": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "uses": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "idBoard"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync lists from Trello boards",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/lists"
+                }
+            ],
+            "input": null,
+            "name": "lists",
+            "output": [
+                "List"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "List"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "List": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "closed": {
+                                "type": "boolean"
+                            },
+                            "pos": {
+                                "type": "number"
+                            },
+                            "idBoard": {
+                                "type": "string"
+                            },
+                            "subscribed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "idBoard"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync members from Trello boards.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/members"
+                }
+            ],
+            "input": null,
+            "name": "members",
+            "output": [
+                "Member"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Member"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Member": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "fullName": {
+                                "type": "string"
+                            },
+                            "username": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "avatarUrl": {
+                                "type": "string"
+                            },
+                            "initials": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync organizations (workspaces) the authenticated member belongs to.",
+            "auto_start": true,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/syncs/organizations"
+                }
+            ],
+            "input": null,
+            "name": "organizations",
+            "output": [
+                "Organization"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Organization"
+            ],
+            "version": "1.0.1",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Organization": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "desc": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "website": {
+                                "type": "string"
+                            },
+                            "logoHash": {
+                                "type": "string"
+                            },
+                            "products": {
+                                "type": "array",
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

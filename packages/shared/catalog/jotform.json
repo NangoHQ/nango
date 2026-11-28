@@ -1,0 +1,2484 @@
+{
+    "providerConfigKey": "jotform",
+    "actions": [
+        {
+            "type": "action",
+            "description": "Add one or more new questions/fields to an existing form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_addformquestions",
+            "name": "add-form-questions",
+            "output": [
+                "ActionOutput_jotform_addformquestions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_addformquestions",
+                "ActionOutput_jotform_addformquestions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_addformquestions": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form to add the questions to. Example: \"262715780901055\""
+                            },
+                            "questions": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Jotform control type of the question to add. Example: \"control_textbox\", \"control_textarea\", \"control_email\", \"control_fullname\", \"control_dropdown\", \"control_radio\""
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Question label shown on the form. Example: \"Your Name\""
+                                        },
+                                        "name": {
+                                            "description": "Optional unique field name for the question. Jotform derives one from the label when omitted.",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Optional 1-based position of the question on the form. The question is appended after existing questions when omitted.",
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "required": {
+                                            "description": "Whether an answer to the question is required. Defaults to false.",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Questions to add to the form. At least one question is required."
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for adding one or more new questions to an existing Jotform form."
+                    },
+                    "ActionOutput_jotform_addformquestions": {
+                        "type": "object",
+                        "properties": {
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "qid": {
+                                            "type": "string",
+                                            "description": "Question ID assigned by Jotform. Example: \"2\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Jotform control type of the added question. Example: \"control_textbox\""
+                                        },
+                                        "text": {
+                                            "description": "Question label shown on the form.",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "description": "Unique field name of the question, when set.",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "1-based position of the question on the form. Example: \"3\"",
+                                            "type": "string"
+                                        },
+                                        "required": {
+                                            "description": "Whether an answer is required: \"Yes\" or \"No\".",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "qid",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "The questions that were added to the form, including their assigned question IDs."
+                            }
+                        },
+                        "required": [
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of adding questions to a Jotform form."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Register a new webhook URL on a form so Jotform POSTs new submissions to it",
+            "endpoint": null,
+            "input": "ActionInput_jotform_addformwebhook",
+            "name": "add-form-webhook",
+            "output": [
+                "ActionOutput_jotform_addformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_addformwebhook",
+                "ActionOutput_jotform_addformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_addformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form to register the webhook on. Example: \"262715780901055\""
+                            },
+                            "webhook_url": {
+                                "type": "string",
+                                "description": "Fully-qualified http(s) URL that Jotform will POST a submission payload to for every new submission on the form. Example: \"https://example.com/jotform-webhook\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "webhook_url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Webhook registration request: the target form and the URL to notify."
+                    },
+                    "ActionOutput_jotform_addformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "webhook_url": {
+                                "type": "string",
+                                "description": "The webhook URL that was registered on the form."
+                            }
+                        },
+                        "required": [
+                            "webhook_url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmation of the registered webhook."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Duplicate an existing form, including its questions/structure, as a new form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_cloneform",
+            "name": "clone-form",
+            "output": [
+                "ActionOutput_jotform_cloneform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_cloneform",
+                "ActionOutput_jotform_cloneform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_cloneform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the Jotform form to clone. Example: \"262715780901055\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for cloning a Jotform form"
+                    },
+                    "ActionOutput_jotform_cloneform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the newly created clone form. Example: \"262735631157055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the cloned form. Jotform automatically prefixes the original form title with \"Clone of \""
+                            },
+                            "status": {
+                                "description": "Status of the cloned form. Example: \"ENABLED\"",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "URL of the cloned form. Example: \"https://form.jotform.com/262735631157055\"",
+                                "type": "string"
+                            },
+                            "username": {
+                                "description": "Username of the Jotform account that owns the cloned form",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Creation timestamp of the cloned form. Example: \"2026-10-01 12:00:00\". Omitted when null in the provider response",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of the last update to the cloned form. Omitted when the form has never been updated",
+                                "type": "string"
+                            },
+                            "last_submission": {
+                                "description": "Timestamp of the most recent submission to the cloned form. Omitted when the clone has no submissions yet",
+                                "type": "string"
+                            },
+                            "count": {
+                                "description": "Total number of submissions on the cloned form. Example: 0",
+                                "type": "number"
+                            },
+                            "new": {
+                                "description": "Number of unread submissions on the cloned form. Example: 0",
+                                "type": "number"
+                            },
+                            "height": {
+                                "description": "Height of the cloned form in pixels, as a string. Example: \"600\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created clone of the source form"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new report (e.g. a CSV export view) for a form",
+            "endpoint": null,
+            "input": "ActionInput_jotform_createformreport",
+            "name": "create-form-report",
+            "output": [
+                "ActionOutput_jotform_createformreport"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_createformreport",
+                "ActionOutput_jotform_createformreport"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_createformreport": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form to create the report for. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the new report. Example: \"Submissions Export\""
+                            },
+                            "list_type": {
+                                "type": "string",
+                                "description": "Type of report to create. Common values: \"csv\", \"excel\", \"grid\", \"table\". Example: \"csv\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "title",
+                            "list_type"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Parameters for creating a new report on a form"
+                    },
+                    "ActionOutput_jotform_createformreport": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier of the created report."
+                            },
+                            "form_id": {
+                                "description": "ID of the form the report belongs to.",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Title of the report.",
+                                "type": "string"
+                            },
+                            "list_type": {
+                                "description": "Type of the report, e.g. \"csv\".",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status of the report, e.g. \"ENABLED\".",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "URL to view the report in Jotform.",
+                                "type": "string"
+                            },
+                            "fields": {
+                                "description": "Comma-separated identifiers of the fields included in the report, e.g. \"dt,ip\".",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The created report"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new form, set its title, and add one or more questions/fields to it in a single call.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_createformwithquestions",
+            "name": "create-form-with-questions",
+            "output": [
+                "ActionOutput_jotform_createformwithquestions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_createformwithquestions",
+                "ActionOutput_jotform_createformwithquestions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_createformwithquestions": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Title of the new form. Example: \"Customer Feedback Survey\""
+                            },
+                            "questions": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Jotform field type of the question. Examples: \"control_textbox\" (short answer), \"control_email\" (email), \"control_fullname\" (full name), \"control_textarea\" (long answer)."
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "description": "Label of the question shown to respondents. Example: \"Your Email\""
+                                        },
+                                        "order": {
+                                            "description": "Display position of the question on the form. Defaults to the question's position in the questions array.",
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                        },
+                                        "name": {
+                                            "description": "Internal field name of the question. Example: \"yourEmail\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One or more questions/fields to add to the new form, in display order."
+                            }
+                        },
+                        "required": [
+                            "title",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for creating a Jotform form with an initial set of questions."
+                    },
+                    "ActionOutput_jotform_createformwithquestions": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the newly created form. Example: \"262735853167567\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the newly created form."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Public URL of the newly created form. Example: \"https://form.jotform.com/262735853167567\""
+                            },
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "qid": {
+                                            "type": "string",
+                                            "description": "Numeric question ID assigned by Jotform. This qid is the answer key used when submitting the form. Example: \"3\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Jotform field type of the created question. Example: \"control_textbox\""
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Label of the created question."
+                                        },
+                                        "name": {
+                                            "description": "Internal field name of the created question, when one was supplied.",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Display position of the question on the form.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "qid",
+                                        "type",
+                                        "text"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Questions created on the new form, with their Jotform-assigned qids."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "url",
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created form and its created questions."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Create a new, empty Jotform form, optionally setting its title at creation time.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_createform",
+            "name": "create-form",
+            "output": [
+                "ActionOutput_jotform_createform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_createform",
+                "ActionOutput_jotform_createform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_createform": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "description": "Title for the new form. Example: \"Contact Us\". If omitted, Jotform assigns its generic placeholder title.",
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Input for creating a new Jotform form."
+                    },
+                    "ActionOutput_jotform_createform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique ID of the newly created form. Example: \"262735255518563\""
+                            },
+                            "title": {
+                                "description": "The title of the created form. If no title was provided, Jotform assigns its generic placeholder title (\"Title Me\").",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "The public URL of the created form. Example: \"https://form.jotform.com/262735255518563\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "The newly created Jotform form."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a single question/field from a form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_deleteformquestion",
+            "name": "delete-form-question",
+            "output": [
+                "ActionOutput_jotform_deleteformquestion"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_deleteformquestion",
+                "ActionOutput_jotform_deleteformquestion"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_deleteformquestion": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form containing the question to delete. Example: \"31974353596870\""
+                            },
+                            "question_id": {
+                                "type": "string",
+                                "description": "ID (qid) of the question to delete from the form. Use the form questions endpoint to discover qids. Example: \"2\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "question_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for deleting a question from a form"
+                    },
+                    "ActionOutput_jotform_deleteformquestion": {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Jotform. Example: \"QuestionID #2 successfully deleted.\""
+                            }
+                        },
+                        "required": [
+                            "message"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of deleting the question"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Remove a registered webhook from a form by its index.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_deleteformwebhook",
+            "name": "delete-form-webhook",
+            "output": [
+                "ActionOutput_jotform_deleteformwebhook"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_deleteformwebhook",
+                "ActionOutput_jotform_deleteformwebhook"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_deleteformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the form the webhook is registered on. Example: \"262715780901055\""
+                            },
+                            "webhook_index": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "pattern": "^\\d+$"
+                                    },
+                                    {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                    }
+                                ],
+                                "description": "The zero-based positional index of the webhook on the form, as returned by list-form-webhooks (a string). Example: \"0\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "webhook_index"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for removing a webhook from a Jotform form"
+                    },
+                    "ActionOutput_jotform_deleteformwebhook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "True when the webhook was deleted successfully."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of the webhook deletion"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Delete a form. Jotform marks it DELETED rather than permanently scrubbing the record.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_deleteform",
+            "name": "delete-form",
+            "output": [
+                "ActionOutput_jotform_deleteform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_deleteform",
+                "ActionOutput_jotform_deleteform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the form to delete. Example: \"262715780901055\"."
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifies the Jotform form to delete."
+                    },
+                    "ActionOutput_jotform_deleteform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the deleted form. Example: \"262715780901055\"."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "The status of the form after deletion. Always \"DELETED\" on success; the form record itself remains retrievable."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Confirmation that the form was marked as deleted."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a report.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_deletereport",
+            "name": "delete-report",
+            "output": [
+                "ActionOutput_jotform_deletereport"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_deletereport",
+                "ActionOutput_jotform_deletereport"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_deletereport": {
+                        "type": "object",
+                        "properties": {
+                            "report_id": {
+                                "type": "string",
+                                "description": "ID of the report to permanently delete. Example: \"1234567890\". List report IDs with the list-form-reports action."
+                            }
+                        },
+                        "required": [
+                            "report_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for deleting a Jotform report."
+                    },
+                    "ActionOutput_jotform_deletereport": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "True when Jotform confirmed the report was permanently deleted."
+                            }
+                        },
+                        "required": [
+                            "success"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of deleting a Jotform report."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Permanently delete a submission.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_deletesubmission",
+            "name": "delete-submission",
+            "output": [
+                "ActionOutput_jotform_deletesubmission"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_deletesubmission",
+                "ActionOutput_jotform_deletesubmission"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "The ID of the Jotform submission to delete. Example: \"6665948653814244880\""
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for permanently deleting a Jotform submission."
+                    },
+                    "ActionOutput_jotform_deletesubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The ID of the submission that was deleted."
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Confirmation message returned by Jotform. Example: \"Submission #6665948653814244880 deleted successfully.\""
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "message"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of permanently deleting a Jotform submission."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Clone an existing Jotform form and set the title of the new copy in one call.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_duplicateform",
+            "name": "duplicate-form",
+            "output": [
+                "ActionOutput_jotform_duplicateform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_duplicateform",
+                "ActionOutput_jotform_duplicateform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_duplicateform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the existing Jotform form to duplicate. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Title to set on the newly created duplicate form. Example: \"Duplicated Intake Form v2\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for duplicating a Jotform form: the source form to clone and the title for the new copy"
+                    },
+                    "ActionOutput_jotform_duplicateform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the newly created duplicate form. Example: \"262735584490062\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the duplicate form after the rename step"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "URL of the duplicate form. Example: \"https://form.jotform.com/262735584490062\""
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of duplicating a Jotform form: identifying details of the renamed clone"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Edit an existing question's properties (e.g. its label text) in place, without creating a duplicate.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_editformquestion",
+            "name": "edit-form-question",
+            "output": [
+                "ActionOutput_jotform_editformquestion"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_editformquestion",
+                "ActionOutput_jotform_editformquestion"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_editformquestion": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form that owns the question. Example: \"262715780901055\""
+                            },
+                            "question_id": {
+                                "type": "string",
+                                "pattern": "^\\d+$",
+                                "description": "Numeric qid of the existing question to edit. Run list-form-questions on the form to discover qids. Example: \"3\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Question properties to set, keyed by Jotform property name. Example: { \"text\": \"New label\", \"required\": \"Yes\" }. Which properties exist depends on the field type of the question."
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "question_id",
+                            "properties"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for editing an existing Jotform form question in place."
+                    },
+                    "ActionOutput_jotform_editformquestion": {
+                        "type": "object",
+                        "properties": {
+                            "question_id": {
+                                "type": "string",
+                                "description": "The qid of the question that was edited. Example: \"3\""
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Control type of the edited question as echoed by Jotform. Example: \"control_textbox\""
+                            },
+                            "properties": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Properties applied to the question, as echoed back by Jotform. Example: { \"text\": \"New label\" }"
+                            }
+                        },
+                        "required": [
+                            "question_id",
+                            "type",
+                            "properties"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of editing a Jotform form question in place."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single form's metadata (title, status, URL, submission count, timestamps)",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getform",
+            "name": "get-form",
+            "output": [
+                "ActionOutput_jotform_getform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getform",
+                "ActionOutput_jotform_getform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "The unique identifier of the form to retrieve. Example: \"262715780901055\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Jotform form"
+                    },
+                    "ActionOutput_jotform_getform": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique identifier of the form. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The title of the form. Example: \"Feature Showcase Form\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "The status of the form, e.g. \"ENABLED\", \"DISABLED\" or \"DELETED\". Example: \"ENABLED\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The public URL of the form. Example: \"https://form.jotform.com/262715780901055\""
+                            },
+                            "count": {
+                                "type": "number",
+                                "description": "The total number of submissions the form has received. Example: 42"
+                            },
+                            "created_at": {
+                                "description": "The date and time the form was created, in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-09-29 14:56:35\"",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "The date and time the form was last updated, in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-09-29 14:59:19\"",
+                                "type": "string"
+                            },
+                            "last_submission": {
+                                "description": "The date and time of the most recent submission, in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the form has no submissions. Example: \"2026-10-01 13:32:51\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "title",
+                            "status",
+                            "url",
+                            "count"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Metadata for a single Jotform form"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the configuration of a single report.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getreport",
+            "name": "get-report",
+            "output": [
+                "ActionOutput_jotform_getreport"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getreport",
+                "ActionOutput_jotform_getreport"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getreport": {
+                        "type": "object",
+                        "properties": {
+                            "report_id": {
+                                "type": "string",
+                                "description": "ID of the report to retrieve. Example: \"262735952083059\""
+                            }
+                        },
+                        "required": [
+                            "report_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Parameters for fetching a single report."
+                    },
+                    "ActionOutput_jotform_getreport": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Report ID. Example: \"262735952083059\""
+                            },
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form the report belongs to. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the report."
+                            },
+                            "list_type": {
+                                "type": "string",
+                                "description": "Report output format, e.g. \"csv\", \"excel\", \"html\", \"pdf\", \"rss\", \"calendar\", or \"table\"."
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Status of the report, e.g. \"ENABLED\"."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Direct URL of the report."
+                            },
+                            "fields": {
+                                "description": "Comma-separated list of question and pseudo-field IDs included in the report. Example: \"dt,ip\"",
+                                "type": "string"
+                            },
+                            "settings": {
+                                "description": "Report type-specific settings, as returned by Jotform.",
+                                "type": "string"
+                            },
+                            "password": {
+                                "description": "Report password. Empty string when the report is not password-protected.",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Creation timestamp in \"YYYY-MM-DD HH:mm:ss\" format.",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Last update timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the report was never updated.",
+                                "type": "string"
+                            },
+                            "isProtected": {
+                                "description": "Whether the report is password-protected.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "title",
+                            "list_type",
+                            "status",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Configuration of a single Jotform report."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a submission's answers re-keyed by human-readable question label/text instead of raw numeric qid",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getsubmissionwithlabels",
+            "name": "get-submission-with-labels",
+            "output": [
+                "ActionOutput_jotform_getsubmissionwithlabels"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getsubmissionwithlabels",
+                "ActionOutput_jotform_getsubmissionwithlabels"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getsubmissionwithlabels": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "The ID of the submission to retrieve. Example: \"6665953522666321061\""
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a submission with its answers keyed by question label"
+                    },
+                    "ActionOutput_jotform_getsubmissionwithlabels": {
+                        "type": "object",
+                        "propertyNames": {
+                            "type": "string"
+                        },
+                        "additionalProperties": {
+                            "description": "The recorded answer for this question: a string for simple fields, an object of sub-label keys for compound fields (e.g. {\"first\": \"Jane\", \"last\": \"Doe\"} for a full name), or an array for multi-value fields"
+                        },
+                        "description": "The submission answers keyed by the question's human-readable label/text instead of its numeric qid, e.g. {\"Email Address\": \"jane@example.com\"}. Only questions that have a recorded answer are included."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve a single submission's recorded answers",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getsubmission",
+            "name": "get-submission",
+            "output": [
+                "ActionOutput_jotform_getsubmission"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getsubmission",
+                "ActionOutput_jotform_getsubmission"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "ID of the submission to retrieve. Example: \"6665953522666321061\""
+                            }
+                        },
+                        "required": [
+                            "submission_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for retrieving a single Jotform submission"
+                    },
+                    "ActionOutput_jotform_getsubmission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "ID of the submission. Example: \"6665953522666321061\""
+                            },
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form the submission belongs to. Example: \"262715780901055\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Status of the submission. Example: \"ACTIVE\""
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "Creation timestamp of the submission in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-09-30 12:35:52\""
+                            },
+                            "answers": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Internal field name of the question on the form. Example: \"q3_email1\""
+                                        },
+                                        "text": {
+                                            "type": "string",
+                                            "description": "Label text of the question as displayed on the form. Example: \"Email Address\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Jotform field type of the question. Examples: \"control_fullname\", \"control_email\", \"control_textbox\""
+                                        },
+                                        "answer": {
+                                            "description": "Recorded answer for the question. A string for simple fields, an object keyed by sub-labels for compound fields (e.g. {\"first\": \"Jane\", \"last\": \"Doe\"} for a full name field), or an array for multi-value fields such as file uploads. Omitted when the question was not answered."
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "text",
+                                        "type"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A single question on the form with its recorded answer, if any"
+                                },
+                                "description": "All questions on the form with their recorded answers, keyed by the question's numeric qid. Questions the submitter did not answer appear with their metadata but no answer value."
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "status",
+                            "created_at",
+                            "answers"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A single Jotform submission with its recorded answers"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated account's current usage/quota stats (submissions, uploads, payments, API calls, and form count) for the current billing period.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getuserusage",
+            "name": "get-user-usage",
+            "output": [
+                "ActionOutput_jotform_getuserusage"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getuserusage",
+                "ActionOutput_jotform_getuserusage"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getuserusage": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input required. Usage stats are returned for the authenticated account."
+                    },
+                    "ActionOutput_jotform_getuserusage": {
+                        "type": "object",
+                        "properties": {
+                            "submissions": {
+                                "type": "number",
+                                "description": "Number of form submissions received during the current monthly usage period."
+                            },
+                            "total_submissions": {
+                                "type": "number",
+                                "description": "Total number of submissions stored on the account across all forms."
+                            },
+                            "uploads": {
+                                "type": "number",
+                                "description": "Upload storage used by submission file uploads, in bytes."
+                            },
+                            "payments": {
+                                "type": "number",
+                                "description": "Number of payment submissions received during the current monthly usage period."
+                            },
+                            "form_count": {
+                                "type": "number",
+                                "description": "Number of forms on the account."
+                            },
+                            "monthly_usage_reset_date": {
+                                "type": "string",
+                                "description": "Date and time when the monthly usage counters reset, in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-11-01 00:00:00\""
+                            },
+                            "api": {
+                                "type": "number",
+                                "description": "Number of API calls counted toward the account usage limits."
+                            },
+                            "ai_agents": {
+                                "type": "number",
+                                "description": "Number of AI agent usages counted on the account."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Current usage and quota stats for the authenticated Jotform account."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Retrieve the authenticated Jotform account's profile information.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_getuser",
+            "name": "get-user",
+            "output": [
+                "ActionOutput_jotform_getuser"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_getuser",
+                "ActionOutput_jotform_getuser"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_getuser": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false,
+                        "description": "No input required. The action returns the profile of the Jotform account that owns the API key used by the connection."
+                    },
+                    "ActionOutput_jotform_getuser": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "Jotform account username. Example: \"jane_doe\""
+                            },
+                            "name": {
+                                "description": "Account holder's display name. Omitted when the account has no name set (Jotform returns null).",
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address registered on the account. Example: \"jane@example.com\""
+                            },
+                            "website": {
+                                "description": "Website URL set on the account. Omitted when not set (Jotform returns null).",
+                                "type": "string"
+                            },
+                            "time_zone": {
+                                "description": "Account time zone. Example: \"America/New_York\"",
+                                "type": "string"
+                            },
+                            "account_type": {
+                                "type": "string",
+                                "description": "Subscription plan identifier, returned as a URL rather than a plain enum. Example: \"https://api.jotform.com/system/plan/FREE\""
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Account status. Example: \"ACTIVE\""
+                            },
+                            "created_at": {
+                                "description": "Account creation timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2024-01-15 09:30:00\"",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Timestamp of the last account update in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2024-01-16 10:45:00\"",
+                                "type": "string"
+                            },
+                            "region": {
+                                "description": "Account data region. Example: \"US\"",
+                                "type": "string"
+                            },
+                            "is_verified": {
+                                "description": "Whether the account email is verified, returned as a \"1\"/\"0\" string flag rather than a boolean.",
+                                "type": "string"
+                            },
+                            "usage": {
+                                "description": "API URL of the account usage endpoint. Example: \"https://api.jotform.com/user/usage\"",
+                                "type": "string"
+                            },
+                            "avatarUrl": {
+                                "description": "URL of the account's avatar image. Omitted when no avatar is set.",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "Account locale. Example: \"en-US\"",
+                                "type": "string"
+                            },
+                            "isHIPAA": {
+                                "description": "Whether the account is HIPAA-enabled, returned as a \"1\"/\"0\" string flag rather than a boolean.",
+                                "type": "string"
+                            },
+                            "euOnly": {
+                                "description": "Whether the account is restricted to EU servers, returned as a \"1\"/\"0\" string flag rather than a boolean.",
+                                "type": "string"
+                            },
+                            "is2FAEnabled": {
+                                "description": "Whether two-factor authentication is enabled on the account.",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "username",
+                            "email",
+                            "account_type",
+                            "status"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Profile of the authenticated Jotform account (the owner of the connection's API key)."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List the questions/fields of a form, including the numeric ID (qid), type, and field name of each question.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_listformquestions",
+            "name": "list-form-questions",
+            "output": [
+                "ActionOutput_jotform_listformquestions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_listformquestions",
+                "ActionOutput_jotform_listformquestions"
+            ],
+            "version": "1.0.1",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_listformquestions": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the Jotform form whose questions to list. Example: \"262715780901055\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for listing the questions of a Jotform form"
+                    },
+                    "ActionOutput_jotform_listformquestions": {
+                        "type": "object",
+                        "properties": {
+                            "questions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "qid": {
+                                            "type": "string",
+                                            "description": "Numeric question ID as a string. This is the key used to submit answers for this question. Example: \"3\""
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "description": "Jotform field type of the question. Example: \"control_email\""
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Unique field name of the question within the form. Example: \"email\""
+                                        },
+                                        "text": {
+                                            "description": "Label text shown to the respondent for this question. Example: \"Your Email\"",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Display position of the question on the form, starting from 1. Example: 2",
+                                            "type": "number"
+                                        },
+                                        "sublabels": {
+                                            "description": "Sub-answer keys and their labels for compound field types such as control_fullname. Example: {\"first\": \"First Name\", \"last\": \"Last Name\"}",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "qid",
+                                        "type",
+                                        "name"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "All questions of the form, sorted by their display order"
+                            }
+                        },
+                        "required": [
+                            "questions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "List of the questions of the form"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List reports (e.g. CSV/grid/table exports or views) configured for a form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_listformreports",
+            "name": "list-form-reports",
+            "output": [
+                "ActionOutput_jotform_listformreports"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_listformreports",
+                "ActionOutput_jotform_listformreports"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_listformreports": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form whose reports should be listed. Example: \"262715780901055\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for listing the reports configured on a Jotform form."
+                    },
+                    "ActionOutput_jotform_listformreports": {
+                        "type": "object",
+                        "properties": {
+                            "reports": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique ID of the report. Example: \"262735952083059\""
+                                        },
+                                        "form_id": {
+                                            "description": "ID of the form the report belongs to.",
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "description": "Title of the report.",
+                                            "type": "string"
+                                        },
+                                        "list_type": {
+                                            "description": "Report format or view type, e.g. \"csv\", \"excel\", \"grid\", \"table\", \"calendar\" or \"rss\".",
+                                            "type": "string"
+                                        },
+                                        "fields": {
+                                            "description": "Comma-separated identifiers of the submission fields included in the report, e.g. \"dt,ip,3,4\".",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Status of the report, e.g. \"ENABLED\".",
+                                            "type": "string"
+                                        },
+                                        "url": {
+                                            "description": "Public share URL where the report can be viewed or downloaded.",
+                                            "type": "string"
+                                        },
+                                        "isProtected": {
+                                            "description": "Whether the report URL is password protected.",
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "description": "Creation timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the provider returns no creation date.",
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "description": "Last update timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the report was never updated.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "Reports configured for the form; empty when the form has no reports."
+                            }
+                        },
+                        "required": [
+                            "reports"
+                        ],
+                        "additionalProperties": false,
+                        "description": "List of reports configured on the form."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List submissions for a specific form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_listformsubmissions",
+            "name": "list-form-submissions",
+            "output": [
+                "ActionOutput_jotform_listformsubmissions"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_listformsubmissions",
+                "ActionOutput_jotform_listformsubmissions"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_listformsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "ID of the Jotform form whose submissions should be listed. Example: \"262715780901055\""
+                            },
+                            "cursor": {
+                                "description": "Pagination cursor returned as next_cursor by a previous call, representing a submission offset. Omit for the first page. Example: \"20\"",
+                                "type": "string",
+                                "pattern": "^[1-9]\\d*$"
+                            },
+                            "limit": {
+                                "description": "Maximum number of submissions to return in this page. Falls back to the provider default (20) when omitted. Example: 50",
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 1000
+                            },
+                            "filter": {
+                                "description": "Jotform filter map applied to submission fields, sent to the API as a JSON-encoded filter parameter. Example: {\"created_at:gt\": \"2026-01-01 00:00:00\"}",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {}
+                            },
+                            "orderby": {
+                                "description": "Submission field to order results by, with optional direction. Examples: \"created_at DESC\", \"id ASC\". Defaults to creation date when omitted",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for listing the submissions of a Jotform form"
+                    },
+                    "ActionOutput_jotform_listformsubmissions": {
+                        "type": "object",
+                        "properties": {
+                            "submissions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique ID of the submission. Example: \"6665953126511883799\""
+                                        },
+                                        "form_id": {
+                                            "type": "string",
+                                            "description": "ID of the form this submission belongs to. Example: \"262715780901055\""
+                                        },
+                                        "status": {
+                                            "description": "Status of the submission. Example: \"ACTIVE\"",
+                                            "type": "string"
+                                        },
+                                        "new": {
+                                            "description": "\"1\" when the submission has not been read yet, otherwise \"0\"",
+                                            "type": "string"
+                                        },
+                                        "flag": {
+                                            "description": "\"1\" when the submission is flagged, otherwise \"0\"",
+                                            "type": "string"
+                                        },
+                                        "notes": {
+                                            "description": "Notes attached to the submission; an empty string when there are none",
+                                            "type": "string"
+                                        },
+                                        "ip": {
+                                            "description": "IP address of the submitter. Example: \"52.26.211.56\"",
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "Creation timestamp of the submission. Example: \"2026-09-30 12:35:12\""
+                                        },
+                                        "updated_at": {
+                                            "description": "Timestamp of the last update to the submission; null when it has never been updated",
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "answers": {
+                                            "description": "Answers keyed by the numeric question ID (qid) of each question on the form",
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Internal field name of the question on the form. Example: \"q3_email1\"",
+                                                        "type": "string"
+                                                    },
+                                                    "order": {
+                                                        "description": "Display order of the question on the form, as a string. Example: \"3\"",
+                                                        "type": "string"
+                                                    },
+                                                    "text": {
+                                                        "description": "Label text of the question shown on the form. Example: \"Email Address\"",
+                                                        "type": "string"
+                                                    },
+                                                    "type": {
+                                                        "description": "Jotform field type of the question. Example: \"control_email\"",
+                                                        "type": "string"
+                                                    },
+                                                    "answer": {
+                                                        "description": "Submitted answer. Its shape depends on the field type: a plain string for simple fields, an object of sub-label keys for compound fields, or an array of file URLs for upload fields. Omitted when the question was not answered."
+                                                    }
+                                                },
+                                                "additionalProperties": {}
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "form_id",
+                                        "created_at"
+                                    ],
+                                    "additionalProperties": {}
+                                },
+                                "description": "Submissions of the form for the requested page"
+                            },
+                            "next_cursor": {
+                                "description": "Cursor to pass as cursor to fetch the next page. Omitted when there are no more results. Example: \"40\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "submissions"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A page of form submissions with an optional cursor to the next page"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List webhook URLs currently registered on a form.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_listformwebhooks",
+            "name": "list-form-webhooks",
+            "output": [
+                "ActionOutput_jotform_listformwebhooks"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_listformwebhooks",
+                "ActionOutput_jotform_listformwebhooks"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_listformwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the Jotform form to list webhooks for. Example: \"262715780901055\""
+                            }
+                        },
+                        "required": [
+                            "form_id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for listing the webhooks registered on a Jotform form."
+                    },
+                    "ActionOutput_jotform_listformwebhooks": {
+                        "type": "object",
+                        "properties": {
+                            "webhooks": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "index": {
+                                            "type": "string",
+                                            "description": "Positional index of the webhook within the form. Example: \"0\""
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Registered webhook URL. Example: \"https://example.com/webhook\""
+                                        }
+                                    },
+                                    "required": [
+                                        "index",
+                                        "url"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A single webhook registered on the form."
+                                },
+                                "description": "Webhook URLs currently registered on the form. Empty when the form has no webhooks."
+                            }
+                        },
+                        "required": [
+                            "webhooks"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Webhooks currently registered on the Jotform form."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "List forms owned by the authenticated user.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_listforms",
+            "name": "list-forms",
+            "output": [
+                "ActionOutput_jotform_listforms"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_listforms",
+                "ActionOutput_jotform_listforms"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "limit": {
+                                "description": "Maximum number of forms to return per page. Jotform defaults to 20 when omitted. Example: 20",
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                            },
+                            "offset": {
+                                "description": "Zero-based index of the first form to return. Combine with limit to page through results. Defaults to 0. Example: 40",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                            },
+                            "orderby": {
+                                "description": "Form field to order results by. Jotform orders by id when omitted. Example: \"created_at\"",
+                                "type": "string",
+                                "enum": [
+                                    "id",
+                                    "title",
+                                    "status",
+                                    "created_at",
+                                    "updated_at",
+                                    "count",
+                                    "slug"
+                                ]
+                            },
+                            "direction": {
+                                "description": "Sort direction applied to orderby. Ignored when orderby is omitted. Example: \"DESC\"",
+                                "type": "string",
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
+                            },
+                            "status": {
+                                "description": "Only return forms in this status. When omitted, forms in every status (including deleted forms) are returned. Example: \"ENABLED\"",
+                                "type": "string",
+                                "enum": [
+                                    "ENABLED",
+                                    "DELETED"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "description": "Pagination, sorting, and filtering options for listing forms"
+                    },
+                    "ActionOutput_jotform_listforms": {
+                        "type": "object",
+                        "properties": {
+                            "forms": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "description": "Unique form ID. Example: \"262715780901055\""
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "description": "Form title. Example: \"Feature Showcase Form\""
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "description": "Form status, e.g. \"ENABLED\" or \"DELETED\". Example: \"ENABLED\""
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Public URL of the form. Example: \"https://form.jotform.com/262715780901055\""
+                                        },
+                                        "count": {
+                                            "type": "string",
+                                            "description": "Number of submissions the form has received, returned as a numeric string. Example: \"3\""
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "description": "Creation timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-09-29 14:56:35\""
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "description": "Last modification timestamp in \"YYYY-MM-DD HH:mm:ss\" format. Example: \"2026-09-29 14:59:19\""
+                                        },
+                                        "last_submission": {
+                                            "description": "Timestamp of the most recent submission in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the form has no submissions. Example: \"2026-09-30 12:35:12\"",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "status",
+                                        "url",
+                                        "count",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
+                                    "additionalProperties": false,
+                                    "description": "A single Jotform form"
+                                },
+                                "description": "Forms owned by the authenticated user for the requested page"
+                            },
+                            "count": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Total number of forms matching the request across all pages. Example: 2"
+                            },
+                            "offset": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Zero-based index of the first returned form, echoing the request. Example: 0"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991,
+                                "description": "Page size that was applied to the request. Example: 20"
+                            }
+                        },
+                        "required": [
+                            "forms",
+                            "count",
+                            "offset",
+                            "limit"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A page of forms with pagination details"
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a form using human-readable field labels (resolved to question IDs via the form's questions) instead of numeric qids.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_submitformbyfieldlabel",
+            "name": "submit-form-by-field-label",
+            "output": [
+                "ActionOutput_jotform_submitformbyfieldlabel"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_submitformbyfieldlabel",
+                "ActionOutput_jotform_submitformbyfieldlabel"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_submitformbyfieldlabel": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the Jotform form to submit. Example: \"262715780901055\""
+                            },
+                            "fields": {
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "propertyNames": {
+                                                "type": "string"
+                                            },
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ],
+                                    "description": "Answer for the field: a plain value for simple fields, or an object of sub-keyed values for compound fields (e.g. {\"first\": \"Jane\", \"last\": \"Doe\"} for a \"Full Name\" field). Sub-keys come from the question's sublabels in list-form-questions; either the machine key (\"first\") or its human label (\"First Name\") is accepted."
+                                },
+                                "description": "Answers keyed by the question's human-readable label (its text, or internal name) exactly as returned by list-form-questions. Example: {\"Email Address\": \"jane@example.com\", \"Full Name\": {\"first\": \"Jane\", \"last\": \"Doe\"}}"
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "fields"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Form submission expressed with human-readable field labels instead of numeric question IDs."
+                    },
+                    "ActionOutput_jotform_submitformbyfieldlabel": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "ID of the created submission. Example: \"6666847323816835506\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Canonical API URL of the created submission. Example: \"https://api.jotform.com/submission/6666847323816835506\""
+                            }
+                        },
+                        "required": [
+                            "submission_id",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Identifiers of the created form submission."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Submit a form (create a new submission) with answers for one or more of its questions.",
+            "endpoint": null,
+            "input": "ActionInput_jotform_submitform",
+            "name": "submit-form",
+            "output": [
+                "ActionOutput_jotform_submitform"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_submitform",
+                "ActionOutput_jotform_submitform"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_submitform": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the Jotform form to submit. Example: \"262715780901055\""
+                            },
+                            "answers": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "qid": {
+                                            "type": "string",
+                                            "pattern": "^\\d+$",
+                                            "description": "Numeric question ID (qid) of the question being answered, as returned by the form's questions list. Example: \"3\""
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "propertyNames": {
+                                                        "type": "string"
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "description": "Answer for the question: a plain string for a simple field (e.g. \"jane@example.com\" for an email field), or an object of sub-values keyed by the question's sublabel keys for a compound field (e.g. { \"first\": \"Jane\", \"last\": \"Doe\" } for a full name field)."
+                                        }
+                                    },
+                                    "required": [
+                                        "qid",
+                                        "value"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "description": "One or more answers keyed by question qid. Use the list-form-questions action first to discover each question's qid, field type, and sublabel keys."
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "answers"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for submitting a Jotform form: the form ID and one or more answers keyed by numeric question ID (qid)."
+                    },
+                    "ActionOutput_jotform_submitform": {
+                        "type": "object",
+                        "properties": {
+                            "submission_id": {
+                                "type": "string",
+                                "description": "ID of the created submission. Example: \"6665948653814244880\""
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "API URL of the created submission resource. Example: \"https://api.jotform.com/submission/6665948653814244880\""
+                            }
+                        },
+                        "required": [
+                            "submission_id",
+                            "url"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Output of a submitted Jotform form: the created submission ID and its API URL, without the recorded answers."
+                    }
+                }
+            },
+            "features": []
+        },
+        {
+            "type": "action",
+            "description": "Renames an existing form by setting its title property",
+            "endpoint": null,
+            "input": "ActionInput_jotform_updateformtitle",
+            "name": "update-form-title",
+            "output": [
+                "ActionOutput_jotform_updateformtitle"
+            ],
+            "scopes": [],
+            "usedModels": [
+                "ActionInput_jotform_updateformtitle",
+                "ActionOutput_jotform_updateformtitle"
+            ],
+            "version": "1.0.0",
+            "json_schema": {
+                "definitions": {
+                    "ActionInput_jotform_updateformtitle": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The ID of the Jotform form to rename. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "The new title to set on the form. Example: \"Customer Intake Form\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Input for renaming a Jotform form"
+                    },
+                    "ActionOutput_jotform_updateformtitle": {
+                        "type": "object",
+                        "properties": {
+                            "form_id": {
+                                "type": "string",
+                                "description": "The ID of the renamed form. Example: \"262715780901055\""
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The title of the form after the update. Example: \"Customer Intake Form\""
+                            }
+                        },
+                        "required": [
+                            "form_id",
+                            "title"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Result of renaming a Jotform form"
+                    }
+                }
+            },
+            "features": []
+        }
+    ],
+    "syncs": [
+        {
+            "type": "sync",
+            "description": "Sync all forms owned by the authenticated Jotform user.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "forms",
+            "output": [
+                "Form"
+            ],
+            "runs": "every hour",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Form"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Form": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier of the form, e.g. \"262715780901055\""
+                            },
+                            "username": {
+                                "description": "Username of the Jotform account that owns the form",
+                                "type": "string"
+                            },
+                            "title": {
+                                "description": "Title of the form",
+                                "type": "string"
+                            },
+                            "height": {
+                                "description": "Height of the form in pixels, returned as a string, e.g. \"690\"",
+                                "type": "string"
+                            },
+                            "status": {
+                                "description": "Status of the form, e.g. \"ENABLED\" or \"DISABLED\". Forms whose status is \"DELETED\" are removed from the synced records instead of being saved",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "description": "Creation date of the form in \"YYYY-MM-DD HH:mm:ss\" format, e.g. \"2026-10-01 14:36:20\"",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Date the form was last updated in \"YYYY-MM-DD HH:mm:ss\" format",
+                                "type": "string"
+                            },
+                            "last_submission": {
+                                "description": "Date of the most recent submission in \"YYYY-MM-DD HH:mm:ss\" format. Omitted when the form has no submissions",
+                                "type": "string"
+                            },
+                            "new": {
+                                "description": "Number of unread submissions on the form, returned as a string, e.g. \"0\"",
+                                "type": "string"
+                            },
+                            "count": {
+                                "description": "Total number of submissions on the form, returned as a string, e.g. \"10\"",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "Layout type of the form, e.g. \"LEGACY\" or \"CARD\"",
+                                "type": "string"
+                            },
+                            "favorite": {
+                                "description": "\"1\" when the form is marked as a favorite, otherwise \"0\"",
+                                "type": "string"
+                            },
+                            "archived": {
+                                "description": "\"1\" when the form is archived, otherwise \"0\"",
+                                "type": "string"
+                            },
+                            "url": {
+                                "description": "Public URL of the form, e.g. \"https://form.jotform.com/262715780901055\"",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A form owned by the authenticated Jotform user"
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        },
+        {
+            "type": "sync",
+            "description": "Sync all submissions across all forms in the Jotform account, incrementally by creation date.",
+            "auto_start": true,
+            "endpoints": [],
+            "input": null,
+            "name": "submissions",
+            "output": [
+                "Submission"
+            ],
+            "runs": "every 5 minutes",
+            "scopes": [],
+            "sync_type": "full",
+            "track_deletes": false,
+            "usedModels": [
+                "Submission"
+            ],
+            "version": "1.0.0",
+            "webhookSubscriptions": [],
+            "json_schema": {
+                "definitions": {
+                    "Submission": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Jotform submission ID, unique across the account (e.g. \"6665953522666321061\")"
+                            },
+                            "form_id": {
+                                "type": "string",
+                                "description": "ID of the form this submission belongs to (e.g. \"262715780901055\")"
+                            },
+                            "ip": {
+                                "description": "IP address of the submitter",
+                                "type": "string"
+                            },
+                            "created_at": {
+                                "type": "string",
+                                "description": "Submission creation timestamp in \"YYYY-MM-DD HH:MM:SS\" format in the account timezone (e.g. \"2026-09-30 12:35:52\")"
+                            },
+                            "status": {
+                                "description": "Submission status (e.g. \"ACTIVE\")",
+                                "type": "string"
+                            },
+                            "new": {
+                                "description": "\"1\" if the submission has not been read yet, \"0\" otherwise",
+                                "type": "string"
+                            },
+                            "flag": {
+                                "description": "\"1\" if the submission is flagged, \"0\" otherwise",
+                                "type": "string"
+                            },
+                            "notes": {
+                                "description": "Notes attached to the submission (empty string when none)",
+                                "type": "string"
+                            },
+                            "updated_at": {
+                                "description": "Last edit timestamp in \"YYYY-MM-DD HH:MM:SS\" format; null when the submission was never edited",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "answers": {
+                                "description": "Map of question ID (qid) to answer entry. An entry only contains \"answer\" when the question was actually answered",
+                                "type": "object",
+                                "propertyNames": {
+                                    "type": "string"
+                                },
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "description": "Internal field name of the question (e.g. \"q3_email1\")",
+                                            "type": "string"
+                                        },
+                                        "order": {
+                                            "description": "Display order of the question on the form, as a string (e.g. \"3\")",
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "description": "Label of the question as shown on the form (e.g. \"Email Address\")",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "description": "Jotform field type of the question (e.g. \"control_email\", \"control_fullname\")",
+                                            "type": "string"
+                                        },
+                                        "sublabels": {
+                                            "description": "JSON-encoded map of sub-labels for compound field types such as control_fullname (e.g. {\"first\": \"First Name\", \"last\": \"Last Name\"})",
+                                            "type": "string"
+                                        },
+                                        "selectedField": {
+                                            "description": "Selected sub-field identifier for question types that expose one (e.g. control_autoincrement)",
+                                            "type": "string"
+                                        },
+                                        "answer": {
+                                            "description": "Submitted answer: a string for simple fields, an object keyed by sub-key for compound fields (e.g. {\"first\": \"Direct\", \"last\": \"Test\"}), or an array for fields such as file upload. Omitted entirely when the question was not answered"
+                                        },
+                                        "prettyFormat": {
+                                            "description": "Human-readable rendering of the answer for compound fields (e.g. \"Direct Test\" for a full name)",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "description": "Answer entry for a single form question. The parent answers map is keyed by the question ID (qid) of the form the submission belongs to"
+                                }
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "form_id",
+                            "created_at"
+                        ],
+                        "additionalProperties": false,
+                        "description": "A Jotform form submission"
+                    }
+                }
+            },
+            "features": [
+                "checkpoints"
+            ]
+        }
+    ],
+    "onEventScripts": {
+        "post-connection-creation": [],
+        "pre-connection-deletion": [],
+        "validate-connection": []
+    },
+    "functions": [],
+    "sdkVersion": "0.72.6"
+}

@@ -125,27 +125,25 @@ describe(`GET ${route}`, () => {
     });
 
     it('should keep renamed templates visible when an older sync with the same model name exists', async () => {
-        const getAllAvailableFlowsAsStandardConfigSpy = vi.spyOn(flowService, 'getAllAvailableFlowsAsStandardConfig').mockReturnValue([
-            {
-                providerConfigKey: 'hubspot',
-                actions: [],
-                syncs: [
-                    seeders.getTestStdSyncConfig({
-                        name: 'sync-users',
-                        type: 'sync',
-                        returns: ['User'],
-                        description: 'Sync provisioned users',
-                        auto_start: true,
-                        sync_type: 'full',
-                        version: '1.0.0',
-                        enabled: false,
-                        endpoints: [{ group: 'Users', method: 'GET', path: '/syncs/sync-users' }],
-                        runs: 'every hour'
-                    })
-                ],
-                ['on-events']: []
-            }
-        ]);
+        const getProviderTemplatesSpy = vi.spyOn(flowService, 'getProviderTemplates').mockReturnValue({
+            providerConfigKey: 'hubspot',
+            actions: [],
+            syncs: [
+                seeders.getTestStdSyncConfig({
+                    name: 'sync-users',
+                    type: 'sync',
+                    returns: ['User'],
+                    description: 'Sync provisioned users',
+                    auto_start: true,
+                    sync_type: 'full',
+                    version: '1.0.0',
+                    enabled: false,
+                    endpoints: [{ group: 'Users', method: 'GET', path: '/syncs/sync-users' }],
+                    runs: 'every hour'
+                })
+            ],
+            ['on-events']: []
+        });
 
         try {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
@@ -188,7 +186,7 @@ describe(`GET ${route}`, () => {
                 type: 'sync'
             });
         } finally {
-            getAllAvailableFlowsAsStandardConfigSpy.mockRestore();
+            getProviderTemplatesSpy.mockRestore();
         }
     });
 });

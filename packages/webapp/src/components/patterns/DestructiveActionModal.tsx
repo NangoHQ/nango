@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import {
     Button,
@@ -24,7 +24,7 @@ interface DestructiveActionModalProps {
     confirmButtonText: string;
     cancelButtonText?: string;
     trigger?: React.ReactNode;
-    onConfirm: () => void;
+    onConfirm: () => Promise<unknown>;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
@@ -42,6 +42,8 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     onOpenChange
 }) => {
     const [confirmText, setConfirmText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const submittingRef = useRef(false);
     const inputId = useId();
     const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
@@ -54,24 +56,52 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
         }
     }, [open]);
 
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!isConfirmed || isSubmitting || submittingRef.current) {
+            return;
+        }
+
+        submittingRef.current = true;
+        setIsSubmitting(true);
+        try {
+            await onConfirm();
+        } catch {
+            // Error presentation (e.g. toast) is owned by onConfirm; keep the modal open so the user can retry.
+        } finally {
+            submittingRef.current = false;
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (isSubmitting) {
+            return;
+        }
+        onOpenChange(nextOpen);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-            <DialogContent>
+            <DialogContent
+                onEscapeKeyDown={(event) => {
+                    if (isSubmitting) {
+                        event.preventDefault();
+                    }
+                }}
+                onInteractOutside={(event) => {
+                    if (isSubmitting) {
+                        event.preventDefault();
+                    }
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    <form
-                        id={formId}
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            if (isConfirmed) {
-                                onConfirm();
-                            }
-                        }}
-                    >
+                    <form id={formId} onSubmit={(event) => void handleSubmit(event)}>
                         <Field>
                             <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
                             <Input
@@ -81,6 +111,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                                 onChange={(event) => setConfirmText(event.target.value)}
                                 placeholder="Enter confirmation text"
                                 autoComplete="off"
+                                disabled={isSubmitting}
                             />
                         </Field>
                     </form>
@@ -88,11 +119,11 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="outline" size="sm">
+                        <Button type="button" variant="outline" size="sm" disabled={isSubmitting}>
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button type="submit" form={formId} variant="danger" size="sm" disabled={!isConfirmed}>
+                    <Button type="submit" form={formId} variant="danger" size="sm" loading={isSubmitting} disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>
