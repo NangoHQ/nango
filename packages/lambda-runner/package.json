@@ -10,8 +10,8 @@
         "ts-build": "tsc"
     },
     "devDependencies": {
-        "@types/aws-lambda": "8.10.158",
-        "@types/node": "24.10.0",
+        "@types/aws-lambda": "8.10.164",
+        "@types/node": "24.19.2",
         "@types/unzipper": "0.10.11",
         "typescript": "5.9.3"
     },

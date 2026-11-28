@@ -141,7 +141,7 @@ export class OAuth1Client {
         const promise = new Promise<OAuth1RequestTokenResult>((resolve, reject) => {
             this.client.getOAuthRequestToken(
                 additionalTokenParams,
-                (error: { statusCode: number; data?: any } | undefined, token: string, token_secret: string, parsed_query_string: string) => {
+                (error: Error | { statusCode: number; data?: any } | undefined, token: string, token_secret: string, parsed_query_string: string) => {
                     if (error) {
                         reject(error as unknown as Error);
                     } else {

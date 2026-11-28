@@ -86,7 +86,7 @@
     "devDependencies": {
         "@nangohq/types": "0.72.6",
         "@types/babel__core": "7.20.5",
-        "@types/babel__traverse": "7.20.7",
+        "@types/babel__traverse": "7.28.0",
         "@types/columnify": "1.5.4",
         "@types/commander": "2.12.5",
         "@types/ejs": "3.1.5",
@@ -94,7 +94,7 @@
         "@types/inquirer": "9.0.7",
         "@types/jscodeshift": "17.3.0",
         "@types/json-schema": "7.0.15",
-        "@types/node": "22.15.29",
+        "@types/node": "22.20.5",
         "@types/npm-package-arg": "6.1.4",
         "@types/promptly": "3.0.5",
         "babel-loader": "9.1.2",
